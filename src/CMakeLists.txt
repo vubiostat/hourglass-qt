@@ -5,6 +5,7 @@ SET(hourglass_QT_HEADERS browser.h launcher.h popup.h thread.h)
 SET(hourglass_SOURCES ${hourglass_QT_SOURCES} mongoose.c server.cpp)
 
 SET(QT_USE_QTWEBKIT TRUE)
+SET(QT_USE_QTSQL TRUE)
 QT4_WRAP_CPP(hourglass_QT_HEADERS_MOC ${hourglass_QT_HEADERS})
 INCLUDE(${QT_USE_FILE})
 ADD_DEFINITIONS(${QT_DEFINITIONS})

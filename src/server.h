@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include <QString>
+#include <QRegExp>
 #include "mongoose.h"
 
 class Server
@@ -11,11 +12,16 @@ class Server
     bool start();
     bool stop();
 
+    static const QRegExp activityPath;
+    static const QRegExp editActivityPath;
+    static const QRegExp deleteActivityPath;
+    static const QRegExp restartActivityPath;
+
   private:
     struct mg_context *ctx;
     QString port;
 
-    static void *router(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info);
+    static void *route(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info);
 };
 
 #endif
