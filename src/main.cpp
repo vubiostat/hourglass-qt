@@ -14,5 +14,9 @@ int main(int argc, char **argv)
   Launcher launcher;
   launcher.show();
 
-  return app.exec();
+  int result = app.exec();
+  t.quit();
+  t.wait();
+
+  return result;
 }

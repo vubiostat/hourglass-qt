@@ -12,7 +12,7 @@ class ServerThread : public QThread
     void run();
 
   private:
-    server *s;
+    Server *s;
 };
 
 #endif

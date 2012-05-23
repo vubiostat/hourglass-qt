@@ -1,24 +1,21 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <QString>
 #include "mongoose.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
+class Server
+{
+  public:
+    Server(QString port);
+    bool start();
+    bool stop();
 
-typedef struct _server {
-  struct mg_context *ctx;
-  char *port;
-} server;
+  private:
+    struct mg_context *ctx;
+    QString port;
 
-server *server_create(char *port);
-int server_start(server *s);
-void server_stop(server *s);
-void server_free(server *s);
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus
+    static void *router(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info);
+};
 
 #endif

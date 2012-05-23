@@ -2,7 +2,7 @@ FIND_PACKAGE(Qt4 REQUIRED)
 
 SET(hourglass_QT_SOURCES browser.cpp launcher.cpp main.cpp popup.cpp thread.cpp)
 SET(hourglass_QT_HEADERS browser.h launcher.h popup.h thread.h)
-SET(hourglass_SOURCES ${hourglass_QT_SOURCES} mongoose.c server.c)
+SET(hourglass_SOURCES ${hourglass_QT_SOURCES} mongoose.c server.cpp)
 
 SET(QT_USE_QTWEBKIT TRUE)
 QT4_WRAP_CPP(hourglass_QT_HEADERS_MOC ${hourglass_QT_HEADERS})

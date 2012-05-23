@@ -1,11 +1,12 @@
+#include <QString>
 #include "thread.h"
 
 void ServerThread::run()
 {
-  s = server_create((char *) "4567");
-  if (server_start(s) == 1) {
+  s = new Server(QString("4567"));
+  if (s->start()) {
     exec();
-    server_stop(s);
-    server_free(s);
+    s->stop();
+    delete s;
   }
 }
