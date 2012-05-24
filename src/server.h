@@ -1,12 +1,16 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <QObject>
 #include <QString>
 #include <QRegExp>
+#include <QSqlDatabase>
 #include "mongoose.h"
 
-class Server
+class Server : public QObject
 {
+  Q_OBJECT
+
   public:
     Server(QString port);
     bool start();
@@ -22,6 +26,7 @@ class Server
     QString port;
 
     static void *route(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info);
+    QString index();
 };
 
 #endif

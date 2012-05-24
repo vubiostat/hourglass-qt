@@ -1,0 +1,218 @@
+body {
+  font-family: georgia;
+  font-size: 16px;
+}
+
+td.activity-tags {
+  width: 100%;
+}
+td.activity-tags ul {
+  list-style-type: none;
+  margin: 0 0 0 1em;
+  padding: 0;
+}
+td.activity-tags ul li {
+  margin-left: 0.2em;
+  font-size: x-small;
+  background: yellow;
+  border: 1px solid gray;
+  padding: 0.2em;
+  display: inline;
+}
+
+#current-activity {
+  position: relative;
+  padding-bottom: 1em;
+}
+#current-activity td {
+  white-space: nowrap;
+}
+#current-activity .activity-name {
+  font-weight: bold;
+  font-size: 1.5em;
+}
+#current-activity .button {
+  text-align: right;
+}
+
+#new-activity {
+  padding-bottom: 1em;
+}
+#new-activity td {
+  white-space: nowrap;
+}
+#new-activity .activity {
+  width: 50%;
+  font-weight: bold;
+}
+#new-activity .activity input {
+  width: 99%;
+  line-height: 1.4em;
+}
+#new-activity .tags {
+  width: 50%;
+}
+#new-activity .tags input {
+  width: 99%;
+  line-height: 1.4em;
+}
+#new-activity .button {
+}
+
+/* http://sonspring.com/journal/clearing-floats */
+.clear {
+  clear: both;
+  display: block;
+  overflow: hidden;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+}
+
+input.empty {
+  color: lightgray;
+}
+
+ul.day-times {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+ul.day-times li {
+  display: block;
+  clear: both;
+}
+
+table.times {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+table.times tr {
+  position: relative;
+  cursor: pointer;
+}
+table.times tr.selected td {
+  background-color: #eee;
+}
+table.times td {
+  padding: 0.2em 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+table.times td.activity-started-at {
+  padding-right: 0.3em;
+}
+table.times td.activity-ended-at {
+  padding-left: 0.3em;
+}
+table.times td.time-separator {
+}
+table.times td.activity-name {
+  padding: 0 0.3em 0 1em;
+}
+table.times td.project-name {
+  color: #b8b8b8;
+  padding: 0 0.3em 0 1em;
+}
+table.times td.activity-duration {
+  text-align: right;
+}
+table.times td.icons {
+  text-align: right;
+  cursor: pointer;
+  padding-top: 0.2em;
+}
+table.times td.icons span.ui-icon {
+  float: left;
+  margin-left: 0.4em;
+}
+table.times td.icons span.ui-icon-pencil {
+  margin-left: 0.7em;
+}
+
+#activity-popup table {
+  width: 100%;
+}
+#activity-popup table td:nth-child(2) {
+}
+#activity-popup .activity-name,
+#activity-popup .activity-tags {
+  width: 100%;
+}
+
+.right-align {
+  text-align: right;
+}
+
+#tabs {
+}
+.ui-tabs .ui-tabs-panel {
+  overflow: auto;
+  padding: 1em;
+}
+
+.ui-autocomplete {
+  max-height: 100px;
+  overflow-y: auto;
+  /* prevent horizontal scrollbar */
+  overflow-x: hidden;
+  /* add padding to account for vertical scrollbar */
+}
+.ui-autocomplete.activity-time {
+  width: auto;
+  max-height: 150px;
+  overflow: hidden;
+}
+.ui-autocomplete-loading { background: white url('../images/ui-anim_basic_16x16.gif') right center no-repeat; }
+.ac-placeholder {
+  height: 100px;
+}
+.ui-autocomplete-header {
+  font-weight: bold;
+  padding: 0.2em 0.4em;
+  margin-bottom: 0.2em;
+  line-height: 1.5;
+  border-bottom: 1px solid black;
+}
+
+input.ui-button, .ui-button-text-only .ui-button-text {
+  padding: 0.2em;
+}
+input.ui-button, .ui-button-text-only {
+  font-size: 1em;
+}
+
+.ui-datepicker {
+  font-size: 0.75em;
+}
+
+.no-wrap {
+  display: inline;
+  white-space: nowrap;
+}
+
+#totals {
+  float: left;
+  overflow: auto;
+}
+#totals ul {
+  margin: 0;
+  padding: 0;
+}
+#totals ul li {
+  margin: 0;
+  display: inline;
+  line-height: 2em;
+}
+
+#add-earlier-activity {
+  float: right;
+}
+
+#select-activity {
+  width: 1.4em;
+  height: 1.4em;
+}
