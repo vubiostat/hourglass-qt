@@ -1,6 +1,8 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#define PUBLIC_PATH "@hourglass_PUBLIC_PATH@"
+
 #include <QObject>
 #include <QString>
 #include <QRegExp>

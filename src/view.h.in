@@ -1,7 +1,6 @@
 #ifndef VIEW_H
 #define VIEW_H
 
-#define PUBLIC_PATH "@hourglass_PUBLIC_PATH@"
 #define VIEW_PATH "@hourglass_VIEW_PATH@"
 
 #include <QObject>

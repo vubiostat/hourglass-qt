@@ -66,15 +66,19 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
         "Content-Length: %d\r\n"
         "\r\n"
         "%s", ba.size(), ba.data());
-  }
 
-  return (void *) "";  // Mark as processed
+    return (void *) "";  // Mark as processed
+  }
+  return NULL;
 }
 
 bool Server::start()
 {
   QByteArray ba = port.toLocal8Bit();
-  const char *options[] = {"listening_ports", ba.data(), NULL};
+  const char *options[] = {
+    "listening_ports", ba.data(),
+    "document_root", PUBLIC_PATH,
+    NULL};
 
   ctx = mg_start(&route, this, options);
   if (ctx == NULL) {
