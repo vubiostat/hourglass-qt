@@ -1,24 +1,22 @@
+#include <QtDebug>
+#include <iostream>
 #include <string>
 #include "view.h"
 
-View::View(QString name, QObject *parent)
-  : QObject(parent)
+View::View(QString name, bool useLayout, QObject *parent)
+  : QObject(parent), name(name), useLayout(useLayout)
 {
-  this->name = name;
 }
 
-void View::addVariable(const QString &name, const QString &str)
-{
-  rootFragment.addVariable(name.toStdString(), str.toStdString());
-}
-
-QString View::render()
+QString View::render(VariableMap &variables)
 {
   Teng::Teng_t teng(VIEW_PATH, Teng::Teng_t::Settings_t());
-  std::string out;
-  Teng::StringWriter_t writer(out);
-  Teng::Error_t err;
+  std::string contentOut, layoutOut;
+  Teng::StringWriter_t contentWriter(contentOut), layoutWriter(layoutOut);
+  Teng::Error_t contentErr, layoutErr;
+  Teng::Fragment_t layoutFragment;
 
+  Teng::Fragment_t *contentFragment = variables.fragment();
   int result = teng.generatePage(
       name.toStdString(),
       std::string(),
@@ -27,14 +25,38 @@ QString View::render()
       std::string(),
       "text/html",
       "utf-8",
-      rootFragment,
-      writer,
-      err);
+      *contentFragment,
+      contentWriter,
+      contentErr);
+  delete contentFragment;
 
-  if (result == 0) {
-    return QString::fromStdString(out);
+  if (result != 0) {
+    contentErr.dump(std::cout);
+    return QString("Content error!");
+  }
+
+  if (useLayout) {
+    layoutFragment.addVariable("content", contentOut);
+    result = teng.generatePage(
+        "layout.html",
+        std::string(),
+        std::string(),
+        std::string(),
+        std::string(),
+        "text/html",
+        "utf-8",
+        layoutFragment,
+        layoutWriter,
+        layoutErr);
+
+    if (result != 0) {
+      layoutErr.dump(std::cout);
+      return QString("Layout error!");
+    }
+
+    return QString::fromStdString(layoutOut);
   }
   else {
-    return QString("zomg errorz");
+    return QString::fromStdString(contentOut);
   }
 }

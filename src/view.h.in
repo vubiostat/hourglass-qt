@@ -9,19 +9,20 @@
 #include "teng.h"
 #include "tengwriter.h"
 #include "tengerror.h"
+#include "variables.h"
+#include "activity.h"
 
 class View : public QObject
 {
   Q_OBJECT
 
   public:
-    View(QString name, QObject *parent = 0);
-    void addVariable(const QString &name, const QString &str);
-    QString render();
+    View(QString name, bool useLayout = true, QObject *parent = 0);
+    QString render(VariableMap &variables);
 
   private:
     QString name;
-    Teng::Fragment_t rootFragment;
+    bool useLayout;
 };
 
 #endif

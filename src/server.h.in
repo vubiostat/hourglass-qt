@@ -8,6 +8,7 @@
 #include <QRegExp>
 #include <QSqlDatabase>
 #include "mongoose.h"
+#include "activity.h"
 
 class Server : public QObject
 {
@@ -29,6 +30,10 @@ class Server : public QObject
 
     static void *route(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info);
     QString index();
+    QString partialCurrent();
+    QString partialToday();
+    QString partialWeek();
+    QString partialActivities(QList<Activity> activities);
 };
 
 #endif

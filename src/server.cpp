@@ -3,6 +3,7 @@
 #include <QDir>
 #include "server.h"
 #include "view.h"
+#include "variables.h"
 
 #include <iostream>
 using namespace std;
@@ -69,6 +70,8 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
 
     return (void *) "";  // Mark as processed
   }
+
+  // Let mongoose handle the request from the document root
   return NULL;
 }
 
@@ -95,10 +98,58 @@ bool Server::stop()
   }
 }
 
+// Partials
+QString Server::partialCurrent()
+{
+  QList<Activity> activities = Activity::findCurrent();
+  View view("_current.html", false);
+  VariableMap variables(&view);
+  variables.addActivities(activities);
+  return view.render(variables);
+}
+
+QString Server::partialToday()
+{
+  QList<Activity> activities = Activity::findToday();
+  View view("_today.html", false);
+  VariableMap variables(&view);
+  variables.addVariable("activities", partialActivities(activities));
+  return view.render(variables);
+}
+
+QString Server::partialWeek()
+{
+  QDate sunday;
+  QDate today = QDate::currentDate();
+  int dayOfWeek = today.dayOfWeek();
+  if (dayOfWeek != Qt::Sunday) {
+    sunday = today.addDays(-dayOfWeek);
+  }
+  else {
+    sunday = today;
+  }
+
+  // TODO
+  View view("_week.html", false);
+}
+
+QString Server::partialActivities(QList<Activity> activities)
+{
+  View view("_activities.html", false);
+  VariableMap variables(&view);
+  variables.addActivities(activities);
+  return view.render(variables);
+}
+
 // GET /
 QString Server::index()
 {
+  QString current = partialCurrent();
+  QString today = partialToday();
+
   View view("index.html");
-  view.addVariable("zomg", "huge");
-  return view.render();
+  VariableMap variables(&view);
+  variables.addVariable("current", current);
+  variables.addVariable("today", today);
+  return view.render(variables);
 }
