@@ -13,6 +13,15 @@ const QString Activity::findQuery = QString(
     "FROM activities "
     "LEFT JOIN projects ON activities.project_id = projects.id");
 
+const QString Activity::distinctNamesQuery = QString(
+    "SELECT DISTINCT activities.name, projects.name AS project_name "
+    "FROM activities "
+    "LEFT JOIN projects ON activities.project_id = projects.id "
+    "ORDER BY activities.name, projects.name");
+
+const QString Activity::distinctProjectNamesQuery = QString(
+    "SELECT DISTINCT name FROM projects ORDER BY name");
+
 QList<Activity> Activity::find(QString conditions)
 {
   QStringList queryStrings;
@@ -22,7 +31,7 @@ QList<Activity> Activity::find(QString conditions)
   }
   qDebug() << queryStrings.join(" ");
 
-  QSqlDatabase database = getDatabase();
+  QSqlDatabase &database = getDatabase();
   QSqlQuery query = database.exec(queryStrings.join(" "));
 
   QList<Activity> result;
@@ -74,7 +83,38 @@ QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)
   return totals;
 }
 
-QSqlDatabase Activity::getDatabase()
+QList<QString> Activity::distinctNames()
+{
+  QSqlDatabase &database = getDatabase();
+  QSqlQuery query = database.exec(distinctNamesQuery);
+
+  QList<QString> names;
+  while (query.next()) {
+    QString name = query.value(0).toString();
+    QVariant projectName = query.value(1);
+    if (projectName.isNull()) {
+      names << name;
+    }
+    else {
+      names << QString("%1@%2").arg(name).arg(projectName.toString());
+    }
+  }
+  return names;
+}
+
+QList<QString> Activity::distinctProjectNames()
+{
+  QSqlDatabase &database = getDatabase();
+  QSqlQuery query = database.exec(distinctProjectNamesQuery);
+
+  QList<QString> names;
+  while (query.next()) {
+    names << query.value(0).toString();
+  }
+  return names;
+}
+
+QSqlDatabase &Activity::getDatabase()
 {
   return DatabaseManager::getInstance().getDatabase();
 }
@@ -194,6 +234,7 @@ QString Activity::durationInWords()
     int totalHours = totalMinutes / 60;
     int hours = totalHours % 24;
     int days = totalHours / 24;
+    qDebug() << "minutes:" << minutes << "; hours:" << hours << "; days:" << days;
 
     QStringList strings;
     if (days > 0) {

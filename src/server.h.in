@@ -34,6 +34,8 @@ class Server : public QObject
     QString partialToday();
     QString partialWeek();
     QString partialTotals();
+    QString partialActivityNames();
+    QString partialProjectNames();
     QString index();
 };
 

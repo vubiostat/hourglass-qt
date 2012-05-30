@@ -16,7 +16,7 @@ class DatabaseManager : public QObject
     ~DatabaseManager();
 
   public:
-    QSqlDatabase getDatabase();
+    QSqlDatabase &getDatabase();
 
   private:
     DatabaseManager(QObject *parent);

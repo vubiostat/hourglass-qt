@@ -42,12 +42,17 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
     else if (path.contains(deleteActivityPath)) {
     }
     else if (path == "/activities") {
+      result = s->partialActivityNames();
     }
     else if (path == "/activities/current/stop") {
     }
     else if (path == "/tags") {
     }
     else if (path == "/projects") {
+      result = s->partialProjectNames();
+    }
+    else if (path == "/totals") {
+      result = s->partialTotals();
     }
   }
   else if (method == "POST") {
@@ -169,6 +174,32 @@ QString Server::partialTotals()
     map.addVariable("duration", i.value());
     map.addVariable("durationInWords",
         QString("%1").arg(((double) i.value()) / 3600.0, 4, 'f', 2, '0'));
+  }
+  return view.render(variables);
+}
+
+QString Server::partialActivityNames()
+{
+  QList<QString> distinctNames = Activity::distinctNames();
+  View view("_names.js", false);
+  VariableMap variables(&view);
+  VariableMapList &names = variables.addMapList("names");
+  for (int i = 0; i < distinctNames.size(); i++) {
+    VariableMap &map = names.addMap();
+    map.addVariable("name", distinctNames.at(i));
+  }
+  return view.render(variables);
+}
+
+QString Server::partialProjectNames()
+{
+  QList<QString> distinctProjectNames = Activity::distinctProjectNames();
+  View view("_names.js", false);
+  VariableMap variables(&view);
+  VariableMapList &names = variables.addMapList("names");
+  for (int i = 0; i < distinctProjectNames.size(); i++) {
+    VariableMap &map = names.addMap();
+    map.addVariable("name", distinctProjectNames.at(i));
   }
   return view.render(variables);
 }

@@ -18,7 +18,9 @@ class Activity : public QObject
     static QList<Activity> findToday();
     static QList<Activity> findDay(QDate date);
     static QMap<QString, int> projectTotals(QList<Activity> &activities);
-    static QSqlDatabase getDatabase();
+    static QList<QString> distinctNames();
+    static QList<QString> distinctProjectNames();
+    static QSqlDatabase &getDatabase();
 
     Activity();
     Activity(QString name, int projectId, QDateTime startedAt, QDateTime endedAt, QString projectName);
@@ -44,6 +46,8 @@ class Activity : public QObject
 
   private:
     static const QString findQuery;
+    static const QString distinctNamesQuery;
+    static const QString distinctProjectNamesQuery;
 };
 
 #endif

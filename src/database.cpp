@@ -24,7 +24,7 @@ DatabaseManager::~DatabaseManager()
   }
 }
 
-QSqlDatabase DatabaseManager::getDatabase()
+QSqlDatabase &DatabaseManager::getDatabase()
 {
   if (!database.isValid()) {
     database = QSqlDatabase::addDatabase("QSQLITE");
