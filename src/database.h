@@ -9,6 +9,7 @@ class DatabaseManager : public QObject
   Q_OBJECT
 
   public:
+    static int CURRENT_DATABASE_VERSION;
     static DatabaseManager& getInstance() {
       static DatabaseManager instance(0);
       return instance;

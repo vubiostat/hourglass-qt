@@ -2,6 +2,7 @@
 #include <QUrl>
 #include <QDir>
 #include "server.h"
+#include "project.h"
 #include "view.h"
 #include "variables.h"
 
@@ -193,13 +194,13 @@ QString Server::partialActivityNames()
 
 QString Server::partialProjectNames()
 {
-  QList<QString> distinctProjectNames = Activity::distinctProjectNames();
+  QList<QString> distinctNames = Project::distinctNames();
   View view("_names.js", false);
   VariableMap variables(&view);
   VariableMapList &names = variables.addMapList("names");
-  for (int i = 0; i < distinctProjectNames.size(); i++) {
+  for (int i = 0; i < distinctNames.size(); i++) {
     VariableMap &map = names.addMap();
-    map.addVariable("name", distinctProjectNames.at(i));
+    map.addVariable("name", distinctNames.at(i));
   }
   return view.render(variables);
 }

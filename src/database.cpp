@@ -6,11 +6,7 @@
 #include <QVariant>
 #include "database.h"
 
-//DatabaseManager& getInstance()
-//{
-  //static DatabaseManager instance;
-  //return instance;
-//}
+int DatabaseManager::CURRENT_DATABASE_VERSION = 1;
 
 DatabaseManager::DatabaseManager(QObject *parent)
   : QObject(parent)
@@ -55,17 +51,21 @@ void DatabaseManager::migrateDatabase()
   }
   qDebug() << "Version:" << version;
 
-  switch(version) {
-    case 0:
-      database.exec("CREATE TABLE schema_info (version INTEGER);");
-      database.exec("CREATE TABLE projects (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT);");
-      database.exec("CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, project_id INTEGER REFERENCES projects, started_at TEXT, ended_at TEXT);");
-      database.exec("CREATE TABLE tags (id INTEGER PRIMARY KEY, name TEXT);");
-      database.exec("CREATE TABLE activities_tags (activity_id INTEGER REFERENCES activities, tag_id INTEGER REFERENCES tags);");
-      database.exec("INSERT INTO schema_info VALUES (1);");
+  while (version < CURRENT_DATABASE_VERSION) {
+    switch (version) {
+      case 0:
+        database.exec("CREATE TABLE schema_info (version INTEGER);");
+        database.exec("CREATE TABLE projects (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT);");
+        database.exec("CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, project_id INTEGER REFERENCES projects, started_at TEXT, ended_at TEXT);");
+        database.exec("CREATE TABLE tags (id INTEGER PRIMARY KEY, name TEXT);");
+        database.exec("CREATE TABLE activities_tags (activity_id INTEGER REFERENCES activities, tag_id INTEGER REFERENCES tags);");
+        database.exec("INSERT INTO schema_info VALUES (1);");
+        break;
+    }
+    if (database.lastError().isValid()) {
+      qDebug() << database.lastError().text();
       break;
-  }
-  if (database.lastError().isValid()) {
-    qDebug() << database.lastError().text();
+    }
+    version++;
   }
 }

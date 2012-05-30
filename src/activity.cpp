@@ -1,9 +1,7 @@
 #include <QtDebug>
 #include <QSqlQuery>
 #include <QSqlError>
-#include <QVariant>
 #include <QStringList>
-#include "database.h"
 #include "activity.h"
 
 const QString Activity::findQuery = QString(
@@ -13,14 +11,16 @@ const QString Activity::findQuery = QString(
     "FROM activities "
     "LEFT JOIN projects ON activities.project_id = projects.id");
 
+const QString Activity::tagsQuery = QString(
+    "SELECT tags.name FROM activity_tags "
+    "JOIN tags ON activity_tags.tag_id = tags.id "
+    "WHERE activity_tags.activity_id = ?");
+
 const QString Activity::distinctNamesQuery = QString(
     "SELECT DISTINCT activities.name, projects.name AS project_name "
     "FROM activities "
     "LEFT JOIN projects ON activities.project_id = projects.id "
     "ORDER BY activities.name, projects.name");
-
-const QString Activity::distinctProjectNamesQuery = QString(
-    "SELECT DISTINCT name FROM projects ORDER BY name");
 
 QList<Activity> Activity::find(QString conditions)
 {
@@ -36,20 +36,15 @@ QList<Activity> Activity::find(QString conditions)
 
   QList<Activity> result;
   while (query.next()) {
-    int id        = query.value(0).toInt();
-    qDebug() << "id:" << id;
-    QString name  = query.value(1).toString();
-    qDebug() << "name:" << name;
-    int projectId = query.value(2).toInt();
-    qDebug() << "projectId:" << projectId;
-    QDateTime startedAt = query.value(3).toDateTime();
-    qDebug() << "startedAt:" << startedAt;
-    QDateTime endedAt   = query.value(4).toDateTime();
-    qDebug() << "endedAt:" << endedAt;
-    QString projectName = query.value(5).toString();
+    QMap<QString, QVariant> attributes;
+    attributes["id"] = query.value(0);
+    attributes["name"] = query.value(1);
+    attributes["project_id"] = query.value(2);
+    attributes["started_at"] = query.value(3);
+    attributes["ended_at"] = query.value(4);
+    attributes["project_name"] = query.value(5);
 
-    Activity activity(name, projectId, startedAt, endedAt, projectName);
-    activity.id = id;
+    Activity activity(attributes);
     result << activity;
   }
   return result;
@@ -76,9 +71,9 @@ QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)
   QMap<QString, int> totals;
   for (int i = 0; i < activities.size(); i++) {
     Activity &activity = activities[i];
-    int total = (totals.contains(activity.projectName) ? totals[activity.projectName] : 0);
+    int total = (totals.contains(activity.projectName()) ? totals[activity.projectName()] : 0);
     total += activity.duration();
-    totals.insert(activity.projectName, total);
+    totals.insert(activity.projectName(), total);
   }
   return totals;
 }
@@ -102,59 +97,66 @@ QList<QString> Activity::distinctNames()
   return names;
 }
 
-QList<QString> Activity::distinctProjectNames()
+Activity::Activity(QObject *parent)
+  : Model(parent)
 {
-  QSqlDatabase &database = getDatabase();
-  QSqlQuery query = database.exec(distinctProjectNamesQuery);
+}
 
-  QList<QString> names;
-  while (query.next()) {
-    names << query.value(0).toString();
+Activity::Activity(QMap<QString, QVariant> &attributes, QObject *parent)
+  : Model(attributes, parent)
+{
+}
+
+int Activity::id()
+{
+  QVariant id = get("id");
+  if (id.isNull() || !id.isValid()) {
+    return -1;
   }
-  return names;
+  return id.toInt();
 }
 
-QSqlDatabase &Activity::getDatabase()
+QString Activity::name()
 {
-  return DatabaseManager::getInstance().getDatabase();
+  return get("name").toString();
 }
 
-Activity::Activity()
+int Activity::projectId()
 {
-  this->id = this->projectId = -1;
+  QVariant projectId = get("project_id");
+  if (projectId.isNull() || !projectId.isValid()) {
+    return -1;
+  }
+  return projectId.toInt();
 }
 
-Activity::Activity(QString name, int projectId, QDateTime startedAt, QDateTime endedAt, QString projectName)
+QDateTime Activity::startedAt()
 {
-  this->name = name;
-  this->projectId = projectId;
-  this->startedAt = startedAt;
-  this->endedAt = endedAt;
-  this->projectName = projectName;
+  return get("started_at").toDateTime();
 }
 
-Activity::Activity(const Activity &other)
+QDateTime Activity::endedAt()
 {
-  this->id = other.id;
-  this->name = other.name;
-  this->projectId = other.projectId;
-  this->startedAt = other.startedAt;
-  this->endedAt = other.endedAt;
+  return get("ended_at").toDateTime();
 }
 
-Activity &Activity::operator=(const Activity &other)
+Project Activity::project()
 {
-  this->id = other.id;
-  this->name = other.name;
-  this->projectId = other.projectId;
-  this->startedAt = other.startedAt;
-  this->endedAt = other.endedAt;
+  int id = projectId();
+  return id >= 0 ? Project::findById(id) : Project();
+}
+
+QString Activity::projectName()
+{
+  int id = projectId();
+  return id >= 0 ? Project::findById(id).name() : QString();
 }
 
 QString Activity::startedAtMDY()
 {
-  if (startedAt.isValid()) {
-    return startedAt.toString("MM/dd/yyyy");
+  QDateTime date = startedAt();
+  if (date.isValid()) {
+    return date.toString("MM/dd/yyyy");
   }
   else {
     return QString();
@@ -163,8 +165,9 @@ QString Activity::startedAtMDY()
 
 QString Activity::startedAtHM()
 {
-  if (startedAt.isValid()) {
-    return startedAt.toString("hh:mm");
+  QDateTime date = startedAt();
+  if (date.isValid()) {
+    return date.toString("hh:mm");
   }
   else {
     return QString();
@@ -173,8 +176,9 @@ QString Activity::startedAtHM()
 
 QString Activity::startedAtISO8601()
 {
-  if (startedAt.isValid()) {
-    return startedAt.toString(Qt::ISODate);
+  QDateTime date = startedAt();
+  if (date.isValid()) {
+    return date.toString(Qt::ISODate);
   }
   else {
     return QString();
@@ -183,8 +187,9 @@ QString Activity::startedAtISO8601()
 
 QString Activity::endedAtMDY()
 {
-  if (endedAt.isValid()) {
-    return endedAt.toString("MM/dd/yyyy");
+  QDateTime date = endedAt();
+  if (date.isValid()) {
+    return date.toString("MM/dd/yyyy");
   }
   else {
     return QString();
@@ -193,8 +198,9 @@ QString Activity::endedAtMDY()
 
 QString Activity::endedAtHM()
 {
-  if (endedAt.isValid()) {
-    return endedAt.toString("hh:mm");
+  QDateTime date = endedAt();
+  if (date.isValid()) {
+    return date.toString("hh:mm");
   }
   else {
     return QString();
@@ -203,8 +209,9 @@ QString Activity::endedAtHM()
 
 QString Activity::endedAtISO8601()
 {
-  if (endedAt.isValid()) {
-    return endedAt.toString(Qt::ISODate);
+  QDateTime date = endedAt();
+  if (date.isValid()) {
+    return date.toString(Qt::ISODate);
   }
   else {
     return QString();
@@ -213,11 +220,13 @@ QString Activity::endedAtISO8601()
 
 int Activity::duration()
 {
-  if (endedAt.isValid()) {
-    return startedAt.secsTo(endedAt);
+  QDateTime start = startedAt();
+  QDateTime end = endedAt();
+  if (end.isValid()) {
+    return start.secsTo(end);
   }
   else {
-    return startedAt.secsTo(QDateTime::currentDateTime());
+    return start.secsTo(QDateTime::currentDateTime());
   }
 }
 
@@ -252,5 +261,5 @@ QString Activity::durationInWords()
 
 bool Activity::isRunning()
 {
-  return endedAt.isValid();
+  return endedAt().isValid();
 }

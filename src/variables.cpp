@@ -39,14 +39,14 @@ void VariableMap::addActivities(const QList<Activity> &activities)
     VariableMap &activityMap = activitiesList.addMap();
 
     Activity activity = activities[i];
-    activityMap.addVariable("id", activity.id);
-    activityMap.addVariable("name", activity.name);
+    activityMap.addVariable("id", activity.id());
+    activityMap.addVariable("name", activity.name());
     activityMap.addVariable("startedAtISO8601", activity.startedAtISO8601());
     activityMap.addVariable("startedAtHM", activity.startedAtHM());
     activityMap.addVariable("endedAtHM", activity.endedAtHM());
     activityMap.addVariable("durationInWords", activity.durationInWords());
     activityMap.addVariable("isRunning", activity.isRunning() ? 0 : 1);
-    activityMap.addVariable("projectName", activity.projectName);
+    activityMap.addVariable("projectName", activity.projectName());
   }
   addVariable("activityCount", activities.size());
 }

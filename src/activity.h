@@ -7,8 +7,10 @@
 #include <QDate>
 #include <QList>
 #include <QMap>
+#include "model.h"
+#include "project.h"
 
-class Activity : public QObject
+class Activity : public Model
 {
   Q_OBJECT
 
@@ -19,13 +21,17 @@ class Activity : public QObject
     static QList<Activity> findDay(QDate date);
     static QMap<QString, int> projectTotals(QList<Activity> &activities);
     static QList<QString> distinctNames();
-    static QList<QString> distinctProjectNames();
-    static QSqlDatabase &getDatabase();
 
-    Activity();
-    Activity(QString name, int projectId, QDateTime startedAt, QDateTime endedAt, QString projectName);
-    Activity(const Activity &other);
-    Activity &operator=(const Activity &other);
+    Activity(QObject *parent = 0);
+    Activity(QMap<QString, QVariant> &attributes, QObject *parent = 0);
+
+    int id();
+    QString name();
+    int projectId();
+    QDateTime startedAt();
+    QDateTime endedAt();
+    Project project();
+    QString projectName();
 
     QString startedAtMDY();
     QString startedAtHM();
@@ -37,17 +43,10 @@ class Activity : public QObject
     QString durationInWords();
     bool isRunning();
 
-    int id;
-    QString name;
-    int projectId;
-    QDateTime startedAt;
-    QDateTime endedAt;
-    QString projectName;
-
   private:
     static const QString findQuery;
+    static const QString tagsQuery;
     static const QString distinctNamesQuery;
-    static const QString distinctProjectNamesQuery;
 };
 
 #endif
