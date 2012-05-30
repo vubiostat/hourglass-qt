@@ -45,7 +45,6 @@ class Activity : public Model
 
   private:
     static const QString findQuery;
-    static const QString tagsQuery;
     static const QString distinctNamesQuery;
 };
 

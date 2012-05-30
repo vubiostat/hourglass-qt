@@ -6,8 +6,8 @@ CONFIGURE_FILE("view.h.in" ${hourglass_VIEW_H})
 SET(hourglass_SERVER_H ${CMAKE_CURRENT_BINARY_DIR}/server.h)
 CONFIGURE_FILE("server.h.in" ${hourglass_SERVER_H})
 
-SET(hourglass_QT_SOURCES browser.cpp launcher.cpp main.cpp popup.cpp thread.cpp server.cpp database.cpp activity.cpp project.cpp view.cpp variables.cpp model.cpp)
-SET(hourglass_QT_HEADERS browser.h launcher.h popup.h thread.h database.h activity.h project.h variables.h model.h ${hourglass_SERVER_H} ${hourglass_VIEW_H})
+SET(hourglass_QT_SOURCES browser.cpp launcher.cpp main.cpp popup.cpp thread.cpp server.cpp database.cpp activity.cpp project.cpp tag.cpp view.cpp variables.cpp model.cpp)
+SET(hourglass_QT_HEADERS browser.h launcher.h popup.h thread.h database.h activity.h project.h tag.h variables.h model.h ${hourglass_SERVER_H} ${hourglass_VIEW_H})
 SET(hourglass_SOURCES ${hourglass_QT_SOURCES} mongoose.c)
 
 SET(QT_USE_QTWEBKIT TRUE)

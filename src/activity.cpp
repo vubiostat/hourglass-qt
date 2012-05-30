@@ -11,11 +11,6 @@ const QString Activity::findQuery = QString(
     "FROM activities "
     "LEFT JOIN projects ON activities.project_id = projects.id");
 
-const QString Activity::tagsQuery = QString(
-    "SELECT tags.name FROM activity_tags "
-    "JOIN tags ON activity_tags.tag_id = tags.id "
-    "WHERE activity_tags.activity_id = ?");
-
 const QString Activity::distinctNamesQuery = QString(
     "SELECT DISTINCT activities.name, projects.name AS project_name "
     "FROM activities "
