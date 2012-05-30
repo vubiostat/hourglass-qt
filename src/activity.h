@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QDate>
 #include <QList>
+#include <QMap>
 
 class Activity : public QObject
 {
@@ -16,6 +17,7 @@ class Activity : public QObject
     static QList<Activity> findCurrent();
     static QList<Activity> findToday();
     static QList<Activity> findDay(QDate date);
+    static QMap<QString, int> projectTotals(QList<Activity> &activities);
     static QSqlDatabase getDatabase();
 
     Activity();

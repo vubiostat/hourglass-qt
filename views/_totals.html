@@ -1,0 +1,8 @@
+<ul>
+<?teng frag totals ?>
+  <li class="project">
+    <?teng if $projectName ?>${projectName}<?teng else ?>Unsorted<?teng endif ?>:
+    <span class="duration" data-duration="${duration}">${durationInWords}</span>h<?teng if ($_number + 1) lt $_count ?>,<?teng endif ?>
+  </li>
+<?teng endfrag ?>
+</ul>

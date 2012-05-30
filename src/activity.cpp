@@ -62,6 +62,18 @@ QList<Activity> Activity::findDay(QDate date)
   return find(QString("WHERE date(activities.started_at) = date('%1')").arg(date.toString(Qt::ISODate)));
 }
 
+QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)
+{
+  QMap<QString, int> totals;
+  for (int i = 0; i < activities.size(); i++) {
+    Activity &activity = activities[i];
+    int total = (totals.contains(activity.projectName) ? totals[activity.projectName] : 0);
+    total += activity.duration();
+    totals.insert(activity.projectName, total);
+  }
+  return totals;
+}
+
 QSqlDatabase Activity::getDatabase()
 {
   return DatabaseManager::getInstance().getDatabase();
@@ -162,10 +174,10 @@ QString Activity::endedAtISO8601()
 int Activity::duration()
 {
   if (endedAt.isValid()) {
-    return endedAt.secsTo(startedAt);
+    return startedAt.secsTo(endedAt);
   }
   else {
-    return QDateTime::currentDateTime().secsTo(startedAt);
+    return startedAt.secsTo(QDateTime::currentDateTime());
   }
 }
 

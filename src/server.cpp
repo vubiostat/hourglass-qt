@@ -99,6 +99,14 @@ bool Server::stop()
 }
 
 // Partials
+QString Server::partialActivities(QList<Activity> activities)
+{
+  View view("_activities.html", false);
+  VariableMap variables(&view);
+  variables.addActivities(activities);
+  return view.render(variables);
+}
+
 QString Server::partialCurrent()
 {
   QList<Activity> activities = Activity::findCurrent();
@@ -145,11 +153,23 @@ QString Server::partialWeek()
   return view.render(variables);
 }
 
-QString Server::partialActivities(QList<Activity> activities)
+QString Server::partialTotals()
 {
-  View view("_activities.html", false);
+  QList<Activity> activities = Activity::findToday();
+  QMap<QString, int> projectTotals = Activity::projectTotals(activities);
+
+  View view("_totals.html", false);
   VariableMap variables(&view);
-  variables.addActivities(activities);
+  VariableMapList &totals = variables.addMapList("totals");
+  QMapIterator<QString, int> i(projectTotals);
+  while (i.hasNext()) {
+    i.next();
+    VariableMap &map = totals.addMap();
+    map.addVariable("projectName", i.key());
+    map.addVariable("duration", i.value());
+    map.addVariable("durationInWords",
+        QString("%1").arg(((double) i.value()) / 3600.0, 4, 'f', 2, '0'));
+  }
   return view.render(variables);
 }
 
@@ -159,11 +179,13 @@ QString Server::index()
   QString current = partialCurrent();
   QString today = partialToday();
   QString week = partialWeek();
+  QString totals = partialTotals();
 
   View view("index.html");
   VariableMap variables(&view);
   variables.addVariable("current", current);
   variables.addVariable("today", today);
   variables.addVariable("week", week);
+  variables.addVariable("totals", totals);
   return view.render(variables);
 }
