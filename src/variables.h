@@ -17,6 +17,7 @@ class VariableMap : public QObject
   public:
     VariableMap(QObject *parent = 0);
 
+    VariableMap &addMap(const QString &name);
     VariableMapList &addMapList(const QString &name);
     void addVariable(const QString &name, const QString &value);
     void addVariable(const QString &name, int value);
@@ -25,7 +26,8 @@ class VariableMap : public QObject
 
   private:
     QMap<QString, QVariant> variables;
-    QList<VariableMapList *> mapLists;
+    QMap<QString, VariableMapList *> mapLists;
+    QMap<QString, VariableMap *> maps;
 
     void addToFragment(Teng::Fragment_t &fragment);
     friend class VariableMapList;
@@ -36,11 +38,10 @@ class VariableMapList : public QObject
   Q_OBJECT
 
   public:
-    VariableMapList(QString name, QObject *parent = 0);
+    VariableMapList(QObject *parent = 0);
     VariableMap &addMap();
 
   private:
-    QString name;
     QList<VariableMap *> maps;
 
     void addToFragmentList(Teng::FragmentList_t &fragmentList);

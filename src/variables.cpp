@@ -6,11 +6,19 @@ VariableMap::VariableMap(QObject *parent)
 {
 }
 
+VariableMap &VariableMap::addMap(const QString &name)
+{
+  VariableMap *map = new VariableMap(this);
+  connect(this, SIGNAL(destroyed()), map, SLOT(deleteLater()));
+  maps.insert(name, map);
+  return *map;
+}
+
 VariableMapList &VariableMap::addMapList(const QString &name)
 {
-  VariableMapList *mapList = new VariableMapList(name, this);
+  VariableMapList *mapList = new VariableMapList(this);
   connect(this, SIGNAL(destroyed()), mapList, SLOT(deleteLater()));
-  mapLists << mapList;
+  mapLists.insert(name, mapList);
   return *mapList;
 }
 
@@ -66,17 +74,24 @@ void VariableMap::addToFragment(Teng::Fragment_t &fragment)
     }
   }
 
-  VariableMapList *mapList;
-  for (int j = 0; j < mapLists.size(); j++) {
-    mapList = mapLists.at(j);
-    Teng::FragmentList_t &fragmentList = fragment.addFragmentList(mapList->name.toStdString());
-    mapList->addToFragmentList(fragmentList);
+  QMapIterator<QString, VariableMapList *> j(mapLists);
+  while (j.hasNext()) {
+    j.next();
+    Teng::FragmentList_t &fragmentList = fragment.addFragmentList(j.key().toStdString());
+    j.value()->addToFragmentList(fragmentList);
+  }
+
+  QMapIterator<QString, VariableMap *> k(maps);
+  while (k.hasNext()) {
+    k.next();
+    Teng::Fragment_t &fragment2 = fragment.addFragment(k.key().toStdString());
+    k.value()->addToFragment(fragment2);
   }
 }
 
 // VariableMapList
-VariableMapList::VariableMapList(QString name, QObject *parent)
-  : QObject(parent), name(name)
+VariableMapList::VariableMapList(QObject *parent)
+  : QObject(parent)
 {
 }
 

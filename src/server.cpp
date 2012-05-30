@@ -119,18 +119,30 @@ QString Server::partialToday()
 
 QString Server::partialWeek()
 {
-  QDate sunday;
+  // Start day at Sunday
+  QDate day;
   QDate today = QDate::currentDate();
   int dayOfWeek = today.dayOfWeek();
   if (dayOfWeek != Qt::Sunday) {
-    sunday = today.addDays(-dayOfWeek);
+    day = today.addDays(-dayOfWeek);
   }
   else {
-    sunday = today;
+    day = today;
   }
 
-  // TODO
   View view("_week.html", false);
+  VariableMap variables(&view);
+  VariableMapList &days = variables.addMapList("days");
+  for (int i = 0; i < 7; i++) {
+    QList<Activity> activities = Activity::findDay(day);
+    VariableMap &map = days.addMap();
+
+    dayOfWeek = day.dayOfWeek();
+    map.addVariable("dayName", QDate::longDayName(dayOfWeek));
+    map.addVariable("activities", partialActivities(activities));
+    day = day.addDays(1);
+  }
+  return view.render(variables);
 }
 
 QString Server::partialActivities(QList<Activity> activities)
@@ -146,10 +158,12 @@ QString Server::index()
 {
   QString current = partialCurrent();
   QString today = partialToday();
+  QString week = partialWeek();
 
   View view("index.html");
   VariableMap variables(&view);
   variables.addVariable("current", current);
   variables.addVariable("today", today);
+  variables.addVariable("week", week);
   return view.render(variables);
 }
