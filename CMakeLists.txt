@@ -3,6 +3,7 @@ INCLUDE(ExternalProject)
 #SET(CMAKE_VERBOSE_MAKEFILE true)
 
 PROJECT(hourglass)
+set(CMAKE_CXX_FLAGS "-g3")
 
 ExternalProject_Add(teng2.1.1
   URL "http://prdownloads.sourceforge.net/teng/teng-2.1.1.tar.gz"

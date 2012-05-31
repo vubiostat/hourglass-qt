@@ -7,6 +7,8 @@
 #include <QString>
 #include <QRegExp>
 #include <QSqlDatabase>
+#include <QList>
+#include <QPair>
 #include "mongoose.h"
 #include "activity.h"
 
@@ -23,6 +25,7 @@ class Server : public QObject
     static const QRegExp editActivityPath;
     static const QRegExp deleteActivityPath;
     static const QRegExp restartActivityPath;
+    static QList<QPair<QString, QString> > decodePost(const char *data);
 
   private:
     struct mg_context *ctx;
@@ -36,6 +39,7 @@ class Server : public QObject
     QString partialTotals();
     QString partialActivityNames();
     QString partialProjectNames();
+    QString partialTagNames();
     QString index();
 };
 

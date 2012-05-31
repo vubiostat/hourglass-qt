@@ -1,8 +1,11 @@
+#include <QtDebug>
 #include <QByteArray>
 #include <QUrl>
 #include <QDir>
+#include <QStringList>
 #include "server.h"
 #include "project.h"
+#include "tag.h"
 #include "view.h"
 #include "variables.h"
 
@@ -48,6 +51,7 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
     else if (path == "/activities/current/stop") {
     }
     else if (path == "/tags") {
+      result = s->partialTagNames();
     }
     else if (path == "/projects") {
       result = s->partialProjectNames();
@@ -57,11 +61,26 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
     }
   }
   else if (method == "POST") {
-    if (path == "/activities") {
-    }
-    else if (path.contains(activityPath)) {
-    }
-    else if (path.contains(restartActivityPath)) {
+    const char *tmp = mg_get_header(conn, "Content-Length");
+    if (tmp != NULL) {
+      QString contentLengthHeader = QString(tmp);
+      bool ok;
+      int contentLength = contentLengthHeader.toInt(&ok);
+      if (ok) {
+        char *buffer = new char[contentLength + 1];
+        if (mg_read(conn, buffer, contentLength) == contentLength) {
+          // Valid POST
+          buffer[contentLength] = 0;
+          QList<QPair<QString, QString> > params = decodePost(buffer);
+
+          if (path == "/activities") {
+          }
+          else if (path.contains(activityPath)) {
+          }
+          else if (path.contains(restartActivityPath)) {
+          }
+        }
+      }
     }
   }
 
@@ -79,6 +98,29 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
 
   // Let mongoose handle the request from the document root
   return NULL;
+}
+
+QList<QPair<QString, QString> > Server::decodePost(const char *data)
+{
+  QList<QPair<QString, QString> > result;
+
+  QStringList parts = QString(data).split('&');
+  for (int i = 0; i < parts.size(); i++) {
+    QString variable = parts[i];
+    QStringList variableParts = variable.split('=');
+    if (variableParts.size() == 2) {
+      QString &key = variableParts[0].replace("+", " ");
+      QString &value = variableParts[1].replace("+", " ");
+      QByteArray keyBA = key.toUtf8();
+      QByteArray valueBA = value.toUtf8();
+      QPair<QString, QString> pair(
+          QUrl::fromPercentEncoding(keyBA),
+          QUrl::fromPercentEncoding(valueBA));
+      qDebug() << pair;
+      result << pair;
+    }
+  }
+  return result;
 }
 
 bool Server::start()
@@ -195,6 +237,19 @@ QString Server::partialActivityNames()
 QString Server::partialProjectNames()
 {
   QList<QString> distinctNames = Project::distinctNames();
+  View view("_names.js", false);
+  VariableMap variables(&view);
+  VariableMapList &names = variables.addMapList("names");
+  for (int i = 0; i < distinctNames.size(); i++) {
+    VariableMap &map = names.addMap();
+    map.addVariable("name", distinctNames.at(i));
+  }
+  return view.render(variables);
+}
+
+QString Server::partialTagNames()
+{
+  QList<QString> distinctNames = Tag::distinctNames();
   View view("_names.js", false);
   VariableMap variables(&view);
   VariableMapList &names = variables.addMapList("names");
