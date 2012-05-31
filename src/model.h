@@ -15,14 +15,20 @@ class Model : public QObject
     static QSqlDatabase &getDatabase();
 
     Model(QObject *parent = 0);
-    Model(QMap<QString, QVariant> &attributes, QObject *parent = 0);
     Model(const Model &other);
     Model &operator=(const Model &other);
 
     QVariant get(const QString &attributeName);
 
+    int id();
+    bool isEmpty();
+
+  protected:
+    Model(QMap<QString, QVariant> &attributes, QObject *parent = 0);
+
   private:
     QMap<QString, QVariant> attributes;
+    bool empty;
 };
 
 #endif

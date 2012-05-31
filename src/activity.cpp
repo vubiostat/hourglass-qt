@@ -3,6 +3,7 @@
 #include <QSqlError>
 #include <QStringList>
 #include "activity.h"
+#include "tag.h"
 
 const QString Activity::findQuery = QString(
     "SELECT activities.id, activities.name, activities.project_id, "
@@ -16,6 +17,10 @@ const QString Activity::distinctNamesQuery = QString(
     "FROM activities "
     "LEFT JOIN projects ON activities.project_id = projects.id "
     "ORDER BY activities.name, projects.name");
+
+const QString Activity::insertQuery = QString(
+    "INSERT INTO activities (name, project_id, started_at, ended_at) "
+    "VALUES(?, ?, ?, ?)");
 
 QList<Activity> Activity::find(QString conditions)
 {
@@ -92,6 +97,47 @@ QList<QString> Activity::distinctNames()
   return names;
 }
 
+bool Activity::createFromParams(const QList<QPair<QString, QString> > &params)
+{
+  QSqlDatabase &database = getDatabase();
+  QSqlQuery query(database);
+  query.prepare(insertQuery);
+
+  bool nameWithProjectFound = false;
+  for (int i = 0; i < params.size(); i++) {
+    const QPair<QString, QString> pair = params[i];
+    if (pair.first == "activity[name_with_project]") {
+      nameWithProjectFound = true;
+      if (pair.first.isEmpty()) {
+        return false;
+      }
+
+      QStringList parts = pair.second.split("@");
+      if (parts[0].isEmpty()) {
+        return false;
+      }
+      query.bindValue(0, QVariant(parts[0]));
+
+      if (parts.size() == 2 && !parts[1].isEmpty()) {
+        int projectId = Project::findOrCreateByName(parts[1]);
+        query.bindValue(1, QVariant(projectId));
+      }
+      else {
+        query.bindValue(1, QVariant(QVariant::Int));
+      }
+    }
+  }
+
+  if (nameWithProjectFound) {
+    query.bindValue(2, QVariant(QDateTime::currentDateTime()));
+    query.bindValue(3, QVariant(QVariant::DateTime));
+    return query.exec();
+  }
+  else {
+    return false;
+  }
+}
+
 Activity::Activity(QObject *parent)
   : Model(parent)
 {
@@ -100,15 +146,6 @@ Activity::Activity(QObject *parent)
 Activity::Activity(QMap<QString, QVariant> &attributes, QObject *parent)
   : Model(attributes, parent)
 {
-}
-
-int Activity::id()
-{
-  QVariant id = get("id");
-  if (id.isNull() || !id.isValid()) {
-    return -1;
-  }
-  return id.toInt();
 }
 
 QString Activity::name()
@@ -145,6 +182,16 @@ QString Activity::projectName()
 {
   int id = projectId();
   return id >= 0 ? Project::findById(id).name() : QString();
+}
+
+QString Activity::tagNames()
+{
+  QList<Tag> tags = Tag::findActivityTags(id());
+  QStringList names;
+  for (int i = 0; i < tags.size(); i++) {
+    names << tags[i].name();
+  }
+  return names.join(", ");
 }
 
 QString Activity::startedAtMDY()

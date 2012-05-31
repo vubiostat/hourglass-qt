@@ -8,10 +8,19 @@
 const QString Project::findQuery = QString(
     "SELECT id, name FROM projects");
 
+const QString Project::insertQuery = QString(
+    "INSERT INTO projects (name) VALUES(?)");
+
 const QString Project::distinctNamesQuery = QString(
     "SELECT DISTINCT name FROM projects ORDER BY name");
 
 QList<Project> Project::find(QString conditions)
+{
+  QList<QVariant> emptyBindValues;
+  return find(conditions, emptyBindValues);
+}
+
+QList<Project> Project::find(QString conditions, const QList<QVariant> &bindValues)
 {
   QStringList queryStrings;
   queryStrings << findQuery;
@@ -21,7 +30,12 @@ QList<Project> Project::find(QString conditions)
   qDebug() << queryStrings.join(" ");
 
   QSqlDatabase &database = getDatabase();
-  QSqlQuery query = database.exec(queryStrings.join(" "));
+  QSqlQuery query(database);
+  query.prepare(queryStrings.join(" "));
+  for (int i = 0; i < bindValues.size(); i++) {
+    query.addBindValue(bindValues[i]);
+  }
+  query.exec();
 
   QList<Project> result;
   while (query.next()) {
@@ -42,6 +56,28 @@ Project Project::findById(int id)
     return Project();
   }
   return projects[0];
+}
+
+int Project::findOrCreateByName(const QString &name)
+{
+  QList<QVariant> bindValues;
+  bindValues << QVariant(name);
+  QList<Project> projects = find("WHERE name = ?", bindValues);
+  if (projects.size() > 0) {
+    return projects[0].id();
+  }
+  else {
+    QSqlDatabase &database = getDatabase();
+    QSqlQuery query(database);
+    query.prepare(insertQuery);
+    query.addBindValue(QVariant(name));
+    if (query.exec()) {
+      return query.lastInsertId().toInt();
+    }
+    else {
+      return -1;
+    }
+  }
 }
 
 QList<QString> Project::distinctNames()

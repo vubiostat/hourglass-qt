@@ -74,12 +74,14 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
           QList<QPair<QString, QString> > params = decodePost(buffer);
 
           if (path == "/activities") {
+            result = s->createActivity(params);
           }
           else if (path.contains(activityPath)) {
           }
           else if (path.contains(restartActivityPath)) {
           }
         }
+        delete buffer;
       }
     }
   }
@@ -221,6 +223,22 @@ QString Server::partialTotals()
   return view.render(variables);
 }
 
+QString Server::partialUpdates()
+{
+  QString current = partialCurrent().replace("\"", "\\\"");
+  QString today = partialToday().replace("\"", "\\\"");
+  QString week = partialWeek().replace("\"", "\\\"");
+  QString totals = partialTotals().replace("\"", "\\\"");
+
+  View view("_updates.js");
+  VariableMap variables(&view);
+  variables.addVariable("current", current);
+  variables.addVariable("today", today);
+  variables.addVariable("week", week);
+  variables.addVariable("totals", totals);
+  return view.render(variables);
+}
+
 QString Server::partialActivityNames()
 {
   QList<QString> distinctNames = Activity::distinctNames();
@@ -275,4 +293,13 @@ QString Server::index()
   variables.addVariable("week", week);
   variables.addVariable("totals", totals);
   return view.render(variables);
+}
+
+// POST /activities
+QString Server::createActivity(const QList<QPair<QString, QString> > &params)
+{
+  if (Activity::createFromParams(params)) {
+    return partialUpdates();
+  }
+  return QString("{\"errors\": \"There were errors!\"}");
 }

@@ -2,7 +2,6 @@
 #define TAG_H
 
 #include "model.h"
-#include "activity.h"
 
 class Tag : public Model
 {
@@ -10,7 +9,7 @@ class Tag : public Model
 
   public:
     static QList<Tag> find(QString conditions);
-    static QList<Tag> findActivityTags(Activity &activity);
+    static QList<Tag> findActivityTags(int activityId);
     static QList<QString> distinctNames();
 
     Tag(QObject *parent = 0);

@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QDate>
 #include <QList>
+#include <QPair>
 #include <QMap>
 #include "model.h"
 #include "project.h"
@@ -21,17 +22,18 @@ class Activity : public Model
     static QList<Activity> findDay(QDate date);
     static QMap<QString, int> projectTotals(QList<Activity> &activities);
     static QList<QString> distinctNames();
+    static bool createFromParams(const QList<QPair<QString, QString> > &params);
 
     Activity(QObject *parent = 0);
     Activity(QMap<QString, QVariant> &attributes, QObject *parent = 0);
 
-    int id();
     QString name();
     int projectId();
     QDateTime startedAt();
     QDateTime endedAt();
     Project project();
     QString projectName();
+    QString tagNames();
 
     QString startedAtMDY();
     QString startedAtHM();
@@ -46,6 +48,7 @@ class Activity : public Model
   private:
     static const QString findQuery;
     static const QString distinctNamesQuery;
+    static const QString insertQuery;
 };
 
 #endif

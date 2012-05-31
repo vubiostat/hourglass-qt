@@ -40,12 +40,13 @@ QList<Tag> Tag::find(QString conditions)
   return result;
 }
 
-QList<Tag> Tag::findActivityTags(Activity &activity)
+QList<Tag> Tag::findActivityTags(int activityId)
 {
   QSqlDatabase &database = getDatabase();
   QSqlQuery query(database);
   query.prepare(findActivityTagsQuery);
-  query.bindValue(0, activity.id());
+  query.bindValue(0, activityId);
+  query.exec();
 
   QList<Tag> result;
   while (query.next()) {

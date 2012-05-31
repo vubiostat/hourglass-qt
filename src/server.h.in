@@ -32,15 +32,19 @@ class Server : public QObject
     QString port;
 
     static void *route(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info);
+
     QString partialActivities(QList<Activity> activities);
     QString partialCurrent();
     QString partialToday();
     QString partialWeek();
     QString partialTotals();
+    QString partialUpdates();
     QString partialActivityNames();
     QString partialProjectNames();
     QString partialTagNames();
+
     QString index();
+    QString createActivity(const QList<QPair<QString, QString> > &params);
 };
 
 #endif

@@ -9,7 +9,9 @@ class Project : public Model
 
   public:
     static QList<Project> find(QString conditions);
+    static QList<Project> find(QString conditions, const QList<QVariant> &bindValues);
     static Project findById(int id);
+    static int findOrCreateByName(const QString &name);
     static QList<QString> distinctNames();
 
     Project(QObject *parent = 0);
@@ -20,6 +22,7 @@ class Project : public Model
 
   private:
     static const QString findQuery;
+    static const QString insertQuery;
     static const QString distinctNamesQuery;
 };
 
