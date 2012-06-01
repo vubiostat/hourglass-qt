@@ -115,6 +115,7 @@ bool Activity::createFromParams(const QList<QPair<QString, QString> > &params)
   query.prepare(insertQuery);
 
   bool nameWithProjectFound = false;
+  bool runningFound = false;
   for (int i = 0; i < params.size(); i++) {
     const QPair<QString, QString> pair = params[i];
     if (pair.first == "activity[name_with_project]") {
@@ -137,11 +138,18 @@ bool Activity::createFromParams(const QList<QPair<QString, QString> > &params)
         query.bindValue(1, QVariant(QVariant::Int));
       }
     }
+    else if (pair.first == "activity[running]") {
+      runningFound = true;
+      if (pair.second == "true") {
+        query.bindValue(2, QVariant(QDateTime::currentDateTime()));
+        query.bindValue(3, QVariant(QVariant::DateTime));
+      }
+      else {
+      }
+    }
   }
 
-  if (nameWithProjectFound) {
-    query.bindValue(2, QVariant(QDateTime::currentDateTime()));
-    query.bindValue(3, QVariant(QVariant::DateTime));
+  if (nameWithProjectFound && runningFound) {
     return query.exec();
   }
   else {
@@ -239,7 +247,7 @@ QString Activity::startedAtISO8601()
 {
   QDateTime date = startedAt();
   if (date.isValid()) {
-    return date.toString(Qt::ISODate);
+    return date.toUTC().toString(Qt::ISODate);
   }
   else {
     return QString();
@@ -272,7 +280,7 @@ QString Activity::endedAtISO8601()
 {
   QDateTime date = endedAt();
   if (date.isValid()) {
-    return date.toString(Qt::ISODate);
+    return date.toUTC().toString(Qt::ISODate);
   }
   else {
     return QString();
