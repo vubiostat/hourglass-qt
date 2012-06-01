@@ -23,7 +23,7 @@ QList<Tag> Tag::find(QString conditions)
   if (!conditions.isEmpty()) {
     queryStrings << conditions;
   }
-  qDebug() << queryStrings.join(" ");
+  //qDebug() << queryStrings.join(" ");
 
   QSqlDatabase &database = getDatabase();
   QSqlQuery query = database.exec(queryStrings.join(" "));

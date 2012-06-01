@@ -17,10 +17,10 @@ class VariableMap : public QObject
   public:
     VariableMap(QObject *parent = 0);
 
-    VariableMap &addMap(const QString &name);
-    VariableMapList &addMapList(const QString &name);
-    void addVariable(const QString &name, const QString &value);
-    void addVariable(const QString &name, int value);
+    VariableMap &addMap(QString name);
+    VariableMapList &addMapList(QString name);
+    void addVariable(QString name, QString value);
+    void addVariable(QString name, int value);
     void addActivities(const QList<Activity> &activities);
     Teng::Fragment_t *fragment();
 

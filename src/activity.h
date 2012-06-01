@@ -23,6 +23,7 @@ class Activity : public Model
     static QMap<QString, int> projectTotals(QList<Activity> &activities);
     static QList<QString> distinctNames();
     static bool createFromParams(const QList<QPair<QString, QString> > &params);
+    static void stopCurrent();
 
     Activity(QObject *parent = 0);
     Activity(QMap<QString, QVariant> &attributes, QObject *parent = 0);
@@ -49,6 +50,8 @@ class Activity : public Model
     static const QString findQuery;
     static const QString distinctNamesQuery;
     static const QString insertQuery;
+    static const QString stopCurrentQuery;
+    static const QString deleteShortQuery;
 };
 
 #endif

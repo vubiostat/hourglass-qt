@@ -35,6 +35,7 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
   QString method(request_info->request_method);
 
   QString result;
+  bool isJSON = false;
   if (method == "GET") {
     if (path == "/") {
       result = s->index();
@@ -47,17 +48,23 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
     }
     else if (path == "/activities") {
       result = s->partialActivityNames();
+      isJSON = true;
     }
     else if (path == "/activities/current/stop") {
+      result = s->stopCurrentActivities();
+      isJSON = true;
     }
     else if (path == "/tags") {
       result = s->partialTagNames();
+      isJSON = true;
     }
     else if (path == "/projects") {
       result = s->partialProjectNames();
+      isJSON = true;
     }
     else if (path == "/totals") {
       result = s->partialTotals();
+      isJSON = true;
     }
   }
   else if (method == "POST") {
@@ -67,33 +74,38 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
       bool ok;
       int contentLength = contentLengthHeader.toInt(&ok);
       if (ok) {
+        //qDebug() << "POST Content-Length:" << contentLength;
         char *buffer = new char[contentLength + 1];
         if (mg_read(conn, buffer, contentLength) == contentLength) {
           // Valid POST
           buffer[contentLength] = 0;
+          //qDebug() << "POST Content:" << buffer;
           QList<QPair<QString, QString> > params = decodePost(buffer);
 
           if (path == "/activities") {
             result = s->createActivity(params);
+            isJSON = true;
           }
           else if (path.contains(activityPath)) {
           }
           else if (path.contains(restartActivityPath)) {
           }
         }
-        delete buffer;
+        delete[] buffer;
       }
     }
   }
 
   if (!result.isNull()) {
-    QByteArray ba = result.toLocal8Bit();
+    QByteArray ba = result.toUtf8();
     mg_printf(conn,
         "HTTP/1.0 200 OK\r\n"
-        "Content-Type: text/html\r\n"
+        "Content-Type: %s\r\n"
         "Content-Length: %d\r\n"
-        "\r\n"
-        "%s", ba.size(), ba.data());
+        "\r\n",
+        isJSON ? "application/json" : "text/html",
+        ba.size());
+    mg_write(conn, ba.data(), ba.size());
 
     return (void *) "";  // Mark as processed
   }
@@ -118,11 +130,23 @@ QList<QPair<QString, QString> > Server::decodePost(const char *data)
       QPair<QString, QString> pair(
           QUrl::fromPercentEncoding(keyBA),
           QUrl::fromPercentEncoding(valueBA));
-      qDebug() << pair;
+      //qDebug() << pair;
       result << pair;
     }
   }
   return result;
+}
+
+QString &Server::toJSON(QString &str)
+{
+  str.replace("\\", "\\\\");
+  str.replace("\"", "\\\"");
+  str.replace("\n", "\\n");
+  str.replace("\f", "\\f");
+  str.replace("\b", "\\b");
+  str.replace("\r", "\\r");
+  str.replace("\t", "\\t");
+  return str;
 }
 
 bool Server::start()
@@ -225,17 +249,17 @@ QString Server::partialTotals()
 
 QString Server::partialUpdates()
 {
-  QString current = partialCurrent().replace("\"", "\\\"");
-  QString today = partialToday().replace("\"", "\\\"");
-  QString week = partialWeek().replace("\"", "\\\"");
-  QString totals = partialTotals().replace("\"", "\\\"");
+  QString current = partialCurrent();
+  QString today = partialToday();
+  QString week = partialWeek();
+  QString totals = partialTotals();
 
-  View view("_updates.js");
+  View view("_updates.js", false);
   VariableMap variables(&view);
-  variables.addVariable("current", current);
-  variables.addVariable("today", today);
-  variables.addVariable("week", week);
-  variables.addVariable("totals", totals);
+  variables.addVariable("current", toJSON(current));
+  variables.addVariable("today", toJSON(today));
+  variables.addVariable("week", toJSON(week));
+  variables.addVariable("totals", toJSON(totals));
   return view.render(variables);
 }
 
@@ -302,4 +326,11 @@ QString Server::createActivity(const QList<QPair<QString, QString> > &params)
     return partialUpdates();
   }
   return QString("{\"errors\": \"There were errors!\"}");
+}
+
+// GET /activities/current/stop
+QString Server::stopCurrentActivities()
+{
+  Activity::stopCurrent();
+  return partialUpdates();
 }

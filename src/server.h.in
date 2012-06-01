@@ -19,13 +19,16 @@ class Server : public QObject
   public:
     Server(QString port);
     bool start();
-    bool stop();
 
     static const QRegExp activityPath;
     static const QRegExp editActivityPath;
     static const QRegExp deleteActivityPath;
     static const QRegExp restartActivityPath;
     static QList<QPair<QString, QString> > decodePost(const char *data);
+    static QString &toJSON(QString &str);
+
+  public slots:
+    bool stop();
 
   private:
     struct mg_context *ctx;
@@ -45,6 +48,7 @@ class Server : public QObject
 
     QString index();
     QString createActivity(const QList<QPair<QString, QString> > &params);
+    QString stopCurrentActivities();
 };
 
 #endif

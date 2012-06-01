@@ -49,16 +49,16 @@ void DatabaseManager::migrateDatabase()
   while (query.next()) {
     version = query.value(0).toInt();
   }
-  qDebug() << "Version:" << version;
+  //qDebug() << "Version:" << version;
 
   while (version < CURRENT_DATABASE_VERSION) {
     switch (version) {
       case 0:
         database.exec("CREATE TABLE schema_info (version INTEGER);");
         database.exec("CREATE TABLE projects (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT);");
-        database.exec("CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, project_id INTEGER REFERENCES projects, started_at TEXT, ended_at TEXT);");
+        database.exec("CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL, started_at TEXT, ended_at TEXT);");
         database.exec("CREATE TABLE tags (id INTEGER PRIMARY KEY, name TEXT);");
-        database.exec("CREATE TABLE activities_tags (activity_id INTEGER REFERENCES activities, tag_id INTEGER REFERENCES tags);");
+        database.exec("CREATE TABLE activities_tags (activity_id INTEGER REFERENCES activities(id) ON DELETE CASCADE, tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE);");
         database.exec("INSERT INTO schema_info VALUES (1);");
         break;
     }

@@ -6,7 +6,7 @@ VariableMap::VariableMap(QObject *parent)
 {
 }
 
-VariableMap &VariableMap::addMap(const QString &name)
+VariableMap &VariableMap::addMap(QString name)
 {
   VariableMap *map = new VariableMap(this);
   connect(this, SIGNAL(destroyed()), map, SLOT(deleteLater()));
@@ -14,7 +14,7 @@ VariableMap &VariableMap::addMap(const QString &name)
   return *map;
 }
 
-VariableMapList &VariableMap::addMapList(const QString &name)
+VariableMapList &VariableMap::addMapList(QString name)
 {
   VariableMapList *mapList = new VariableMapList(this);
   connect(this, SIGNAL(destroyed()), mapList, SLOT(deleteLater()));
@@ -22,12 +22,12 @@ VariableMapList &VariableMap::addMapList(const QString &name)
   return *mapList;
 }
 
-void VariableMap::addVariable(const QString &name, const QString &value)
+void VariableMap::addVariable(QString name, QString value)
 {
   variables.insert(name, QVariant(value));
 }
 
-void VariableMap::addVariable(const QString &name, int value)
+void VariableMap::addVariable(QString name, int value)
 {
   variables.insert(name, QVariant(value));
 }

@@ -22,6 +22,17 @@ const QString Activity::insertQuery = QString(
     "INSERT INTO activities (name, project_id, started_at, ended_at) "
     "VALUES(?, ?, ?, ?)");
 
+const QString Activity::stopCurrentQuery = QString(
+    "UPDATE activities SET ended_at = datetime('now', 'localtime') "
+    "WHERE ended_at IS NULL");
+
+const QString Activity::deleteShortQuery = QString(
+    "DELETE FROM activities "
+    "WHERE ended_at IS NOT NULL AND ("
+      "CAST(strftime('%s', ended_at, 'localtime') AS INTEGER) - "
+      "CAST(strftime('%s', started_at, 'localtime') AS INTEGER) < 60"
+    ")");
+
 QList<Activity> Activity::find(QString conditions)
 {
   QStringList queryStrings;
@@ -29,7 +40,7 @@ QList<Activity> Activity::find(QString conditions)
   if (!conditions.isEmpty()) {
     queryStrings << conditions;
   }
-  qDebug() << queryStrings.join(" ");
+  //qDebug() << queryStrings.join(" ");
 
   QSqlDatabase &database = getDatabase();
   QSqlQuery query = database.exec(queryStrings.join(" "));
@@ -136,6 +147,14 @@ bool Activity::createFromParams(const QList<QPair<QString, QString> > &params)
   else {
     return false;
   }
+}
+
+void Activity::stopCurrent()
+{
+  QSqlDatabase &database = getDatabase();
+  database.exec(stopCurrentQuery);
+  //qDebug() << deleteShortQuery;
+  database.exec(deleteShortQuery);
 }
 
 Activity::Activity(QObject *parent)
@@ -285,7 +304,7 @@ QString Activity::durationInWords()
     int totalHours = totalMinutes / 60;
     int hours = totalHours % 24;
     int days = totalHours / 24;
-    qDebug() << "minutes:" << minutes << "; hours:" << hours << "; days:" << days;
+    //qDebug() << "minutes:" << minutes << "; hours:" << hours << "; days:" << days;
 
     QStringList strings;
     if (days > 0) {
