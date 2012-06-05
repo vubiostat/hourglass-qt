@@ -8,13 +8,16 @@ class Launcher : public QWidget
 {
   Q_OBJECT
 
-public:
+  public:
     Launcher(QWidget *parent = 0);
 
-private slots:
+  public slots:
+    void start();
+
+  private slots:
     void viewTitleChanged(const QString &title);
 
-private:
+  private:
     QWebView *view;
 };
 

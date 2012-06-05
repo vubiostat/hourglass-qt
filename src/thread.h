@@ -11,8 +11,15 @@ class ServerThread : public QThread
   public:
     void run();
 
+  signals:
+    void serverStarted();
+
   private:
     Server *s;
+
+  private slots:
+    void serverStartedInternal();
+    void serverStoppedInternal();
 };
 
 #endif

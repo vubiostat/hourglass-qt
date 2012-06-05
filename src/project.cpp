@@ -16,37 +16,12 @@ const QString Project::distinctNamesQuery = QString(
 
 QList<Project> Project::find(QString conditions)
 {
-  QList<QVariant> emptyBindValues;
-  return find(conditions, emptyBindValues);
+  return Model::find<Project>("projects", conditions);
 }
 
 QList<Project> Project::find(QString conditions, const QList<QVariant> &bindValues)
 {
-  QStringList queryStrings;
-  queryStrings << findQuery;
-  if (!conditions.isEmpty()) {
-    queryStrings << conditions;
-  }
-  //qDebug() << queryStrings.join(" ");
-
-  QSqlDatabase &database = getDatabase();
-  QSqlQuery query(database);
-  query.prepare(queryStrings.join(" "));
-  for (int i = 0; i < bindValues.size(); i++) {
-    query.addBindValue(bindValues[i]);
-  }
-  query.exec();
-
-  QList<Project> result;
-  while (query.next()) {
-    QMap<QString, QVariant> attributes;
-    attributes["id"] = query.value(0);
-    attributes["name"] = query.value(1);
-
-    Project project(attributes);
-    result << project;
-  }
-  return result;
+  return Model::find<Project>("projects", conditions, bindValues);
 }
 
 Project Project::findById(int id)
@@ -92,19 +67,9 @@ QList<QString> Project::distinctNames()
   return names;
 }
 
-Project::Project(QObject *parent)
-  : Model(parent)
+bool Project::save()
 {
-}
-
-Project::Project(QMap<QString, QVariant> &attributes, QObject *parent)
-  : Model(attributes, parent)
-{
-}
-
-int Project::id()
-{
-  return get("id").toInt();
+  return Model::save("projects");
 }
 
 QString Project::name()

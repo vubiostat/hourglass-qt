@@ -19,9 +19,10 @@ Hourglass::Hourglass(int &argc, char **argv)
 
 int Hourglass::exec()
 {
-  st.start();
-  launcher.show();
+  connect(&st, SIGNAL(serverStarted()), &launcher, SLOT(start()));
   connect(&st, SIGNAL(finished()), this, SLOT(quit()));
+  st.start();
+
   return QApplication::exec();
 }
 

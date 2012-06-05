@@ -3,11 +3,13 @@
 #include <QUrl>
 #include <QDir>
 #include <QStringList>
+#include <QVariant>
+#include <QMap>
+#include <QList>
 #include "server.h"
 #include "project.h"
 #include "tag.h"
 #include "view.h"
-#include "variables.h"
 
 #include <iostream>
 using namespace std;
@@ -17,9 +19,9 @@ const QRegExp Server::activityPath = QRegExp("^/activities/(\\d+)$");
 const QRegExp Server::deleteActivityPath = QRegExp("^/activities/(\\d+)/delete$");
 const QRegExp Server::restartActivityPath = QRegExp("^/activities/(\\d+)/restart$");
 
-Server::Server(QString port)
+Server::Server(QString port, QObject *parent)
+  : QObject(parent), port(port)
 {
-  this->port = port;
   ctx = NULL;
 }
 
@@ -41,6 +43,7 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
       result = s->index();
     }
     else if (path == "/activities/new") {
+      result = s->newActivity();
     }
     else if (path.contains(editActivityPath)) {
     }
@@ -123,13 +126,13 @@ QList<QPair<QString, QString> > Server::decodePost(const char *data)
     QString variable = parts[i];
     QStringList variableParts = variable.split('=');
     if (variableParts.size() == 2) {
-      QString &key = variableParts[0].replace("+", " ");
-      QString &value = variableParts[1].replace("+", " ");
-      QByteArray keyBA = key.toUtf8();
-      QByteArray valueBA = value.toUtf8();
+      QString &rawKey = variableParts[0].replace("+", " ");
+      QString &rawValue = variableParts[1].replace("+", " ");
+      QByteArray rawKeyBA = rawKey.toUtf8();
+      QByteArray rawValueBA = rawValue.toUtf8();
       QPair<QString, QString> pair(
-          QUrl::fromPercentEncoding(keyBA),
-          QUrl::fromPercentEncoding(valueBA));
+          QUrl::fromPercentEncoding(rawKeyBA),
+          QUrl::fromPercentEncoding(rawValueBA));
       //qDebug() << pair;
       result << pair;
     }
@@ -149,7 +152,7 @@ QString &Server::toJSON(QString &str)
   return str;
 }
 
-bool Server::start()
+void Server::start()
 {
   QByteArray ba = port.toLocal8Bit();
   const char *options[] = {
@@ -158,45 +161,42 @@ bool Server::start()
     NULL};
 
   ctx = mg_start(&route, this, options);
-  if (ctx == NULL) {
-    return false;
+  if (ctx != NULL) {
+    emit started();
   }
-  return true;
 }
 
-bool Server::stop()
+void Server::stop()
 {
   if (ctx != NULL) {
     mg_stop(ctx);
     ctx = NULL;
   }
+  emit stopped();
 }
 
 // Partials
 QString Server::partialActivities(QList<Activity> activities)
 {
   View view("_activities.html", false);
-  VariableMap variables(&view);
-  variables.addActivities(activities);
-  return view.render(variables);
+  view.addVariable("activities", Activity::toVariantList(activities));
+  return view.render();
 }
 
 QString Server::partialCurrent()
 {
   QList<Activity> activities = Activity::findCurrent();
   View view("_current.html", false);
-  VariableMap variables(&view);
-  variables.addActivities(activities);
-  return view.render(variables);
+  view.addVariable("activities", Activity::toVariantList(activities));
+  return view.render();
 }
 
 QString Server::partialToday()
 {
   QList<Activity> activities = Activity::findToday();
   View view("_today.html", false);
-  VariableMap variables(&view);
-  variables.addVariable("activities", partialActivities(activities));
-  return view.render(variables);
+  view.addVariable("activities", partialActivities(activities));
+  return view.render();
 }
 
 QString Server::partialWeek()
@@ -213,18 +213,19 @@ QString Server::partialWeek()
   }
 
   View view("_week.html", false);
-  VariableMap variables(&view);
-  VariableMapList &days = variables.addMapList("days");
+  QVariantList days;
   for (int i = 0; i < 7; i++) {
     QList<Activity> activities = Activity::findDay(day);
-    VariableMap &map = days.addMap();
+    QVariantMap map;
 
     dayOfWeek = day.dayOfWeek();
-    map.addVariable("dayName", QDate::longDayName(dayOfWeek));
-    map.addVariable("activities", partialActivities(activities));
+    map["dayName"] = QDate::longDayName(dayOfWeek);
+    map["activities"] = partialActivities(activities);
+    days << map;
     day = day.addDays(1);
   }
-  return view.render(variables);
+  view.addVariable("days", days);
+  return view.render();
 }
 
 QString Server::partialTotals()
@@ -233,18 +234,19 @@ QString Server::partialTotals()
   QMap<QString, int> projectTotals = Activity::projectTotals(activities);
 
   View view("_totals.html", false);
-  VariableMap variables(&view);
-  VariableMapList &totals = variables.addMapList("totals");
+  QVariantList totals;
   QMapIterator<QString, int> i(projectTotals);
   while (i.hasNext()) {
     i.next();
-    VariableMap &map = totals.addMap();
-    map.addVariable("projectName", i.key());
-    map.addVariable("duration", i.value());
-    map.addVariable("durationInWords",
-        QString("%1").arg(((double) i.value()) / 3600.0, 4, 'f', 2, '0'));
+    QVariantMap map;
+    map["projectName"] = i.key();
+    map["duration"] =  i.value();
+    map["durationInWords"] =
+        QString("%1").arg(((double) i.value()) / 3600.0, 4, 'f', 2, '0');
+    totals << map;
   }
-  return view.render(variables);
+  view.addVariable("totals", totals);
+  return view.render();
 }
 
 QString Server::partialUpdates()
@@ -255,51 +257,53 @@ QString Server::partialUpdates()
   QString totals = partialTotals();
 
   View view("_updates.js", false);
-  VariableMap variables(&view);
-  variables.addVariable("current", toJSON(current));
-  variables.addVariable("today", toJSON(today));
-  variables.addVariable("week", toJSON(week));
-  variables.addVariable("totals", toJSON(totals));
-  return view.render(variables);
+  view.addVariable("current", toJSON(current));
+  view.addVariable("today", toJSON(today));
+  view.addVariable("week", toJSON(week));
+  view.addVariable("totals", toJSON(totals));
+  return view.render();
 }
 
 QString Server::partialActivityNames()
 {
   QList<QString> distinctNames = Activity::distinctNames();
   View view("_names.js", false);
-  VariableMap variables(&view);
-  VariableMapList &names = variables.addMapList("names");
+  QVariantList names;
   for (int i = 0; i < distinctNames.size(); i++) {
-    VariableMap &map = names.addMap();
-    map.addVariable("name", distinctNames.at(i));
+    QVariantMap map;
+    map["name"] = distinctNames.at(i);
+    names << map;
   }
-  return view.render(variables);
+  view.addVariable("names", names);
+  return view.render();
 }
 
 QString Server::partialProjectNames()
 {
   QList<QString> distinctNames = Project::distinctNames();
   View view("_names.js", false);
-  VariableMap variables(&view);
-  VariableMapList &names = variables.addMapList("names");
+  QVariantList names;
   for (int i = 0; i < distinctNames.size(); i++) {
-    VariableMap &map = names.addMap();
-    map.addVariable("name", distinctNames.at(i));
+    QVariantMap map;
+    map["name"] = distinctNames.at(i);
+    names << map;
   }
-  return view.render(variables);
+  view.addVariable("names", names);
+  return view.render();
 }
 
 QString Server::partialTagNames()
 {
   QList<QString> distinctNames = Tag::distinctNames();
   View view("_names.js", false);
-  VariableMap variables(&view);
-  VariableMapList &names = variables.addMapList("names");
+  QVariantList names;
   for (int i = 0; i < distinctNames.size(); i++) {
-    VariableMap &map = names.addMap();
-    map.addVariable("name", distinctNames.at(i));
+    QVariantMap map;
+    map["name"] = distinctNames.at(i);
+    names << map;
   }
-  return view.render(variables);
+  view.addVariable("names", names);
+  return view.render();
 }
 
 // GET /
@@ -311,18 +315,20 @@ QString Server::index()
   QString totals = partialTotals();
 
   View view("index.html");
-  VariableMap variables(&view);
-  variables.addVariable("current", current);
-  variables.addVariable("today", today);
-  variables.addVariable("week", week);
-  variables.addVariable("totals", totals);
-  return view.render(variables);
+  view.addVariable("current", current);
+  view.addVariable("today", today);
+  view.addVariable("week", week);
+  view.addVariable("totals", totals);
+  return view.render();
 }
 
 // POST /activities
 QString Server::createActivity(const QList<QPair<QString, QString> > &params)
 {
-  if (Activity::createFromParams(params)) {
+  Activity activity;
+  activity.setStartedAt(QDateTime::currentDateTime());
+  activity.setFromParams(params);
+  if (activity.save()) {
     return partialUpdates();
   }
   return QString("{\"errors\": \"There were errors!\"}");
@@ -333,4 +339,15 @@ QString Server::stopCurrentActivities()
 {
   Activity::stopCurrent();
   return partialUpdates();
+}
+
+// GET /activities/new
+QString Server::newActivity()
+{
+  Activity newActivity = Activity();
+  View view("popup.html");
+  view.setTitle("Add earlier activity");
+  view.addVariable("submitUrl", "/activities");
+  view.addVariable("activity", newActivity.toVariantMap());
+  return view.render();
 }

@@ -14,10 +14,12 @@ class Project : public Model
     static int findOrCreateByName(const QString &name);
     static QList<QString> distinctNames();
 
-    Project(QObject *parent = 0);
-    Project(QMap<QString, QVariant> &attributes, QObject *parent = 0);
+    Project(QObject *parent = 0) : Model(parent) {}
+    Project(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0)
+      : Model(attributes, newRecord, parent) {}
 
-    int id();
+    bool save();
+
     QString name();
 
   private:

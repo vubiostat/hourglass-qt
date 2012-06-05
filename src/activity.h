@@ -22,20 +22,35 @@ class Activity : public Model
     static QList<Activity> findDay(QDate date);
     static QMap<QString, int> projectTotals(QList<Activity> &activities);
     static QList<QString> distinctNames();
-    static bool createFromParams(const QList<QPair<QString, QString> > &params);
     static void stopCurrent();
+    static QVariantList toVariantList(QList<Activity> &activities);
 
     Activity(QObject *parent = 0);
-    Activity(QMap<QString, QVariant> &attributes, QObject *parent = 0);
+    Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
 
+    // Attribute getters
     QString name();
     int projectId();
     QDateTime startedAt();
     QDateTime endedAt();
+
+    // Attribute setters
+    void setName(QString name);
+    void setProjectId(int projectId);
+    void setStartedAt(QDateTime startedAt);
+    void setEndedAt(QDateTime endedAt);
+    void setFromParams(const QList<QPair<QString, QString> > &params);
+
+    // Non-attribute getters/setters
+    bool isRunning();
+    void setRunning(bool running);
+    QString nameWithProject();
+    void setNameWithProject(QString nameWithProject);
+
+    // Helpers
     Project project();
     QString projectName();
     QString tagNames();
-
     QString startedAtMDY();
     QString startedAtHM();
     QString startedAtISO8601();
@@ -44,14 +59,17 @@ class Activity : public Model
     QString endedAtISO8601();
     int duration();
     QString durationInWords();
-    bool isRunning();
+    QVariantMap toVariantMap();
+
+    bool save();
 
   private:
-    static const QString findQuery;
     static const QString distinctNamesQuery;
-    static const QString insertQuery;
     static const QString stopCurrentQuery;
     static const QString deleteShortQuery;
+
+    bool validate();
+    QVariant running;
 };
 
 #endif

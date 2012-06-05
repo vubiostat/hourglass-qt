@@ -15,7 +15,8 @@ class Tag : public Model
     Tag(QObject *parent = 0);
     Tag(QMap<QString, QVariant> &attributes, QObject *parent = 0);
 
-    int id();
+    bool save();
+
     QString name();
 
   private:

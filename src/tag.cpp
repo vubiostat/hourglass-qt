@@ -82,9 +82,9 @@ Tag::Tag(QMap<QString, QVariant> &attributes, QObject *parent)
 {
 }
 
-int Tag::id()
+bool Tag::save()
 {
-  return get("id").toInt();
+  return Model::save("tags");
 }
 
 QString Tag::name()

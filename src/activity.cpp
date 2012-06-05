@@ -5,22 +5,12 @@
 #include "activity.h"
 #include "tag.h"
 
-const QString Activity::findQuery = QString(
-    "SELECT activities.id, activities.name, activities.project_id, "
-    "activities.started_at, activities.ended_at, "
-    "projects.name AS project_name "
-    "FROM activities "
-    "LEFT JOIN projects ON activities.project_id = projects.id");
-
+// Static members
 const QString Activity::distinctNamesQuery = QString(
     "SELECT DISTINCT activities.name, projects.name AS project_name "
     "FROM activities "
     "LEFT JOIN projects ON activities.project_id = projects.id "
     "ORDER BY activities.name, projects.name");
-
-const QString Activity::insertQuery = QString(
-    "INSERT INTO activities (name, project_id, started_at, ended_at) "
-    "VALUES(?, ?, ?, ?)");
 
 const QString Activity::stopCurrentQuery = QString(
     "UPDATE activities SET ended_at = datetime('now', 'localtime') "
@@ -35,37 +25,13 @@ const QString Activity::deleteShortQuery = QString(
 
 QList<Activity> Activity::find(QString conditions)
 {
-  QStringList queryStrings;
-  queryStrings << findQuery;
-  if (!conditions.isEmpty()) {
-    queryStrings << conditions;
-  }
-  //qDebug() << queryStrings.join(" ");
-
-  QSqlDatabase &database = getDatabase();
-  QSqlQuery query = database.exec(queryStrings.join(" "));
-
-  QList<Activity> result;
-  while (query.next()) {
-    QMap<QString, QVariant> attributes;
-    attributes["id"] = query.value(0);
-    attributes["name"] = query.value(1);
-    attributes["project_id"] = query.value(2);
-    attributes["started_at"] = query.value(3);
-    attributes["ended_at"] = query.value(4);
-    attributes["project_name"] = query.value(5);
-
-    Activity activity(attributes);
-    result << activity;
-  }
-  return result;
+  return Model::find<Activity>("activities", conditions);
 }
 
 QList<Activity> Activity::findCurrent()
 {
   return find("WHERE activities.ended_at IS NULL");
 }
-
 
 QList<Activity> Activity::findToday()
 {
@@ -108,55 +74,6 @@ QList<QString> Activity::distinctNames()
   return names;
 }
 
-bool Activity::createFromParams(const QList<QPair<QString, QString> > &params)
-{
-  QSqlDatabase &database = getDatabase();
-  QSqlQuery query(database);
-  query.prepare(insertQuery);
-
-  bool nameWithProjectFound = false;
-  bool runningFound = false;
-  for (int i = 0; i < params.size(); i++) {
-    const QPair<QString, QString> pair = params[i];
-    if (pair.first == "activity[name_with_project]") {
-      nameWithProjectFound = true;
-      if (pair.first.isEmpty()) {
-        return false;
-      }
-
-      QStringList parts = pair.second.split("@");
-      if (parts[0].isEmpty()) {
-        return false;
-      }
-      query.bindValue(0, QVariant(parts[0]));
-
-      if (parts.size() == 2 && !parts[1].isEmpty()) {
-        int projectId = Project::findOrCreateByName(parts[1]);
-        query.bindValue(1, QVariant(projectId));
-      }
-      else {
-        query.bindValue(1, QVariant(QVariant::Int));
-      }
-    }
-    else if (pair.first == "activity[running]") {
-      runningFound = true;
-      if (pair.second == "true") {
-        query.bindValue(2, QVariant(QDateTime::currentDateTime()));
-        query.bindValue(3, QVariant(QVariant::DateTime));
-      }
-      else {
-      }
-    }
-  }
-
-  if (nameWithProjectFound && runningFound) {
-    return query.exec();
-  }
-  else {
-    return false;
-  }
-}
-
 void Activity::stopCurrent()
 {
   QSqlDatabase &database = getDatabase();
@@ -165,19 +82,38 @@ void Activity::stopCurrent()
   database.exec(deleteShortQuery);
 }
 
+QVariantList Activity::toVariantList(QList<Activity> &activities)
+{
+  QVariantList list;
+  for (int i = 0; i < activities.size(); i++) {
+    Activity activity = activities[i];
+    list << activity.toVariantMap();
+  }
+  return list;
+}
+
+// Constructors
 Activity::Activity(QObject *parent)
   : Model(parent)
 {
+  running = QVariant(QVariant::Bool);
 }
 
-Activity::Activity(QMap<QString, QVariant> &attributes, QObject *parent)
-  : Model(attributes, parent)
+Activity::Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
+  : Model(attributes, newRecord, parent)
 {
+  running = QVariant(QVariant::Bool);
 }
 
+// Attribute getters/setters
 QString Activity::name()
 {
   return get("name").toString();
+}
+
+void Activity::setName(QString name)
+{
+  set("name", name);
 }
 
 int Activity::projectId()
@@ -189,9 +125,24 @@ int Activity::projectId()
   return projectId.toInt();
 }
 
+void Activity::setProjectId(int projectId)
+{
+  if (projectId >= 0) {
+    set("project_id", projectId);
+  }
+  else {
+    unset("project_id");
+  }
+}
+
 QDateTime Activity::startedAt()
 {
   return get("started_at").toDateTime();
+}
+
+void Activity::setStartedAt(QDateTime startedAt)
+{
+  set("started_at", startedAt);
 }
 
 QDateTime Activity::endedAt()
@@ -199,6 +150,69 @@ QDateTime Activity::endedAt()
   return get("ended_at").toDateTime();
 }
 
+void Activity::setEndedAt(QDateTime endedAt)
+{
+  set("ended_at", endedAt);
+}
+
+void Activity::setFromParams(const QList<QPair<QString, QString> > &params)
+{
+  for (int i = 0; i < params.size(); i++) {
+    const QPair<QString, QString> pair = params[i];
+    if (pair.first == "activity[name_with_project]") {
+      setNameWithProject(pair.second);
+    }
+    else if (pair.first == "activity[running]") {
+      setRunning(pair.second == "true");
+    }
+  }
+}
+
+// Non-attribute getters and setters
+bool Activity::isRunning()
+{
+  if (isNew() || !running.isNull()) {
+    return running.toBool();
+  }
+  else {
+    return endedAt().isValid();
+  }
+}
+
+void Activity::setRunning(bool running)
+{
+  this->running = QVariant(running);
+}
+
+QString Activity::nameWithProject()
+{
+  QStringList strings;
+  QString pname = projectName();
+
+  strings << name();
+  if (!pname.isEmpty()) {
+    strings << pname;
+  }
+  return strings.join("@");
+}
+
+void Activity::setNameWithProject(QString nameWithProject)
+{
+  // NOTE: this could create orphaned projects if the activity is not saved
+  //       after this method is called
+  QStringList parts = nameWithProject.split("@");
+  setName(parts[0]);
+
+  if (parts.size() == 2 && !parts[1].isEmpty()) {
+    int projectId = Project::findOrCreateByName(parts[1]);
+    setProjectId(projectId);
+  }
+  else {
+    setProjectId(-1);
+  }
+}
+
+// Helpers
 Project Activity::project()
 {
   int id = projectId();
@@ -290,45 +304,98 @@ QString Activity::endedAtISO8601()
 int Activity::duration()
 {
   QDateTime start = startedAt();
-  QDateTime end = endedAt();
-  if (end.isValid()) {
-    return start.secsTo(end);
+  if (start.isValid()) {
+    QDateTime end = endedAt();
+    if (end.isValid()) {
+      return start.secsTo(end);
+    }
+    else {
+      return start.secsTo(QDateTime::currentDateTime());
+    }
   }
   else {
-    return start.secsTo(QDateTime::currentDateTime());
+    return -1;
   }
 }
 
 QString Activity::durationInWords()
 {
   int d = duration();
-  int totalMinutes = d / 60;
+  if (d >= 0) {
+    int totalMinutes = d / 60;
 
-  if (totalMinutes == 0) {
-    return QString("0min");
+    if (totalMinutes == 0) {
+      return QString("0min");
+    }
+    else {
+      int minutes = totalMinutes % 60;
+      int totalHours = totalMinutes / 60;
+      int hours = totalHours % 24;
+      int days = totalHours / 24;
+      //qDebug() << "minutes:" << minutes << "; hours:" << hours << "; days:" << days;
+
+      QStringList strings;
+      if (days > 0) {
+        strings << QString("%1d").arg(days);
+      }
+      if (hours > 0) {
+        strings << QString("%1h").arg(hours);
+      }
+      if (minutes > 0) {
+        strings << QString("%1min").arg(minutes);
+      }
+      return strings.join(" ");
+    }
   }
   else {
-    int minutes = totalMinutes % 60;
-    int totalHours = totalMinutes / 60;
-    int hours = totalHours % 24;
-    int days = totalHours / 24;
-    //qDebug() << "minutes:" << minutes << "; hours:" << hours << "; days:" << days;
-
-    QStringList strings;
-    if (days > 0) {
-      strings << QString("%1d").arg(days);
-    }
-    if (hours > 0) {
-      strings << QString("%1h").arg(hours);
-    }
-    if (minutes > 0) {
-      strings << QString("%1min").arg(minutes);
-    }
-    return strings.join(" ");
+    return QString();
   }
 }
 
-bool Activity::isRunning()
+QVariantMap Activity::toVariantMap()
 {
-  return endedAt().isValid();
+  QVariantMap map;
+
+  map["id"] = id();
+  map["name"] = name();
+  map["startedAtISO8601"] = startedAtISO8601();
+  map["startedAtHM"] = startedAtHM();
+  map["startedAtMDY"] = startedAtMDY();
+  map["endedAtHM"] = endedAtHM();
+  map["endedAtMDY"] = endedAtMDY();
+  map["durationInWords"] = durationInWords();
+  map["isRunning"] = isRunning() ? 0 : 1;
+  map["projectName"] = projectName();
+  map["nameWithProject"] = nameWithProject();
+  map["tagNames"] = tagNames();
+
+  return map;
+}
+
+// Overriden Model functions
+bool Activity::save()
+{
+  return Model::save("activities");
+}
+
+bool Activity::validate()
+{
+  if (name().isEmpty()) {
+    qDebug() << "name was empty";
+    return false;
+  }
+  if (!startedAt().isValid()) {
+    qDebug() << "startedAt was empty";
+    return false;
+  }
+  if (endedAt().isValid() && duration() < 0) {
+    qDebug() << "endedAt was earlier than startedAt";
+    return false;
+  }
+  if (!isRunning() && !endedAt().isValid()) {
+    qDebug() << "endedAt was empty";
+    return false;
+  }
+
+  return true;
 }

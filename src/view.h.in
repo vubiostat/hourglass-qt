@@ -5,11 +5,13 @@
 
 #include <QObject>
 #include <QString>
+#include <QVariant>
+#include <QMap>
+#include <QList>
 
 #include "teng.h"
 #include "tengwriter.h"
 #include "tengerror.h"
-#include "variables.h"
 #include "activity.h"
 
 class View : public QObject
@@ -18,11 +20,18 @@ class View : public QObject
 
   public:
     View(QString name, bool useLayout = true, QObject *parent = 0);
-    QString render(VariableMap &variables);
+    void setTitle(QString title);
+    void addVariable(const QString &name, QVariant value);
+    QString render();
 
   private:
     QString name;
+    QString title;
+    QVariantMap variables;
     bool useLayout;
+
+    void setupFragment(Teng::Fragment_t &fragment, QVariantMap &vars);
+    void setupFragmentList(Teng::FragmentList_t &fragmentList, QVariantList &vars);
 };
 
 #endif
