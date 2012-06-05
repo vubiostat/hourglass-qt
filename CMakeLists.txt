@@ -5,11 +5,12 @@ INCLUDE(ExternalProject)
 PROJECT(hourglass)
 set(CMAKE_CXX_FLAGS "-g3")
 
-ExternalProject_Add(teng2.1.1
-  URL "http://prdownloads.sourceforge.net/teng/teng-2.1.1.tar.gz"
+ExternalProject_Add(ctemplate-2.2
+  URL "http://ctemplate.googlecode.com/files/ctemplate-2.2.tar.gz"
+  URL_MD5 "1de89d9073f473c1e31862c4581636f3"
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>)
-ExternalProject_Get_Property(teng2.1.1 INSTALL_DIR)
-SET(TENG_INSTALL_DIR ${INSTALL_DIR})
+ExternalProject_Get_Property(ctemplate-2.2 INSTALL_DIR)
+SET(CTEMPLATE_INSTALL_DIR ${INSTALL_DIR})
 SET(INSTALL_DIR)
 
 SET(hourglass_PUBLIC_PATH ${CMAKE_CURRENT_BINARY_DIR}/public)
@@ -22,4 +23,4 @@ ADD_CUSTOM_TARGET(views
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/views ${hourglass_VIEW_PATH})
 
 ADD_SUBDIRECTORY(src)
-ADD_DEPENDENCIES(hourglass teng2.1.1 public views)
+ADD_DEPENDENCIES(hourglass ctemplate-2.2 public views)
