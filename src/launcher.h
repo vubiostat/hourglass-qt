@@ -20,6 +20,7 @@ class Launcher : public QWidget
 
   private:
     QWebView *view;
+    int loadCount;
 };
 
 #endif
