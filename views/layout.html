@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title><?teng if exist(title) ?>${title}<?teng else ?>Hourglass<?teng endif ?></title>
+  <title>{{title}}</title>
   <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" src="/js/jquery-ui-1.8.18.custom.min.js"></script>
   <script type="text/javascript" src="/js/dictionary.js"></script>
@@ -10,8 +10,6 @@
   <link type="text/css" rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
-
-${unescape($content)}
-
+{{>content}}
 </body>
 </html>

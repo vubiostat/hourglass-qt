@@ -1,6 +1,7 @@
 #include <QtDebug>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <ctemplate/template.h>
 #include "hourglass.h"
 
 int Hourglass::sigintFd[2] = {0, 0};
@@ -9,6 +10,12 @@ Hourglass::Hourglass(int &argc, char **argv)
   : QApplication(argc, argv)
 {
   connect(this, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
+
+  // Setup Ctemplate
+  ctemplate::Template::SetTemplateRootDirectory(VIEW_PATH);
+
+  // Setup server
+  st = new ServerThread(PUBLIC_PATH, this);
 
   if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigintFd))
     qFatal("Couldn't create INT socketpair");
@@ -19,9 +26,9 @@ Hourglass::Hourglass(int &argc, char **argv)
 
 int Hourglass::exec()
 {
-  connect(&st, SIGNAL(serverStarted()), &launcher, SLOT(start()));
-  connect(&st, SIGNAL(finished()), this, SLOT(quit()));
-  st.start();
+  connect(st, SIGNAL(serverStarted()), &launcher, SLOT(go()));
+  connect(st, SIGNAL(finished()), this, SLOT(quit()));
+  st->start();
 
   return QApplication::exec();
 }
@@ -46,6 +53,6 @@ void Hourglass::intSignalHandler(int)
 void Hourglass::cleanUp()
 {
   qDebug() << "Cleaning up...";
-  st.quit();
-  st.wait();
+  st->quit();
+  st->wait();
 }

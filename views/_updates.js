@@ -1,1 +1,2 @@
-{"today": "${unescape($today)}", "week": "${unescape($week)}", "current": "${unescape($current)}", "totals": "${unescape($totals)}"}
+{{%AUTOESCAPE context="JAVASCRIPT"}}
+{"today": "{{>today:o}}", "week": "{{>week:o}}", "current": "{{>current:o}}", "totals": "{{>totals:o}}"}

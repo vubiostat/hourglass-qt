@@ -1,37 +1,48 @@
 <form>
   <div id="activity-popup" class="ui-widget ui-widget-content ui-corner-all" style="padding: 0.5em; font-size: 1em; overflow: auto;">
-    <?teng frag activity ?>
+    {{#activity}}
     <table>
       <tbody>
         <tr>
           <td>Time:</td>
           <td>
             <div class="no-wrap">
-              <input class="activity-started-at-date" type="text" name="activity[started_at_mdy]" value="${startedAtMDY}" size="10" maxlength="10" />
-              <input class="activity-started-at-time" type="text" name="activity[started_at_hm]" value="${startedAtHM}" size="5" maxlength="5" />
+              <input class="activity-started-at-date" type="text" name="activity[started_at_mdy]" value="{{startedAtMDY}}" size="10" maxlength="10" />
+              <input class="activity-started-at-time" type="text" name="activity[started_at_hm]" value="{{startedAtHM}}" size="5" maxlength="5" />
               to
             </div>
             <div class="no-wrap">
-              <input class="activity-ended-at-time" type="text" name="activity[ended_at_hm]" value="${endedAtHM}" size="5" maxlength="5"<?teng if $isRunning ?> disabled="disabled"<?teng endif ?> />
-              <input class="activity-ended-at-date" type="text" name="activity[ended_at_mdy]" value="${endedAtMDY}" size="10" maxlength="10"<?teng if $isRunning ?> disabled="disabled"<?teng endif ?> />
+            {{#running}}
+              <input class="activity-ended-at-time" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" disabled="disabled" />
+              <input class="activity-ended-at-date" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" disabled="disabled" />
+            {{/running}}
+            {{#notRunning}}
+              <input class="activity-ended-at-time" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" />
+              <input class="activity-ended-at-date" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" />
+            {{/notRunning}}
             </div>
             <div class="no-wrap">
-              <input id="in-progress-checkbox" class="activity-running" type="checkbox" name="activity[running]" value="true"<?teng if $isRunning ?> checked="checked"<?teng endif ?> />
+            {{#running}}
+              <input id="in-progress-checkbox" class="activity-running" type="checkbox" name="activity[running]" value="true" checked="checked" />
+            {{/running}}
+            {{#notRunning}}
+              <input id="in-progress-checkbox" class="activity-running" type="checkbox" name="activity[running]" value="true" />
+            {{/notRunning}}
               <label for="in-progress-checkbox">in progress</label>
             </div>
           </td>
         </tr>
         <tr>
           <td>Activity:</td>
-          <td colspan="2"><input class="activity-name" type="text" name="activity[name_with_project]" value="${nameWithProject}" /></td>
+          <td colspan="2"><input class="activity-name" type="text" name="activity[name_with_project]" value="{{nameWithProject}}" /></td>
         </tr>
         <tr>
           <td>Tags:</td>
-          <td colspan="2"><input class="activity-tags" type="text" name="activity[tag_names]" value="${tagNames}" /></td>
+          <td colspan="2"><input class="activity-tags" type="text" name="activity[tag_names]" value="{{tagNames}}" /></td>
         </tr>
       </tbody>
     </table>
-    <?teng endfrag ?>
+    {{/activity}}
     <div class="ac-placeholder">&nbsp;</div>
   </div>
   <div class="right-align" style="margin: 0.5em 0";>
@@ -57,7 +68,7 @@
       }
     });
 
-    var submitUrl = "${submitUrl}";
+    var submitUrl = "{{submitUrl}}";
     form.submit(function(e) {
       e.preventDefault();
       $.post(submitUrl, form.serialize(), function(data, status) {

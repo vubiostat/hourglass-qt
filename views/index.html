@@ -1,5 +1,5 @@
 <div id="current-activity">
-  ${unescape($current)}
+  {{>current}}
 </div>
 <div class="clear"></div>
 
@@ -23,14 +23,14 @@
     <li><a href="#week-tab">Week</a></li>
   </ul>
   <div id="today-tab">
-    ${unescape($today)}
+    {{>today}}
   </div>
   <div id="week-tab">
-    ${unescape($week)}
+    {{>week}}
   </div>
 </div>
 <div style="margin: 0.5em 0";>
-  <div id="totals">${unescape($totals)}</div>
+  <div id="totals">{{>totals}}</div>
   <button id="add-earlier-activity">Add earlier activity</button>
   <div class="clear"></div>
 </div>

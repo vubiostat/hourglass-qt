@@ -12,7 +12,8 @@ class Launcher : public QWidget
     Launcher(QWidget *parent = 0);
 
   public slots:
-    void start();
+    void go();
+    void loadFinished(bool ok);
 
   private slots:
     void viewTitleChanged(const QString &title);

@@ -1,8 +1,6 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#define PUBLIC_PATH "@hourglass_PUBLIC_PATH@"
-
 #include <QObject>
 #include <QString>
 #include <QRegExp>
@@ -11,13 +9,14 @@
 #include <QPair>
 #include "mongoose.h"
 #include "activity.h"
+#include "dictionary.h"
 
 class Server : public QObject
 {
   Q_OBJECT
 
   public:
-    Server(QString port, QObject *parent = 0);
+    Server(QString root, QString port, QObject *parent = 0);
     void start();
 
     static const QRegExp activityPath;
@@ -25,7 +24,6 @@ class Server : public QObject
     static const QRegExp deleteActivityPath;
     static const QRegExp restartActivityPath;
     static QList<QPair<QString, QString> > decodePost(const char *data);
-    static QString &toJSON(QString &str);
 
   signals:
     void started();
@@ -36,16 +34,21 @@ class Server : public QObject
 
   private:
     struct mg_context *ctx;
-    QString port;
+    QString root, port;
 
     static void *route(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info);
 
-    QString partialActivities(QList<Activity> activities);
-    QString partialCurrent();
-    QString partialToday();
-    QString partialWeek();
+    void includeActivities(Dictionary *dictionary, QList<Activity> &activities);
+    void includeNames(Dictionary *dictionary, QList<QString> &names);
+
+    void includeCurrent(Dictionary *dictionary);
+    void includeToday(Dictionary *dictionary);
+    void includeWeek(Dictionary *dictionary);
+    void includeTotals(Dictionary *dictionary, bool addIncludeDictionary = true);
+
     QString partialTotals();
     QString partialUpdates();
+    QString partialNames(QList<QString> &names);
     QString partialActivityNames();
     QString partialProjectNames();
     QString partialTagNames();

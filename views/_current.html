@@ -1,16 +1,15 @@
 <table>
-<?teng if $.activities._count gt 0 ?>
-  <?teng frag activities ?>
-  <tr class="activity activity-${id}">
-    <td class="activity-name">${name}</td>
+{{#activity}}
+  <tr class="activity activity-{{id}}">
+    <td class="activity-name">{{name}}</td>
     <td class="activity-tags"></td>
-    <td class="activity-duration activity-running" title="${startedAtISO8601}">${durationInWords}</td>
+    <td class="activity-duration activity-running" title="{{startedAtISO8601}}">{{durationInWords}}</td>
     <td class="button">
       <button class="stop-tracking">Stop tracking</button>
     </td>
   </tr>
-  <?teng endfrag ?>
-<?teng else ?>
+{{/activity}}
+{{#noCurrentActivity}}
   <tr>
     <td class="activity-name">No activity</td>
     <td class="activity-tags">&nbsp;</td>
@@ -19,5 +18,5 @@
       <button class="stop-tracking" disabled="disabled">Stop tracking</button>
     </td>
   </tr>
-<?teng endif ?>
+{{/noCurrentActivity}}
 </table>

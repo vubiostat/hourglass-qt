@@ -1,11 +1,11 @@
 <ul class="day-times">
-  <?teng frag days ?>
+{{#day}}
   <li>
-    <h3>${dayName}</h3>
-    <table id="weekday-${_number}-times" class="times">
-      ${unescape($activities)}
+    <h3>{{dayName}}</h3>
+    <table id="weekday-{{dayNumber}}-times" class="times">
+      {{>activities}}
     </table>
     <div class="clear"></div>
   </li>
-  <?teng endfrag ?>
+{{/day}}
 </ul>

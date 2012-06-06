@@ -19,8 +19,8 @@ const QRegExp Server::activityPath = QRegExp("^/activities/(\\d+)$");
 const QRegExp Server::deleteActivityPath = QRegExp("^/activities/(\\d+)/delete$");
 const QRegExp Server::restartActivityPath = QRegExp("^/activities/(\\d+)/restart$");
 
-Server::Server(QString port, QObject *parent)
-  : QObject(parent), port(port)
+Server::Server(QString root, QString port, QObject *parent)
+  : QObject(parent), root(root), port(port)
 {
   ctx = NULL;
 }
@@ -140,24 +140,13 @@ QList<QPair<QString, QString> > Server::decodePost(const char *data)
   return result;
 }
 
-QString &Server::toJSON(QString &str)
-{
-  str.replace("\\", "\\\\");
-  str.replace("\"", "\\\"");
-  str.replace("\n", "\\n");
-  str.replace("\f", "\\f");
-  str.replace("\b", "\\b");
-  str.replace("\r", "\\r");
-  str.replace("\t", "\\t");
-  return str;
-}
-
 void Server::start()
 {
-  QByteArray ba = port.toLocal8Bit();
+  QByteArray rootBA = root.toLocal8Bit();
+  QByteArray portBA = port.toLocal8Bit();
   const char *options[] = {
-    "listening_ports", ba.data(),
-    "document_root", PUBLIC_PATH,
+    "listening_ports", portBA.data(),
+    "document_root", rootBA.data(),
     NULL};
 
   ctx = mg_start(&route, this, options);
@@ -175,32 +164,48 @@ void Server::stop()
   emit stopped();
 }
 
-// Partials
-QString Server::partialActivities(QList<Activity> activities)
+void Server::includeActivities(Dictionary *dictionary, QList<Activity> &activities)
 {
-  View view("_activities.html", false);
-  view.addVariable("activities", Activity::toVariantList(activities));
-  return view.render();
+  Dictionary *d = dictionary->addIncludeDictionary("activities", "_activities.html");
+  d->addActivitySection(activities);
 }
 
-QString Server::partialCurrent()
+void Server::includeNames(Dictionary *dictionary, QList<QString> &names)
 {
+  Dictionary *d = dictionary->addIncludeDictionary("names", "_names.js");
+
+  Dictionary *d2;
+  QListIterator<QString> i(names);
+  while (i.hasNext()) {
+    d2 = d->addSectionDictionary("name");
+    d2->setValue("value", i.next());
+    d2->setValue("comma", i.hasNext() ? "," : "");
+  }
+}
+
+void Server::includeCurrent(Dictionary *dictionary)
+{
+  Dictionary *d = dictionary->addIncludeDictionary("current", "_current.html");
   QList<Activity> activities = Activity::findCurrent();
-  View view("_current.html", false);
-  view.addVariable("activities", Activity::toVariantList(activities));
-  return view.render();
+  if (activities.count() > 0) {
+    d->addActivitySection(activities);
+  }
+  else {
+    d->showSection("noCurrentActivity");
+  }
 }
 
-QString Server::partialToday()
+void Server::includeToday(Dictionary *dictionary)
 {
+  Dictionary *d = dictionary->addIncludeDictionary("today", "_today.html");
   QList<Activity> activities = Activity::findToday();
-  View view("_today.html", false);
-  view.addVariable("activities", partialActivities(activities));
-  return view.render();
+  includeActivities(d, activities);
 }
 
-QString Server::partialWeek()
+void Server::includeWeek(Dictionary *dictionary)
 {
+  Dictionary *d = dictionary->addIncludeDictionary("week", "_week.html");
+
   // Start day at Sunday
   QDate day;
   QDate today = QDate::currentDate();
@@ -212,113 +217,109 @@ QString Server::partialWeek()
     day = today;
   }
 
-  View view("_week.html", false);
-  QVariantList days;
+  Dictionary *d2;
   for (int i = 0; i < 7; i++) {
+    d2 = d->addSectionDictionary("day");
     QList<Activity> activities = Activity::findDay(day);
-    QVariantMap map;
 
     dayOfWeek = day.dayOfWeek();
-    map["dayName"] = QDate::longDayName(dayOfWeek);
-    map["activities"] = partialActivities(activities);
-    days << map;
+    d2->setValue("dayName", QDate::longDayName(dayOfWeek));
+    d2->setValue("dayNumber", i);
+    includeActivities(d2, activities);
+
     day = day.addDays(1);
   }
-  view.addVariable("days", days);
-  return view.render();
+}
+
+void Server::includeTotals(Dictionary *dictionary, bool addIncludeDictionary)
+{
+  Dictionary *d;
+  if (addIncludeDictionary) {
+    d = dictionary->addIncludeDictionary("totals", "_totals.html");
+  }
+  else {
+    d = dictionary;
+  }
+
+  QList<Activity> activities = Activity::findToday();
+  QMap<QString, int> projectTotals = Activity::projectTotals(activities);
+
+  Dictionary *d2;
+  QMapIterator<QString, int> i(projectTotals);
+  while (i.hasNext()) {
+    i.next();
+    d2 = d->addSectionDictionary("total");
+    d2->setValue("projectName", i.key().isEmpty() ? "Unsorted" : i.key());
+    d2->setValue("duration", i.value());
+    d2->setValue("durationInWords",
+        QString("%1").arg(((double) i.value()) / 3600.0, 4, 'f', 2, '0'));
+    d2->setValue("comma", i.hasNext() ? "," : "");
+  }
 }
 
 QString Server::partialTotals()
 {
-  QList<Activity> activities = Activity::findToday();
-  QMap<QString, int> projectTotals = Activity::projectTotals(activities);
-
   View view("_totals.html", false);
-  QVariantList totals;
-  QMapIterator<QString, int> i(projectTotals);
-  while (i.hasNext()) {
-    i.next();
-    QVariantMap map;
-    map["projectName"] = i.key();
-    map["duration"] =  i.value();
-    map["durationInWords"] =
-        QString("%1").arg(((double) i.value()) / 3600.0, 4, 'f', 2, '0');
-    totals << map;
-  }
-  view.addVariable("totals", totals);
+  Dictionary *dictionary = view.dictionary();
+  includeTotals(dictionary, false);
   return view.render();
 }
 
 QString Server::partialUpdates()
 {
-  QString current = partialCurrent();
-  QString today = partialToday();
-  QString week = partialWeek();
-  QString totals = partialTotals();
-
   View view("_updates.js", false);
-  view.addVariable("current", toJSON(current));
-  view.addVariable("today", toJSON(today));
-  view.addVariable("week", toJSON(week));
-  view.addVariable("totals", toJSON(totals));
+  Dictionary *dictionary = view.dictionary();
+  includeCurrent(dictionary);
+  includeToday(dictionary);
+  includeWeek(dictionary);
+  includeTotals(dictionary);
+  return view.render();
+}
+
+QString Server::partialNames(QList<QString> &names)
+{
+  View view("_names.js", false);
+  Dictionary *d = view.dictionary();
+
+  Dictionary *d2;
+  QListIterator<QString> i(names);
+  while (i.hasNext()) {
+    QString name = i.next();
+    d2 = d->addSectionDictionary("name");
+    d2->setValue("value", name);
+    d2->setValue("comma", i.hasNext() ? "," : "");
+  }
+
   return view.render();
 }
 
 QString Server::partialActivityNames()
 {
   QList<QString> distinctNames = Activity::distinctNames();
-  View view("_names.js", false);
-  QVariantList names;
-  for (int i = 0; i < distinctNames.size(); i++) {
-    QVariantMap map;
-    map["name"] = distinctNames.at(i);
-    names << map;
-  }
-  view.addVariable("names", names);
-  return view.render();
+  return partialNames(distinctNames);
 }
 
 QString Server::partialProjectNames()
 {
   QList<QString> distinctNames = Project::distinctNames();
-  View view("_names.js", false);
-  QVariantList names;
-  for (int i = 0; i < distinctNames.size(); i++) {
-    QVariantMap map;
-    map["name"] = distinctNames.at(i);
-    names << map;
-  }
-  view.addVariable("names", names);
-  return view.render();
+  return partialNames(distinctNames);
 }
 
 QString Server::partialTagNames()
 {
   QList<QString> distinctNames = Tag::distinctNames();
-  View view("_names.js", false);
-  QVariantList names;
-  for (int i = 0; i < distinctNames.size(); i++) {
-    QVariantMap map;
-    map["name"] = distinctNames.at(i);
-    names << map;
-  }
-  view.addVariable("names", names);
-  return view.render();
+  return partialNames(distinctNames);
 }
 
 // GET /
 QString Server::index()
 {
-  QString current = partialCurrent();
-  QString today = partialToday();
-  QString week = partialWeek();
-  QString totals = partialTotals();
-
   View view("index.html");
-  view.addVariable("current", current);
-  view.addVariable("today", today);
-  view.addVariable("week", week);
-  view.addVariable("totals", totals);
+  Dictionary *dictionary = view.dictionary();
+  includeCurrent(dictionary);
+  includeToday(dictionary);
+  includeWeek(dictionary);
+  includeTotals(dictionary);
   return view.render();
 }
 
@@ -344,10 +345,12 @@ QString Server::stopCurrentActivities()
 // GET /activities/new
 QString Server::newActivity()
 {
-  Activity newActivity = Activity();
   View view("popup.html");
   view.setTitle("Add earlier activity");
-  view.addVariable("submitUrl", "/activities");
-  view.addVariable("activity", newActivity.toVariantMap());
+  Dictionary *dictionary = view.dictionary();
+
+  Activity newActivity = Activity();
+  dictionary->setValue("submitUrl", "/activities");
+  dictionary->addActivitySection(newActivity);
   return view.render();
 }
