@@ -7,20 +7,31 @@ View::View(QString name, bool useLayout, QObject *parent)
   : QObject(parent), useLayout(useLayout)
 {
   if (useLayout) {
-    _dictionary = new Dictionary("layout", this);
-    _dictionary->setValue("title", "Hourglass");
-    _contentDictionary = _dictionary->addIncludeDictionary("content", name);
+    _rootDictionary = _layoutDictionary = new Dictionary("layout", this);
+    _layoutDictionary->setValue("title", "Hourglass");
+    _contentDictionary = _layoutDictionary->addIncludeDictionary("content", name);
     templateName = "layout.html";
   }
   else {
-    _dictionary = _contentDictionary = new Dictionary("content", this);
+    _rootDictionary = _contentDictionary = new Dictionary("content", this);
+    _layoutDictionary = NULL;
     templateName = name;
   }
 }
 
 void View::setTitle(QString title)
 {
-  _dictionary->setValue("title", title);
+  if (_layoutDictionary != NULL) {
+    _layoutDictionary->setValue("title", title);
+  }
+}
+
+void View::addJavascript(QString url)
+{
+  if (_layoutDictionary != NULL) {
+    Dictionary *d = _layoutDictionary->addSectionDictionary("javascript");
+    d->setValue("url", url);
+  }
 }
 
 Dictionary *View::dictionary()
@@ -33,7 +44,7 @@ QString View::render()
   std::string out;
 
   bool result = ctemplate::ExpandTemplate(templateName.toStdString(),
-      ctemplate::DO_NOT_STRIP, _dictionary->object(), &out);
+      ctemplate::DO_NOT_STRIP, _rootDictionary->object(), &out);
 
   if (!result) {
     return QString("Couldn't render view!");

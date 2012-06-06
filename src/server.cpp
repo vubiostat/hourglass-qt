@@ -315,6 +315,7 @@ QString Server::partialTagNames()
 QString Server::index()
 {
   View view("index.html");
+  view.addJavascript("/js/index.js");
   Dictionary *dictionary = view.dictionary();
   includeCurrent(dictionary);
   includeToday(dictionary);

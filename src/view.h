@@ -16,13 +16,14 @@ class View : public QObject
   public:
     View(QString name, bool useLayout = true, QObject *parent = 0);
     void setTitle(QString title);
+    void addJavascript(QString url);
     Dictionary *dictionary();
     QString render();
 
   private:
     QString templateName;
     bool useLayout;
-    Dictionary *_dictionary, *_contentDictionary;
+    Dictionary *_rootDictionary, *_layoutDictionary, *_contentDictionary;
 };
 
 #endif
