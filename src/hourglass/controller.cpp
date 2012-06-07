@@ -1,38 +1,53 @@
-#include <QtDebug>
-#include <QByteArray>
-#include <QUrl>
-#include <QDir>
-#include <QStringList>
-#include <QVariant>
-#include <QMap>
-#include <QList>
-#include "server.h"
+#include <QFile>
+#include "view.h"
+#include "controller.h"
 #include "project.h"
 #include "tag.h"
-#include "view.h"
 
-#include <iostream>
-using namespace std;
+const QRegExp Controller::editActivityPath = QRegExp("^/activities/(\\d+)/edit$");
+const QRegExp Controller::activityPath = QRegExp("^/activities/(\\d+)$");
+const QRegExp Controller::deleteActivityPath = QRegExp("^/activities/(\\d+)/delete$");
+const QRegExp Controller::restartActivityPath = QRegExp("^/activities/(\\d+)/restart$");
 
-const QRegExp Server::editActivityPath = QRegExp("^/activities/(\\d+)/edit$");
-const QRegExp Server::activityPath = QRegExp("^/activities/(\\d+)$");
-const QRegExp Server::deleteActivityPath = QRegExp("^/activities/(\\d+)/delete$");
-const QRegExp Server::restartActivityPath = QRegExp("^/activities/(\\d+)/restart$");
-
-Server::Server(QString root, quint16 port, QObject *parent)
-  : QObject(parent), port(port)
+QList<QPair<QString, QString> > Controller::decodePost(const char *data)
 {
-  http = new QHttpServer(this);
-  connect(http, SIGNAL(newRequest(QHttpRequest*, QHttpResponse*)),
-      this, SLOT(route(QHttpRequest*, QHttpResponse*)));
-  this->root = QDir(root);
-  qDebug() << "Root directory:" << this->root.dirName();
+  QList<QPair<QString, QString> > result;
+
+  QStringList parts = QString(data).split('&');
+  for (int i = 0; i < parts.size(); i++) {
+    QString variable = parts[i];
+    QStringList variableParts = variable.split('=');
+    if (variableParts.size() == 2) {
+      QString &rawKey = variableParts[0].replace("+", " ");
+      QString &rawValue = variableParts[1].replace("+", " ");
+      QByteArray rawKeyBA = rawKey.toUtf8();
+      QByteArray rawValueBA = rawValue.toUtf8();
+      QPair<QString, QString> pair(
+          QUrl::fromPercentEncoding(rawKeyBA),
+          QUrl::fromPercentEncoding(rawValueBA));
+      //qDebug() << pair;
+      result << pair;
+    }
+  }
+  return result;
 }
 
-void Server::route(QHttpRequest *request, QHttpResponse *response)
+Controller::Controller(QDir root, QHttpRequest *req, QHttpResponse *resp, QObject *parent)
+  : QObject(parent), m_root(root), m_req(req), m_resp(resp)
 {
-  QString path = request->path();
-  QString method = request->method();
+  connect(m_req, SIGNAL(data(const QByteArray&)), this, SLOT(accumulate(const QByteArray&)));
+  connect(m_req, SIGNAL(end()), this, SLOT(route()));
+}
+
+void Controller::accumulate(const QByteArray &data)
+{
+  this->data.append(data);
+}
+
+void Controller::route()
+{
+  QString path = m_req->path();
+  QString method = m_req->method();
 
   QString result;
   bool isJSON = false;
@@ -69,116 +84,39 @@ void Server::route(QHttpRequest *request, QHttpResponse *response)
     }
   }
   else if (method == "POST") {
-    /*
-    const char *tmp = mg_get_header(conn, "Content-Length");
-    if (tmp != NULL) {
-      QString contentLengthHeader = QString(tmp);
-      bool ok;
-      int contentLength = contentLengthHeader.toInt(&ok);
-      if (ok) {
-        //qDebug() << "POST Content-Length:" << contentLength;
-        char *buffer = new char[contentLength + 1];
-        if (mg_read(conn, buffer, contentLength) == contentLength) {
-          // Valid POST
-          buffer[contentLength] = 0;
-          //qDebug() << "POST Content:" << buffer;
-          QList<QPair<QString, QString> > params = decodePost(buffer);
+    QList<QPair<QString, QString> > params = decodePost(data);
 
-          if (path == "/activities") {
-            result = createActivity(params);
-            isJSON = true;
-          }
-          else if (path.contains(activityPath)) {
-          }
-          else if (path.contains(restartActivityPath)) {
-          }
-        }
-        delete[] buffer;
-      }
+    if (path == "/activities") {
+      result = createActivity(params);
+      isJSON = true;
     }
-    */
+    else if (path.contains(activityPath)) {
+    }
+    else if (path.contains(restartActivityPath)) {
+    }
   }
 
   if (result.isNull()) {
-    // Serve a file
-    QFile file(root.absoluteFilePath(path));
-    if (file.exists()) {
-      qDebug() << "Serving file:" << file.fileName();
-      QFileInfo info(file);
-      QString contentType("text/plain");
-      if (info.suffix() == "css") {
-        contentType = "text/css";
-      }
-      else if (info.suffix() == "js") {
-        contentType = "text/javascript";
-      }
-      else if (info.suffix() == "png") {
-        contentType = "image/png";
-      }
-      else if (info.suffix() == "gif") {
-        contentType = "image/gif";
-      }
-      response->setHeader("Content-Type", contentType);
-      response->setHeader("Content-Length", QString("%1").arg(file.size()));
-      response->writeHead(200);
-      response->write(file.readAll());
-    }
-    else {
-      qDebug() << "File doesn't exist:" << file.fileName();
-      response->writeHead(404);
-    }
+    serveFile(path);
   }
   else {
-    response->setHeader("Content-Type",
+    m_resp->setHeader("Content-Type",
         isJSON ? "application/json" : "text/html");
-    response->setHeader("Content-Length", QString("%1").arg(result.size()));
-    response->writeHead(200);
-    response->write(result);
+    m_resp->setHeader("Content-Length", QString("%1").arg(result.size()));
+    m_resp->writeHead(200);
+    m_resp->write(result);
+    m_resp->end();
   }
-  response->end();
+  emit done();
 }
 
-QList<QPair<QString, QString> > Server::decodePost(const char *data)
-{
-  QList<QPair<QString, QString> > result;
-
-  QStringList parts = QString(data).split('&');
-  for (int i = 0; i < parts.size(); i++) {
-    QString variable = parts[i];
-    QStringList variableParts = variable.split('=');
-    if (variableParts.size() == 2) {
-      QString &rawKey = variableParts[0].replace("+", " ");
-      QString &rawValue = variableParts[1].replace("+", " ");
-      QByteArray rawKeyBA = rawKey.toUtf8();
-      QByteArray rawValueBA = rawValue.toUtf8();
-      QPair<QString, QString> pair(
-          QUrl::fromPercentEncoding(rawKeyBA),
-          QUrl::fromPercentEncoding(rawValueBA));
-      //qDebug() << pair;
-      result << pair;
-    }
-  }
-  return result;
-}
-
-void Server::start()
-{
-  http->listen(port);
-  emit started();
-}
-
-void Server::stop()
-{
-  emit stopped();
-}
-
-void Server::includeActivities(Dictionary *dictionary, QList<Activity> &activities)
+void Controller::includeActivities(Dictionary *dictionary, QList<Activity> &activities)
 {
   Dictionary *d = dictionary->addIncludeDictionary("activities", "_activities.html");
   d->addActivitySection(activities);
 }
 
-void Server::includeNames(Dictionary *dictionary, QList<QString> &names)
+void Controller::includeNames(Dictionary *dictionary, QList<QString> &names)
 {
   Dictionary *d = dictionary->addIncludeDictionary("names", "_names.js");
 
@@ -191,7 +129,7 @@ void Server::includeNames(Dictionary *dictionary, QList<QString> &names)
   }
 }
 
-void Server::includeCurrent(Dictionary *dictionary)
+void Controller::includeCurrent(Dictionary *dictionary)
 {
   Dictionary *d = dictionary->addIncludeDictionary("current", "_current.html");
   QList<Activity> activities = Activity::findCurrent();
@@ -203,14 +141,14 @@ void Server::includeCurrent(Dictionary *dictionary)
   }
 }
 
-void Server::includeToday(Dictionary *dictionary)
+void Controller::includeToday(Dictionary *dictionary)
 {
   Dictionary *d = dictionary->addIncludeDictionary("today", "_today.html");
   QList<Activity> activities = Activity::findToday();
   includeActivities(d, activities);
 }
 
-void Server::includeWeek(Dictionary *dictionary)
+void Controller::includeWeek(Dictionary *dictionary)
 {
   Dictionary *d = dictionary->addIncludeDictionary("week", "_week.html");
 
@@ -239,7 +177,7 @@ void Server::includeWeek(Dictionary *dictionary)
   }
 }
 
-void Server::includeTotals(Dictionary *dictionary, bool addIncludeDictionary)
+void Controller::includeTotals(Dictionary *dictionary, bool addIncludeDictionary)
 {
   Dictionary *d;
   if (addIncludeDictionary) {
@@ -265,7 +203,7 @@ void Server::includeTotals(Dictionary *dictionary, bool addIncludeDictionary)
   }
 }
 
-QString Server::partialTotals()
+QString Controller::partialTotals()
 {
   View view("_totals.html", false);
   Dictionary *dictionary = view.dictionary();
@@ -273,7 +211,7 @@ QString Server::partialTotals()
   return view.render();
 }
 
-QString Server::partialUpdates()
+QString Controller::partialUpdates()
 {
   View view("_updates.js", false);
   Dictionary *dictionary = view.dictionary();
@@ -284,7 +222,7 @@ QString Server::partialUpdates()
   return view.render();
 }
 
-QString Server::partialNames(QList<QString> &names)
+QString Controller::partialNames(QList<QString> &names)
 {
   View view("_names.js", false);
   Dictionary *d = view.dictionary();
@@ -301,26 +239,26 @@ QString Server::partialNames(QList<QString> &names)
   return view.render();
 }
 
-QString Server::partialActivityNames()
+QString Controller::partialActivityNames()
 {
   QList<QString> distinctNames = Activity::distinctNames();
   return partialNames(distinctNames);
 }
 
-QString Server::partialProjectNames()
+QString Controller::partialProjectNames()
 {
   QList<QString> distinctNames = Project::distinctNames();
   return partialNames(distinctNames);
 }
 
-QString Server::partialTagNames()
+QString Controller::partialTagNames()
 {
   QList<QString> distinctNames = Tag::distinctNames();
   return partialNames(distinctNames);
 }
 
 // GET /
-QString Server::index()
+QString Controller::index()
 {
   View view("index.html");
   view.addJavascript("/js/index.js");
@@ -333,7 +271,7 @@ QString Server::index()
 }
 
 // POST /activities
-QString Server::createActivity(const QList<QPair<QString, QString> > &params)
+QString Controller::createActivity(const QList<QPair<QString, QString> > &params)
 {
   Activity activity;
   activity.setStartedAt(QDateTime::currentDateTime());
@@ -345,14 +283,14 @@ QString Server::createActivity(const QList<QPair<QString, QString> > &params)
 }
 
 // GET /activities/current/stop
-QString Server::stopCurrentActivities()
+QString Controller::stopCurrentActivities()
 {
   Activity::stopCurrent();
   return partialUpdates();
 }
 
 // GET /activities/new
-QString Server::newActivity()
+QString Controller::newActivity()
 {
   View view("popup.html");
   view.setTitle("Add earlier activity");
@@ -362,4 +300,38 @@ QString Server::newActivity()
   dictionary->setValue("submitUrl", "/activities");
   dictionary->addActivitySection(newActivity);
   return view.render();
+}
+
+void Controller::serveFile(const QString &path)
+{
+  QFile file(m_root.absolutePath() + path);
+  if (file.exists()) {
+    qDebug() << "Serving file:" << file.fileName();
+    QFileInfo info(file);
+    QString contentType("text/plain");
+    if (info.suffix() == "css") {
+      contentType = "text/css";
+    }
+    else if (info.suffix() == "js") {
+      contentType = "text/javascript";
+    }
+    else if (info.suffix() == "png") {
+      contentType = "image/png";
+    }
+    else if (info.suffix() == "gif") {
+      contentType = "image/gif";
+    }
+    m_resp->setHeader("Content-Type", contentType);
+    m_resp->setHeader("Content-Length", QString("%1").arg(file.size()));
+    m_resp->writeHead(200);
+
+    file.open(QIODevice::ReadOnly);
+    m_resp->write(file.readAll());
+    file.close();
+  }
+  else {
+    qDebug() << "File doesn't exist:" << file.fileName();
+    m_resp->writeHead(404);
+  }
+  m_resp->end();
 }

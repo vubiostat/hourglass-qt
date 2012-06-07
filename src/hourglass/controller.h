@@ -1,45 +1,40 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
-#include <QObject>
-#include <QString>
-#include <QRegExp>
-#include <QSqlDatabase>
-#include <QList>
-#include <QPair>
 #include <QDir>
+#include <QObject>
+#include <QByteArray>
 #include <qhttpserver.h>
 #include <qhttprequest.h>
 #include <qhttpresponse.h>
-#include "activity.h"
 #include "dictionary.h"
+#include "activity.h"
 
-class Server : public QObject
+class Controller : public QObject
 {
   Q_OBJECT
 
   public:
-    Server(QString root, quint16 port, QObject *parent = 0);
-    void start();
+    Controller(QDir root, QHttpRequest *req, QHttpResponse *resp, QObject *parent = 0);
+    static QList<QPair<QString, QString> > decodePost(const char *data);
 
+  signals:
+    void done();
+
+  private slots:
+    void accumulate(const QByteArray &data);
+    void route();
+
+  private:
     static const QRegExp activityPath;
     static const QRegExp editActivityPath;
     static const QRegExp deleteActivityPath;
     static const QRegExp restartActivityPath;
-    static QList<QPair<QString, QString> > decodePost(const char *data);
 
-  signals:
-    void started();
-    void stopped();
-
-  public slots:
-    void stop();
-    void route(QHttpRequest *request, QHttpResponse *response);
-
-  private:
-    QHttpServer *http;
-    QDir root;
-    quint16 port;
+    QDir m_root;
+    QHttpRequest *m_req;
+    QHttpResponse *m_resp;
+    QByteArray data;
 
     void includeActivities(Dictionary *dictionary, QList<Activity> &activities);
     void includeNames(Dictionary *dictionary, QList<QString> &names);
@@ -60,6 +55,8 @@ class Server : public QObject
     QString createActivity(const QList<QPair<QString, QString> > &params);
     QString stopCurrentActivities();
     QString newActivity();
+
+    void serveFile(const QString &path);
 };
 
 #endif

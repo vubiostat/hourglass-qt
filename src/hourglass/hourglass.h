@@ -1,9 +1,6 @@
 #ifndef HOURGLASS_H
 #define HOURGLASS_H
 
-#define PUBLIC_PATH "@hourglass_PUBLIC_PATH@"
-#define VIEW_PATH "@hourglass_VIEW_PATH@"
-
 #include <QApplication>
 #include <QSocketNotifier>
 #include "launcher.h"

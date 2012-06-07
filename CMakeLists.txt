@@ -3,7 +3,7 @@ INCLUDE(ExternalProject)
 #SET(CMAKE_VERBOSE_MAKEFILE true)
 
 PROJECT(hourglass)
-set(CMAKE_CXX_FLAGS "-g3")
+SET(CMAKE_CXX_FLAGS "-g3")
 
 ExternalProject_Add(ctemplate-2.2
   URL "http://ctemplate.googlecode.com/files/ctemplate-2.2.tar.gz"
@@ -20,15 +20,7 @@ ExternalProject_Add(qhttpserver-git
   INSTALL_COMMAND cd <SOURCE_DIR> && make install)
 ExternalProject_Get_Property(qhttpserver-git INSTALL_DIR)
 SET(QHTTPSERVER_INSTALL_DIR ${INSTALL_DIR})
-
-SET(hourglass_PUBLIC_PATH ${CMAKE_CURRENT_BINARY_DIR}/public)
-SET(hourglass_VIEW_PATH ${CMAKE_CURRENT_BINARY_DIR}/views)
-
-ADD_CUSTOM_TARGET(public
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/public ${hourglass_PUBLIC_PATH})
-
-ADD_CUSTOM_TARGET(views
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/views ${hourglass_VIEW_PATH})
+SET(INSTALL_DIR)
 
 ADD_SUBDIRECTORY(src)
-ADD_DEPENDENCIES(hourglass ctemplate-2.2 public views)
+ADD_DEPENDENCIES(hourglass ctemplate-2.2 qhttpserver-git)

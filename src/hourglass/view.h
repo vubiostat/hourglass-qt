@@ -6,6 +6,7 @@
 #include <QVariant>
 #include <QMap>
 #include <QList>
+#include <QDir>
 #include <ctemplate/template.h>
 #include "dictionary.h"
 

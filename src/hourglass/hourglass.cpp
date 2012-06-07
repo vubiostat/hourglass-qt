@@ -1,4 +1,8 @@
 #include <QtDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfoList>
+#include <QByteArray>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <ctemplate/template.h>
@@ -11,11 +15,23 @@ Hourglass::Hourglass(int &argc, char **argv)
 {
   connect(this, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
 
-  // Setup Ctemplate
-  ctemplate::Template::SetTemplateRootDirectory(VIEW_PATH);
-
   // Setup server
-  st = new ServerThread(PUBLIC_PATH, this);
+  st = new ServerThread(":/public", this);
+
+  // Setup Ctemplate
+  QDir views(":/views");
+  views.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
+  QFileInfoList list = views.entryInfoList();
+  for (int i = 0; i < list.size(); ++i) {
+    QFileInfo fileInfo = list.at(i);
+    QFile file(fileInfo.absoluteFilePath());
+    file.open(QIODevice::ReadOnly);
+    QByteArray bytes = file.readAll();
+    file.close();
+
+    ctemplate::StringToTemplateCache(fileInfo.fileName().toStdString(),
+        bytes.data(), bytes.size(), ctemplate::DO_NOT_STRIP);
+  }
 
   if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigintFd))
     qFatal("Couldn't create INT socketpair");
