@@ -9,7 +9,7 @@ ServerThread::ServerThread(QString root, QObject *parent)
 
 void ServerThread::run()
 {
-  s = new Server(root, "5678");
+  s = new Server(root, 5678);
   connect(s, SIGNAL(started()), this, SLOT(serverStartedInternal()));
   connect(s, SIGNAL(stopped()), this, SLOT(serverStoppedInternal()));
   connect(this, SIGNAL(finished()), s, SLOT(stop()));

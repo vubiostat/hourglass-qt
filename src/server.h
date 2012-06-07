@@ -7,7 +7,10 @@
 #include <QSqlDatabase>
 #include <QList>
 #include <QPair>
-#include "mongoose.h"
+#include <QDir>
+#include <qhttpserver.h>
+#include <qhttprequest.h>
+#include <qhttpresponse.h>
 #include "activity.h"
 #include "dictionary.h"
 
@@ -16,7 +19,7 @@ class Server : public QObject
   Q_OBJECT
 
   public:
-    Server(QString root, QString port, QObject *parent = 0);
+    Server(QString root, quint16 port, QObject *parent = 0);
     void start();
 
     static const QRegExp activityPath;
@@ -31,12 +34,12 @@ class Server : public QObject
 
   public slots:
     void stop();
+    void route(QHttpRequest *request, QHttpResponse *response);
 
   private:
-    struct mg_context *ctx;
-    QString root, port;
-
-    static void *route(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info);
+    QHttpServer *http;
+    QDir root;
+    quint16 port;
 
     void includeActivities(Dictionary *dictionary, QList<Activity> &activities);
     void includeNames(Dictionary *dictionary, QList<QString> &names);

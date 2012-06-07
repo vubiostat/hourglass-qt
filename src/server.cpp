@@ -19,58 +19,57 @@ const QRegExp Server::activityPath = QRegExp("^/activities/(\\d+)$");
 const QRegExp Server::deleteActivityPath = QRegExp("^/activities/(\\d+)/delete$");
 const QRegExp Server::restartActivityPath = QRegExp("^/activities/(\\d+)/restart$");
 
-Server::Server(QString root, QString port, QObject *parent)
-  : QObject(parent), root(root), port(port)
+Server::Server(QString root, quint16 port, QObject *parent)
+  : QObject(parent), port(port)
 {
-  ctx = NULL;
+  http = new QHttpServer(this);
+  connect(http, SIGNAL(newRequest(QHttpRequest*, QHttpResponse*)),
+      this, SLOT(route(QHttpRequest*, QHttpResponse*)));
+  this->root = QDir(root);
+  qDebug() << "Root directory:" << this->root.dirName();
 }
 
-void *Server::route(enum mg_event event, struct mg_connection *conn, const struct mg_request_info *request_info)
+void Server::route(QHttpRequest *request, QHttpResponse *response)
 {
-  if (event != MG_NEW_REQUEST) {
-    return NULL;
-  }
-
-  Server *s = (Server *) request_info->user_data;
-  QUrl url(request_info->uri);
-  QString path = url.path();
-  QString method(request_info->request_method);
+  QString path = request->path();
+  QString method = request->method();
 
   QString result;
   bool isJSON = false;
   if (method == "GET") {
     if (path == "/") {
-      result = s->index();
+      result = index();
     }
     else if (path == "/activities/new") {
-      result = s->newActivity();
+      result = newActivity();
     }
     else if (path.contains(editActivityPath)) {
     }
     else if (path.contains(deleteActivityPath)) {
     }
     else if (path == "/activities") {
-      result = s->partialActivityNames();
+      result = partialActivityNames();
       isJSON = true;
     }
     else if (path == "/activities/current/stop") {
-      result = s->stopCurrentActivities();
+      result = stopCurrentActivities();
       isJSON = true;
     }
     else if (path == "/tags") {
-      result = s->partialTagNames();
+      result = partialTagNames();
       isJSON = true;
     }
     else if (path == "/projects") {
-      result = s->partialProjectNames();
+      result = partialProjectNames();
       isJSON = true;
     }
     else if (path == "/totals") {
-      result = s->partialTotals();
+      result = partialTotals();
       isJSON = true;
     }
   }
   else if (method == "POST") {
+    /*
     const char *tmp = mg_get_header(conn, "Content-Length");
     if (tmp != NULL) {
       QString contentLengthHeader = QString(tmp);
@@ -86,7 +85,7 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
           QList<QPair<QString, QString> > params = decodePost(buffer);
 
           if (path == "/activities") {
-            result = s->createActivity(params);
+            result = createActivity(params);
             isJSON = true;
           }
           else if (path.contains(activityPath)) {
@@ -97,24 +96,46 @@ void *Server::route(enum mg_event event, struct mg_connection *conn, const struc
         delete[] buffer;
       }
     }
+    */
   }
 
-  if (!result.isNull()) {
-    QByteArray ba = result.toUtf8();
-    mg_printf(conn,
-        "HTTP/1.0 200 OK\r\n"
-        "Content-Type: %s\r\n"
-        "Content-Length: %d\r\n"
-        "\r\n",
-        isJSON ? "application/json" : "text/html",
-        ba.size());
-    mg_write(conn, ba.data(), ba.size());
-
-    return (void *) "";  // Mark as processed
+  if (result.isNull()) {
+    // Serve a file
+    QFile file(root.absoluteFilePath(path));
+    if (file.exists()) {
+      qDebug() << "Serving file:" << file.fileName();
+      QFileInfo info(file);
+      QString contentType("text/plain");
+      if (info.suffix() == "css") {
+        contentType = "text/css";
+      }
+      else if (info.suffix() == "js") {
+        contentType = "text/javascript";
+      }
+      else if (info.suffix() == "png") {
+        contentType = "image/png";
+      }
+      else if (info.suffix() == "gif") {
+        contentType = "image/gif";
+      }
+      response->setHeader("Content-Type", contentType);
+      response->setHeader("Content-Length", QString("%1").arg(file.size()));
+      response->writeHead(200);
+      response->write(file.readAll());
+    }
+    else {
+      qDebug() << "File doesn't exist:" << file.fileName();
+      response->writeHead(404);
+    }
   }
-
-  // Let mongoose handle the request from the document root
-  return NULL;
+  else {
+    response->setHeader("Content-Type",
+        isJSON ? "application/json" : "text/html");
+    response->setHeader("Content-Length", QString("%1").arg(result.size()));
+    response->writeHead(200);
+    response->write(result);
+  }
+  response->end();
 }
 
 QList<QPair<QString, QString> > Server::decodePost(const char *data)
@@ -142,25 +163,12 @@ QList<QPair<QString, QString> > Server::decodePost(const char *data)
 
 void Server::start()
 {
-  QByteArray rootBA = root.toLocal8Bit();
-  QByteArray portBA = port.toLocal8Bit();
-  const char *options[] = {
-    "listening_ports", portBA.data(),
-    "document_root", rootBA.data(),
-    NULL};
-
-  ctx = mg_start(&route, this, options);
-  if (ctx != NULL) {
-    emit started();
-  }
+  http->listen(port);
+  emit started();
 }
 
 void Server::stop()
 {
-  if (ctx != NULL) {
-    mg_stop(ctx);
-    ctx = NULL;
-  }
   emit stopped();
 }
 
