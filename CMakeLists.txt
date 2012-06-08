@@ -5,22 +5,31 @@ INCLUDE(ExternalProject)
 PROJECT(hourglass)
 SET(CMAKE_CXX_FLAGS "-g3")
 
-ExternalProject_Add(ctemplate-2.2
-  URL "http://ctemplate.googlecode.com/files/ctemplate-2.2.tar.gz"
-  URL_MD5 "1de89d9073f473c1e31862c4581636f3"
-  CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>)
-ExternalProject_Get_Property(ctemplate-2.2 INSTALL_DIR)
-SET(CTEMPLATE_INSTALL_DIR ${INSTALL_DIR})
-SET(INSTALL_DIR)
+FIND_LIBRARY(LIBCTEMPLATE_LIBRARY NAMES ctemplate libctemplate)
+FIND_PATH(LIBCTEMPLATE_INCLUDE_DIR ctemplate/template.h)
+IF (DEFINED LIBCTEMPLATE_LIBRARY-NOTFOUND OR DEFINED LIBCTEMPLATE_INCLUDE_DIR-NOTFOUND)
+  ExternalProject_Add(ctemplate-2.2
+    URL "http://ctemplate.googlecode.com/files/ctemplate-2.2.tar.gz"
+    URL_MD5 "1de89d9073f473c1e31862c4581636f3"
+    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>)
+  ExternalProject_Get_Property(ctemplate-2.2 INSTALL_DIR)
+  SET(LIBCTEMPLATE_LIBRARY ${INSTALL_DIR}/lib/libctemplate.so)
+  SET(LIBCTEMPLATE_INCLUDE_DIR ${INSTALL_DIR}/include)
+  SET(INSTALL_DIR)
+ENDIF()
 
-ExternalProject_Add(qhttpserver-git
-  GIT_REPOSITORY "https://github.com/viking/qhttpserver"
-  CONFIGURE_COMMAND cd <SOURCE_DIR> && ${QT_QMAKE_EXECUTABLE} -r PREFIX=<INSTALL_DIR>
-  BUILD_COMMAND cd <SOURCE_DIR> && make
-  INSTALL_COMMAND cd <SOURCE_DIR> && make install)
-ExternalProject_Get_Property(qhttpserver-git INSTALL_DIR)
-SET(QHTTPSERVER_INSTALL_DIR ${INSTALL_DIR})
-SET(INSTALL_DIR)
+FIND_LIBRARY(LIBQHTTPSERVER_LIBRARY NAMES qhttpserver libqhttpserver)
+FIND_PATH(LIBQHTTPSERVER_INCLUDE_DIR qhttpserver.h)
+IF (DEFINED LIBQHTTPSERVER_LIBRARY-NOTFOUND OR DEFINED LIBQHTTPSERVER_INCLUDE_DIR-NOTFOUND)
+  ExternalProject_Add(qhttpserver-git
+    GIT_REPOSITORY "https://github.com/viking/qhttpserver"
+    CONFIGURE_COMMAND cd <SOURCE_DIR> && ${QT_QMAKE_EXECUTABLE} -r PREFIX=<INSTALL_DIR>
+    BUILD_COMMAND cd <SOURCE_DIR> && make
+    INSTALL_COMMAND cd <SOURCE_DIR> && make install)
+  ExternalProject_Get_Property(qhttpserver-git INSTALL_DIR)
+  SET(LIBQHTTPSERVER_LIBRARY ${INSTALL_DIR}/lib/libqhttpserver.so)
+  SET(LIBQHTTPSERVER_INCLUDE_DIR ${INSTALL_DIR}/include)
+  SET(INSTALL_DIR)
+ENDIF()
 
 ADD_SUBDIRECTORY(src)
-ADD_DEPENDENCIES(hourglass ctemplate-2.2 qhttpserver-git)
