@@ -2,7 +2,8 @@
 #define LAUNCHER_H
 
 #include <QWidget>
-class QWebView;
+#include <QVBoxLayout>
+#include "browser.h"
 
 class Launcher : public QWidget
 {
@@ -13,14 +14,15 @@ class Launcher : public QWidget
 
   public slots:
     void go();
-    void loadFinished(bool ok);
 
   private slots:
+    void browserResized(int width, int height);
     void viewTitleChanged(const QString &title);
 
   private:
-    QWebView *view;
-    int loadCount;
+    QVBoxLayout *layout;
+    Browser *browser;
+    bool firstLoad;
 };
 
 #endif

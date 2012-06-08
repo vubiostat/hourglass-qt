@@ -5,17 +5,24 @@
 Popup::Popup(QWidget *parent)
   : QDialog(parent, 0)
 {
-  view = new QWebView(this);
-  view->settings()->setAttribute(QWebSettings::JavascriptCanCloseWindows, true);
-  view->show();
-
-  connect(view, SIGNAL(titleChanged(QString)), this, SLOT(viewTitleChanged(QString)));
-  connect(view->page(), SIGNAL(windowCloseRequested()), this, SLOT(pageWindowCloseRequested()));
+  layout = new QVBoxLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
+  browser = new Browser(this);
+  browser->settings()->setAttribute(QWebSettings::JavascriptCanCloseWindows, true);
+  connect(browser, SIGNAL(titleChanged(QString)), this, SLOT(viewTitleChanged(QString)));
+  connect(browser, SIGNAL(resized(int, int)), this, SLOT(browserResized(int, int)));
+  connect(browser->page(), SIGNAL(windowCloseRequested()), this, SLOT(pageWindowCloseRequested()));
+  layout->addWidget(browser);
 }
 
 void Popup::viewTitleChanged(const QString &title)
 {
   setWindowTitle(title);
+}
+
+void Popup::browserResized(int width, int height)
+{
+  resize(width, height);
 }
 
 void Popup::pageWindowCloseRequested()

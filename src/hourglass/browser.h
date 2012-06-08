@@ -8,10 +8,16 @@ class Browser : public QWebView
 {
   Q_OBJECT
 
-public:
+  public:
     Browser(QWidget *parent = 0);
 
-private:
+  public slots:
+    void resizeView();
+
+  signals:
+    void resized(int width, int height);
+
+  private:
     QWebView * createWindow(QWebPage::WebWindowType type);
 };
 

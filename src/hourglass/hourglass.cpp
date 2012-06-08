@@ -45,6 +45,7 @@ int Hourglass::exec()
   connect(st, SIGNAL(serverStarted()), &launcher, SLOT(go()));
   connect(st, SIGNAL(finished()), this, SLOT(quit()));
   st->start();
+  launcher.show();
 
   return QApplication::exec();
 }

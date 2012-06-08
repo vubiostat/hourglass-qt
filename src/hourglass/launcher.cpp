@@ -1,6 +1,5 @@
 #include <QWebSettings>
 #include <QUrl>
-#include <QWebFrame>
 #include <QtDebug>
 #include "launcher.h"
 #include "browser.h"
@@ -8,37 +7,24 @@
 Launcher::Launcher(QWidget *parent)
   : QWidget(parent)
 {
-  view = new Browser(this);
-  view->settings()->setAttribute(QWebSettings::JavascriptCanOpenWindows, true);
-  connect(view, SIGNAL(titleChanged(QString)), this, SLOT(viewTitleChanged(QString)));
-  connect(view, SIGNAL(loadFinished(bool)), this, SLOT(loadFinished(bool)));
-  loadCount = 0;
+  layout = new QVBoxLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
+  browser = new Browser(this);
+  browser->settings()->setAttribute(QWebSettings::JavascriptCanOpenWindows, true);
+  connect(browser, SIGNAL(titleChanged(QString)), this, SLOT(viewTitleChanged(QString)));
+  connect(browser, SIGNAL(resized(int, int)), this, SLOT(browserResized(int, int)));
+  layout->addWidget(browser);
+  firstLoad = true;
 }
 
 void Launcher::go()
 {
-  view->load(QUrl("http://127.0.0.1:5678/"));
+  browser->load(QUrl("http://127.0.0.1:5678/"));
 }
 
-void Launcher::loadFinished(bool ok)
+void Launcher::browserResized(int width, int height)
 {
-  if (ok) {
-    switch (loadCount++) {
-      case 0:
-        /* Hackity hack */
-        view->reload();
-        break;
-      case 1:
-        view->show();
-        show();
-        break;
-      default:
-        break;
-    }
-  }
-  else {
-    qDebug() << "Couldn't load page!";
-  }
+  resize(width, height);
 }
 
 void Launcher::viewTitleChanged(const QString &title)
