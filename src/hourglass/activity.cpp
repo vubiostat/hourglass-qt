@@ -215,7 +215,7 @@ bool Activity::isRunning()
     return m_running.toBool();
   }
   else {
-    return endedAt().isValid();
+    return !endedAt().isValid();
   }
 }
 
