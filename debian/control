@@ -1,0 +1,16 @@
+Source: hourglass
+Section: utils
+Priority: extra
+Maintainer: Jeremy Stephens <jeremy.f.stephens@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), cmake, cdbs, libqt4-dev
+Standards-Version: 3.9.2
+Homepage: https://github.com/vubiostat/hourglass-qt.git
+#Vcs-Git: git://git.debian.org/collab-maint/hourglass.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/hourglass.git;a=summary
+
+Package: hourglass
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Simple time tracking tool
+ Hourglass is a Qt-based tool for tracking time spent on activities. It
+ is inspired by Project Hamster.
