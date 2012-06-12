@@ -91,6 +91,7 @@ class Model : public QObject
     bool isModified() const;
     bool isValid();
     bool save(QString tableName);
+    bool destroy(QString tableName);
 
   protected:
     Model(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);

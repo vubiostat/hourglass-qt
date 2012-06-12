@@ -70,11 +70,14 @@ void Controller::route()
       if (ok) {
         result = editActivity(activityId);
       }
-      else {
+    }
+    else if (pathMatches(path, deleteActivityPattern, matchData)) {
+      bool ok = false;
+      int activityId = matchData[1].toInt(&ok);
+      if (ok) {
+        result = deleteActivity(activityId);
       }
     }
-    //else if (!(strings = deleteActivityPattern.matches(path)).isEmpty()) {
-    //}
     else if (path == "/activities") {
       result = partialActivityNames();
       isJSON = true;
@@ -353,6 +356,19 @@ QString Controller::updateActivity(int activityId, const QList<QPair<QString, QS
   }
   activity.setFromParams(params);
   if (activity.save()) {
+    return partialUpdates();
+  }
+  return QString("{\"errors\": \"There were errors!\"}");
+}
+
+// GET /activities/1/delete
+QString Controller::deleteActivity(int activityId)
+{
+  Activity activity = Activity::findById(activityId);
+  if (activity.isNew()) {
+    return QString();
+  }
+  if (activity.destroy()) {
     return partialUpdates();
   }
   return QString("{\"errors\": \"There were errors!\"}");

@@ -67,6 +67,7 @@ class Activity : public Model
     QVariantMap toVariantMap();
 
     bool save();
+    bool destroy();
     void beforeValidation();
 
   private:

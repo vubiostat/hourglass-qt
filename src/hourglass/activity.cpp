@@ -438,6 +438,11 @@ bool Activity::save()
   return Model::save("activities");
 }
 
+bool Activity::destroy()
+{
+  return Model::destroy("activities");
+}
+
 void Activity::beforeValidation()
 {
   if (m_startedAtMDY.isValid() && m_startedAtHM.isValid()) {

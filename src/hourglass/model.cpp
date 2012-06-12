@@ -145,3 +145,20 @@ bool Model::save(QString tableName)
   }
   return result;
 }
+
+bool Model::destroy(QString tableName)
+{
+  if (newRecord) {
+    return false;
+  }
+
+  QString queryString("DELETE FROM " + tableName + " WHERE id = ?");
+
+  QSqlDatabase &database = getDatabase();
+  QSqlQuery query(database);
+  query.prepare(queryString);
+  query.addBindValue(id());
+
+  qDebug() << queryString;
+  return query.exec();
+}
