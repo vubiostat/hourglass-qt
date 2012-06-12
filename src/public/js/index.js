@@ -17,7 +17,8 @@ function isSameDay(one, two) {
 }
 function updateUI(data) {
   $('#current-activity').html(data.current);
-  $('.stop-tracking').button().find('span').width(buttonWidth);
+  //$('.stop-tracking').button().find('span').width(buttonWidth);
+  $('.stop-tracking').button();
   $('#today-tab').html(data.today);
   $('#week-tab').html(data.week);
   $('#totals').html(data.totals);
@@ -187,8 +188,8 @@ $(function() {
   resizeUI();
 
   $('#add-earlier-activity, .start-tracking, .stop-tracking').button();
-  buttonWidth = $('.start-tracking span').width();
-  $('.stop-tracking span').width(buttonWidth);
+  //buttonWidth = $('.start-tracking span').width();
+  //$('.stop-tracking span').width(buttonWidth);
 
   $('#select-activity').button({
     icons: {
@@ -233,7 +234,7 @@ $(function() {
     var col = $(this);
     var activityId = col.closest('.activity').attr('class').match(/activity-(\d+)/)[1];
     $.post('/activities/'+activityId+'/restart', function(data) {
-      if (data.success) {
+      if (!data.failed) {
         updateUI(data);
       }
     }, 'json');

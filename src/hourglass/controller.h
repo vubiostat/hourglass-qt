@@ -58,6 +58,7 @@ class Controller : public QObject
     QString editActivity(int activityId);
     QString updateActivity(int activityId, const QList<QPair<QString, QString> > &params);
     QString deleteActivity(int activityId);
+    QString restartActivity(int activityId);
 
     bool pathMatches(const QString &path, const QString &pattern, QStringList &matchData);
     void serveFile(const QString &path);

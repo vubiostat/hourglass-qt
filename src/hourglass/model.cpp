@@ -38,7 +38,7 @@ Model &Model::operator=(const Model &other)
   attributes = other.attributes;
 }
 
-QVariant Model::get(const QString &attributeName)
+QVariant Model::get(const QString &attributeName) const
 {
   return attributes[attributeName];
 }
@@ -55,7 +55,7 @@ void Model::unset(const QString &attributeName)
   modified = true;
 }
 
-int Model::id()
+int Model::id() const
 {
   QVariant id = get("id");
   if (id.isNull() || !id.isValid()) {

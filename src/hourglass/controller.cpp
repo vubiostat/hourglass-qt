@@ -113,11 +113,15 @@ void Controller::route()
         result = updateActivity(activityId, params);
         isJSON = true;
       }
-      else {
+    }
+    else if (pathMatches(path, restartActivityPattern, matchData)) {
+      bool ok = false;
+      int activityId = matchData[1].toInt(&ok);
+      if (ok) {
+        result = restartActivity(activityId);
+        isJSON = true;
       }
     }
-    //else if (!(strings = restartActivityPattern.matches(path)).isEmpty()) {
-    //}
   }
 
   if (result.isNull()) {
@@ -372,6 +376,19 @@ QString Controller::deleteActivity(int activityId)
     return partialUpdates();
   }
   return QString("{\"errors\": \"There were errors!\"}");
+}
+
+// POST /activities/1/restart
+QString Controller::restartActivity(int activityId)
+{
+  Activity activity = Activity::findById(activityId);
+  if (activity.isNew()) {
+    return QString();
+  }
+  if (Activity::startLike(activity)) {
+    return partialUpdates();
+  }
+  return QString("{\"failed\": true}");
 }
 
 bool Controller::pathMatches(const QString &path, const QString &pattern, QStringList &matchData)

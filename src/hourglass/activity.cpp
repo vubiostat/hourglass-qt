@@ -98,6 +98,24 @@ QVariantList Activity::toVariantList(QList<Activity> &activities)
   return list;
 }
 
+bool Activity::startLike(const Activity &activity)
+{
+  QList<Activity> currentActivities = findCurrent();
+  if (currentActivities.count() > 0) {
+    Activity &current = currentActivities[0];
+    if (activity.id() == current.id() || activity.isSimilarTo(current)) {
+      return false;
+    }
+  }
+  stopCurrent();
+
+  Activity result;
+  result.setRunning(true);
+  result.setNameWithProject(activity.nameWithProject());
+  result.setStartedAt(QDateTime::currentDateTime());
+  return result.save();
+}
+
 QDate Activity::dateFromMDY(const QString &mdy)
 {
   QRegExp rx("^(\\d{1,2})/(\\d{1,2})/(\\d{4})$");
@@ -134,7 +152,7 @@ Activity::Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject 
 }
 
 // Attribute getters/setters
-QString Activity::name()
+QString Activity::name() const
 {
   return get("name").toString();
 }
@@ -144,7 +162,7 @@ void Activity::setName(QString name)
   set("name", name);
 }
 
-int Activity::projectId()
+int Activity::projectId() const
 {
   QVariant projectId = get("project_id");
   if (projectId.isNull() || !projectId.isValid()) {
@@ -163,7 +181,7 @@ void Activity::setProjectId(int projectId)
   }
 }
 
-QDateTime Activity::startedAt()
+QDateTime Activity::startedAt() const
 {
   return get("started_at").toDateTime();
 }
@@ -173,7 +191,7 @@ void Activity::setStartedAt(QDateTime startedAt)
   set("started_at", startedAt);
 }
 
-QDateTime Activity::endedAt()
+QDateTime Activity::endedAt() const
 {
   return get("ended_at").toDateTime();
 }
@@ -209,7 +227,7 @@ void Activity::setFromParams(const QList<QPair<QString, QString> > &params)
 }
 
 // Non-attribute getters and setters
-bool Activity::isRunning()
+bool Activity::isRunning() const
 {
   if (isNew() || !m_running.isNull()) {
     return m_running.toBool();
@@ -224,7 +242,7 @@ void Activity::setRunning(bool running)
   this->m_running = QVariant(running);
 }
 
-QString Activity::nameWithProject()
+QString Activity::nameWithProject() const
 {
   QStringList strings;
   QString pname = projectName();
@@ -252,7 +270,7 @@ void Activity::setNameWithProject(QString nameWithProject)
   }
 }
 
-QString Activity::startedAtMDY()
+QString Activity::startedAtMDY() const
 {
   QDateTime date = startedAt();
   if (date.isValid()) {
@@ -268,7 +286,7 @@ void Activity::setStartedAtMDY(const QString &mdy)
   m_startedAtMDY = dateFromMDY(mdy);
 }
 
-QString Activity::startedAtHM()
+QString Activity::startedAtHM() const
 {
   QDateTime date = startedAt();
   if (date.isValid()) {
@@ -284,7 +302,7 @@ void Activity::setStartedAtHM(const QString &hm)
   m_startedAtHM = timeFromHM(hm);
 }
 
-QString Activity::endedAtMDY()
+QString Activity::endedAtMDY() const
 {
   QDateTime date = endedAt();
   if (date.isValid()) {
@@ -300,7 +318,7 @@ void Activity::setEndedAtMDY(const QString &mdy)
   m_endedAtMDY = dateFromMDY(mdy);
 }
 
-QString Activity::endedAtHM()
+QString Activity::endedAtHM() const
 {
   QDateTime date = endedAt();
   if (date.isValid()) {
@@ -317,19 +335,19 @@ void Activity::setEndedAtHM(const QString &hm)
 }
 
 // Helpers
-Project Activity::project()
+Project Activity::project() const
 {
   int id = projectId();
   return id >= 0 ? Project::findById(id) : Project();
 }
 
-QString Activity::projectName()
+QString Activity::projectName() const
 {
   int id = projectId();
   return id >= 0 ? Project::findById(id).name() : QString();
 }
 
-QString Activity::tagNames()
+QString Activity::tagNames() const
 {
   QList<Tag> tags = Tag::findActivityTags(id());
   QStringList names;
@@ -339,7 +357,7 @@ QString Activity::tagNames()
   return names.join(", ");
 }
 
-QString Activity::startedAtISO8601()
+QString Activity::startedAtISO8601() const
 {
   QDateTime date = startedAt();
   if (date.isValid()) {
@@ -350,7 +368,7 @@ QString Activity::startedAtISO8601()
   }
 }
 
-QString Activity::endedAtISO8601()
+QString Activity::endedAtISO8601() const
 {
   QDateTime date = endedAt();
   if (date.isValid()) {
@@ -361,7 +379,7 @@ QString Activity::endedAtISO8601()
   }
 }
 
-int Activity::duration()
+int Activity::duration() const
 {
   QDateTime start = startedAt();
   if (start.isValid()) {
@@ -378,7 +396,7 @@ int Activity::duration()
   }
 }
 
-QString Activity::durationInWords()
+QString Activity::durationInWords() const
 {
   int d = duration();
   if (d >= 0) {
@@ -412,7 +430,7 @@ QString Activity::durationInWords()
   }
 }
 
-QVariantMap Activity::toVariantMap()
+QVariantMap Activity::toVariantMap() const
 {
   QVariantMap map;
 
@@ -430,6 +448,12 @@ QVariantMap Activity::toVariantMap()
   map["tagNames"] = tagNames();
 
   return map;
+}
+
+bool Activity::isSimilarTo(const Activity &other) const
+{
+  return other.nameWithProject() == nameWithProject() &&
+    other.tagNames() == tagNames();
 }
 
 // Overriden Model functions

@@ -25,15 +25,16 @@ class Activity : public Model
     static QList<QString> distinctNames();
     static void stopCurrent();
     static QVariantList toVariantList(QList<Activity> &activities);
+    static bool startLike(const Activity &activity);
 
     Activity(QObject *parent = 0);
     Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
 
     // Attribute getters
-    QString name();
-    int projectId();
-    QDateTime startedAt();
-    QDateTime endedAt();
+    QString name() const;
+    int projectId() const;
+    QDateTime startedAt() const;
+    QDateTime endedAt() const;
 
     // Attribute setters
     void setName(QString name);
@@ -43,28 +44,29 @@ class Activity : public Model
     void setFromParams(const QList<QPair<QString, QString> > &params);
 
     // Non-attribute getters/setters
-    bool isRunning();
+    bool isRunning() const;
     void setRunning(bool running);
-    QString nameWithProject();
+    QString nameWithProject() const;
     void setNameWithProject(QString nameWithProject);
-    QString startedAtMDY();
+    QString startedAtMDY() const;
     void setStartedAtMDY(const QString &mdy);
-    QString startedAtHM();
+    QString startedAtHM() const;
     void setStartedAtHM(const QString &hm);
-    QString endedAtMDY();
+    QString endedAtMDY() const;
     void setEndedAtMDY(const QString &mdy);
-    QString endedAtHM();
+    QString endedAtHM() const;
     void setEndedAtHM(const QString &hm);
 
     // Helpers
-    Project project();
-    QString projectName();
-    QString tagNames();
-    QString startedAtISO8601();
-    QString endedAtISO8601();
-    int duration();
-    QString durationInWords();
-    QVariantMap toVariantMap();
+    Project project() const;
+    QString projectName() const;
+    QString tagNames() const;
+    QString startedAtISO8601() const;
+    QString endedAtISO8601() const;
+    int duration() const;
+    QString durationInWords() const;
+    QVariantMap toVariantMap() const;
+    bool isSimilarTo(const Activity &other) const;
 
     bool save();
     bool destroy();

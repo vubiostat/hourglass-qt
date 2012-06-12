@@ -82,11 +82,11 @@ class Model : public QObject
     Model(const Model &other);
     Model &operator=(const Model &other);
 
-    QVariant get(const QString &attributeName);
+    QVariant get(const QString &attributeName) const;
     void set(const QString &attributeName, QVariant value);
     void unset(const QString &attributeName);
 
-    int id();
+    int id() const;
     bool isNew() const;
     bool isModified() const;
     bool isValid();
