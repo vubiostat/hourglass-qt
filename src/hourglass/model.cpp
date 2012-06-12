@@ -19,17 +19,22 @@ Model::Model(QMap<QString, QVariant> &attributes, bool newRecord, QObject *paren
   if (id() == -1) {
     qDebug() << "Record should have an ID, but doesn't!";
   }
+  newRecord = false;
   modified = false;
 }
 
 Model::Model(const Model &other)
   : QObject(other.parent())
 {
+  newRecord = other.isNew();
+  modified = other.isModified();
   attributes = other.attributes;
 }
 
 Model &Model::operator=(const Model &other)
 {
+  newRecord = other.isNew();
+  modified = other.isModified();
   attributes = other.attributes;
 }
 
@@ -59,19 +64,24 @@ int Model::id()
   return id.toInt();
 }
 
-bool Model::isNew()
+bool Model::isNew() const
 {
   return newRecord;
 }
 
-bool Model::isModified()
+bool Model::isModified() const
 {
   return modified;
 }
 
 bool Model::isValid()
 {
+  beforeValidation();
   return validate();
+}
+
+void Model::beforeValidation()
+{
 }
 
 bool Model::validate()

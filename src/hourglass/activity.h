@@ -17,6 +17,7 @@ class Activity : public Model
 
   public:
     static QList<Activity> find(QString conditions);
+    static Activity findById(int id);
     static QList<Activity> findCurrent();
     static QList<Activity> findToday();
     static QList<Activity> findDay(QDate date);
@@ -46,30 +47,41 @@ class Activity : public Model
     void setRunning(bool running);
     QString nameWithProject();
     void setNameWithProject(QString nameWithProject);
+    QString startedAtMDY();
+    void setStartedAtMDY(const QString &mdy);
+    QString startedAtHM();
+    void setStartedAtHM(const QString &hm);
+    QString endedAtMDY();
+    void setEndedAtMDY(const QString &mdy);
+    QString endedAtHM();
+    void setEndedAtHM(const QString &hm);
 
     // Helpers
     Project project();
     QString projectName();
     QString tagNames();
-    QString startedAtMDY();
-    QString startedAtHM();
     QString startedAtISO8601();
-    QString endedAtMDY();
-    QString endedAtHM();
     QString endedAtISO8601();
     int duration();
     QString durationInWords();
     QVariantMap toVariantMap();
 
     bool save();
+    void beforeValidation();
 
   private:
     static const QString distinctNamesQuery;
     static const QString stopCurrentQuery;
     static const QString deleteShortQuery;
+    static QDate dateFromMDY(const QString &mdy);
+    static QTime timeFromHM(const QString &hm);
 
+    QVariant m_running;
+    QDate m_startedAtMDY;
+    QTime m_startedAtHM;
+    QDate m_endedAtMDY;
+    QTime m_endedAtHM;
     bool validate();
-    QVariant running;
 };
 
 #endif

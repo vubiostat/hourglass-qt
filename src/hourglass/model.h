@@ -87,8 +87,8 @@ class Model : public QObject
     void unset(const QString &attributeName);
 
     int id();
-    bool isNew();
-    bool isModified();
+    bool isNew() const;
+    bool isModified() const;
     bool isValid();
     bool save(QString tableName);
 
@@ -96,6 +96,7 @@ class Model : public QObject
     Model(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
     static QSqlDatabase &getDatabase();
 
+    virtual void beforeValidation();
     virtual bool validate();
 
   private:

@@ -1,13 +1,18 @@
 #include <QFile>
+#include <QStringList>
 #include "view.h"
 #include "controller.h"
 #include "project.h"
 #include "tag.h"
 
-const QRegExp Controller::editActivityPath = QRegExp("^/activities/(\\d+)/edit$");
-const QRegExp Controller::activityPath = QRegExp("^/activities/(\\d+)$");
-const QRegExp Controller::deleteActivityPath = QRegExp("^/activities/(\\d+)/delete$");
-const QRegExp Controller::restartActivityPath = QRegExp("^/activities/(\\d+)/restart$");
+const QString Controller::editActivityPattern =
+  QString("^/activities/(\\d+)/edit$");
+const QString Controller::activityPattern =
+  QString("^/activities/(\\d+)$");
+const QString Controller::deleteActivityPattern =
+  QString("^/activities/(\\d+)/delete$");
+const QString Controller::restartActivityPattern =
+  QString("^/activities/(\\d+)/restart$");
 
 QList<QPair<QString, QString> > Controller::decodePost(const char *data)
 {
@@ -50,6 +55,7 @@ void Controller::route()
   QString method = m_req->method();
 
   QString result;
+  QStringList matchData;
   bool isJSON = false;
   if (method == "GET") {
     if (path == "/") {
@@ -58,10 +64,17 @@ void Controller::route()
     else if (path == "/activities/new") {
       result = newActivity();
     }
-    else if (path.contains(editActivityPath)) {
+    else if (pathMatches(path, editActivityPattern, matchData)) {
+      bool ok = false;
+      int activityId = matchData[1].toInt(&ok);
+      if (ok) {
+        result = editActivity(activityId);
+      }
+      else {
+      }
     }
-    else if (path.contains(deleteActivityPath)) {
-    }
+    //else if (!(strings = deleteActivityPattern.matches(path)).isEmpty()) {
+    //}
     else if (path == "/activities") {
       result = partialActivityNames();
       isJSON = true;
@@ -90,10 +103,18 @@ void Controller::route()
       result = createActivity(params);
       isJSON = true;
     }
-    else if (path.contains(activityPath)) {
+    else if (pathMatches(path, activityPattern, matchData)) {
+      bool ok = false;
+      int activityId = matchData[1].toInt(&ok);
+      if (ok) {
+        result = updateActivity(activityId, params);
+        isJSON = true;
+      }
+      else {
+      }
     }
-    else if (path.contains(restartActivityPath)) {
-    }
+    //else if (!(strings = restartActivityPattern.matches(path)).isEmpty()) {
+    //}
   }
 
   if (result.isNull()) {
@@ -296,17 +317,66 @@ QString Controller::newActivity()
   view.setTitle("Add earlier activity");
   Dictionary *dictionary = view.dictionary();
 
-  Activity newActivity = Activity();
+  QDateTime now = QDateTime::currentDateTime();
+  Activity activity = Activity();
+  activity.setStartedAt(now);
+  activity.setEndedAt(now);
+  activity.setRunning(true);
   dictionary->setValue("submitUrl", "/activities");
-  dictionary->addActivitySection(newActivity);
+  dictionary->addActivitySection(activity);
   return view.render();
+}
+
+// GET /activities/1/edit
+QString Controller::editActivity(int activityId)
+{
+  View view("popup.html");
+  view.setTitle("Edit activity");
+  Dictionary *dictionary = view.dictionary();
+
+  QDateTime now = QDateTime::currentDateTime();
+  Activity activity = Activity::findById(activityId);
+  if (activity.isNew()) {
+    return QString();
+  }
+  dictionary->setValue("submitUrl", QString("/activities/%1").arg(activityId));
+  dictionary->addActivitySection(activity);
+  return view.render();
+}
+
+// POST /activities/1
+QString Controller::updateActivity(int activityId, const QList<QPair<QString, QString> > &params)
+{
+  Activity activity = Activity::findById(activityId);
+  if (activity.isNew()) {
+    return QString();
+  }
+  activity.setFromParams(params);
+  if (activity.save()) {
+    return partialUpdates();
+  }
+  return QString("{\"errors\": \"There were errors!\"}");
+}
+
+bool Controller::pathMatches(const QString &path, const QString &pattern, QStringList &matchData)
+{
+  QRegExp rx(pattern);
+  if (path.contains(rx)) {
+    //qDebug() << "Matched path:" << rx.cap(0);
+    matchData << rx.capturedTexts();
+    return true;
+  }
+  else {
+    //qDebug() << "Path (" << path << ") didn't match pattern:" << pattern;
+    return false;
+  }
 }
 
 void Controller::serveFile(const QString &path)
 {
   QFile file(m_root.absolutePath() + path);
   if (file.exists()) {
-    qDebug() << "Serving file:" << file.fileName();
+    //qDebug() << "Serving file:" << file.fileName();
     QFileInfo info(file);
     QString contentType("text/plain");
     if (info.suffix() == "css") {

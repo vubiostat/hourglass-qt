@@ -2,6 +2,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QStringList>
+#include <QRegExp>
 #include "activity.h"
 #include "tag.h"
 
@@ -26,6 +27,11 @@ const QString Activity::deleteShortQuery = QString(
 QList<Activity> Activity::find(QString conditions)
 {
   return Model::find<Activity>("activities", conditions);
+}
+
+Activity Activity::findById(int id)
+{
+  return Model::findById<Activity>("activities", id);
 }
 
 QList<Activity> Activity::findCurrent()
@@ -92,17 +98,39 @@ QVariantList Activity::toVariantList(QList<Activity> &activities)
   return list;
 }
 
+QDate Activity::dateFromMDY(const QString &mdy)
+{
+  QRegExp rx("^(\\d{1,2})/(\\d{1,2})/(\\d{4})$");
+  if (mdy.contains(rx)) {
+    return QDate(rx.cap(3).toInt(), rx.cap(1).toInt(), rx.cap(2).toInt());
+  }
+  else {
+    return QDate();
+  }
+}
+
+QTime Activity::timeFromHM(const QString &hm)
+{
+  QRegExp rx("^(\\d{1,2}):(\\d{2})$");
+  if (hm.contains(rx)) {
+    return QTime(rx.cap(1).toInt(), rx.cap(2).toInt());
+  }
+  else {
+    return QTime();
+  }
+}
+
 // Constructors
 Activity::Activity(QObject *parent)
   : Model(parent)
 {
-  running = QVariant(QVariant::Bool);
+  m_running = QVariant(QVariant::Bool);
 }
 
 Activity::Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
   : Model(attributes, newRecord, parent)
 {
-  running = QVariant(QVariant::Bool);
+  m_running = QVariant(QVariant::Bool);
 }
 
 // Attribute getters/setters
@@ -165,14 +193,26 @@ void Activity::setFromParams(const QList<QPair<QString, QString> > &params)
     else if (pair.first == "activity[running]") {
       setRunning(pair.second == "true");
     }
+    else if (pair.first == "activity[started_at_mdy]") {
+      setStartedAtMDY(pair.second);
+    }
+    else if (pair.first == "activity[started_at_hm]") {
+      setStartedAtHM(pair.second);
+    }
+    else if (pair.first == "activity[ended_at_mdy]") {
+      setEndedAtMDY(pair.second);
+    }
+    else if (pair.first == "activity[ended_at_hm]") {
+      setEndedAtHM(pair.second);
+    }
   }
 }
 
 // Non-attribute getters and setters
 bool Activity::isRunning()
 {
-  if (isNew() || !running.isNull()) {
-    return running.toBool();
+  if (isNew() || !m_running.isNull()) {
+    return m_running.toBool();
   }
   else {
     return endedAt().isValid();
@@ -181,7 +221,7 @@ bool Activity::isRunning()
 
 void Activity::setRunning(bool running)
 {
-  this->running = QVariant(running);
+  this->m_running = QVariant(running);
 }
 
 QString Activity::nameWithProject()
@@ -212,6 +252,70 @@ void Activity::setNameWithProject(QString nameWithProject)
   }
 }
 
+QString Activity::startedAtMDY()
+{
+  QDateTime date = startedAt();
+  if (date.isValid()) {
+    return date.toString("MM/dd/yyyy");
+  }
+  else {
+    return QString();
+  }
+}
+
+void Activity::setStartedAtMDY(const QString &mdy)
+{
+  m_startedAtMDY = dateFromMDY(mdy);
+}
+
+QString Activity::startedAtHM()
+{
+  QDateTime date = startedAt();
+  if (date.isValid()) {
+    return date.toString("hh:mm");
+  }
+  else {
+    return QString();
+  }
+}
+
+void Activity::setStartedAtHM(const QString &hm)
+{
+  m_startedAtHM = timeFromHM(hm);
+}
+
+QString Activity::endedAtMDY()
+{
+  QDateTime date = endedAt();
+  if (date.isValid()) {
+    return date.toString("MM/dd/yyyy");
+  }
+  else {
+    return QString();
+  }
+}
+
+void Activity::setEndedAtMDY(const QString &mdy)
+{
+  m_endedAtMDY = dateFromMDY(mdy);
+}
+
+QString Activity::endedAtHM()
+{
+  QDateTime date = endedAt();
+  if (date.isValid()) {
+    return date.toString("hh:mm");
+  }
+  else {
+    return QString();
+  }
+}
+
+void Activity::setEndedAtHM(const QString &hm)
+{
+  m_endedAtHM = timeFromHM(hm);
+}
+
 // Helpers
 Project Activity::project()
 {
@@ -235,55 +339,11 @@ QString Activity::tagNames()
   return names.join(", ");
 }
 
-QString Activity::startedAtMDY()
-{
-  QDateTime date = startedAt();
-  if (date.isValid()) {
-    return date.toString("MM/dd/yyyy");
-  }
-  else {
-    return QString();
-  }
-}
-
-QString Activity::startedAtHM()
-{
-  QDateTime date = startedAt();
-  if (date.isValid()) {
-    return date.toString("hh:mm");
-  }
-  else {
-    return QString();
-  }
-}
-
 QString Activity::startedAtISO8601()
 {
   QDateTime date = startedAt();
   if (date.isValid()) {
     return date.toUTC().toString(Qt::ISODate);
-  }
-  else {
-    return QString();
-  }
-}
-
-QString Activity::endedAtMDY()
-{
-  QDateTime date = endedAt();
-  if (date.isValid()) {
-    return date.toString("MM/dd/yyyy");
-  }
-  else {
-    return QString();
-  }
-}
-
-QString Activity::endedAtHM()
-{
-  QDateTime date = endedAt();
-  if (date.isValid()) {
-    return date.toString("hh:mm");
   }
   else {
     return QString();
@@ -376,6 +436,27 @@ QVariantMap Activity::toVariantMap()
 bool Activity::save()
 {
   return Model::save("activities");
+}
+
+void Activity::beforeValidation()
+{
+  if (m_startedAtMDY.isValid() && m_startedAtHM.isValid()) {
+    QDateTime date;
+    date.setDate(m_startedAtMDY);
+    date.setTime(m_startedAtHM);
+    setStartedAt(date);
+    m_startedAtMDY = QDate();
+    m_startedAtHM = QTime();
+  }
+
+  if (m_endedAtMDY.isValid() && m_endedAtHM.isValid()) {
+    QDateTime date;
+    date.setDate(m_endedAtMDY);
+    date.setTime(m_endedAtHM);
+    setEndedAt(date);
+    m_endedAtMDY = QDate();
+    m_endedAtHM = QTime();
+  }
 }
 
 bool Activity::validate()

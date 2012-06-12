@@ -26,10 +26,10 @@ class Controller : public QObject
     void route();
 
   private:
-    static const QRegExp activityPath;
-    static const QRegExp editActivityPath;
-    static const QRegExp deleteActivityPath;
-    static const QRegExp restartActivityPath;
+    static const QString activityPattern;
+    static const QString editActivityPattern;
+    static const QString deleteActivityPattern;
+    static const QString restartActivityPattern;
 
     QDir m_root;
     QHttpRequest *m_req;
@@ -55,7 +55,10 @@ class Controller : public QObject
     QString createActivity(const QList<QPair<QString, QString> > &params);
     QString stopCurrentActivities();
     QString newActivity();
+    QString editActivity(int activityId);
+    QString updateActivity(int activityId, const QList<QPair<QString, QString> > &params);
 
+    bool pathMatches(const QString &path, const QString &pattern, QStringList &matchData);
     void serveFile(const QString &path);
 };
 
