@@ -1,4 +1,5 @@
 #include "dictionary.h"
+#include "tag.h"
 
 Dictionary::Dictionary(QString name, QObject *parent)
   : QObject(parent)
@@ -62,10 +63,18 @@ void Dictionary::addActivity(Activity &activity)
   setValue("endedAtMDY", activity.endedAtMDY());
   setValue("durationInWords", activity.durationInWords());
   setValue("nameWithProject", activity.nameWithProject());
-  setValue("tagNames", activity.tagNames());
 
   QString projectName = activity.projectName();
   setValue("projectName", projectName.isEmpty() ? "unsorted" : projectName);
+
+  setValue("tagNames", activity.tagNames());
+  QList<Tag> tags = activity.tags();
+  Dictionary *tagsDictionary = addIncludeDictionary("tags", "_tags.html");
+  for (int i = 0; i < tags.size(); i++) {
+    Dictionary *tagDictionary = tagsDictionary->addSectionDictionary("tag");
+    tagDictionary->setValue("id", tags[i].id());
+    tagDictionary->setValue("name", tags[i].name());
+  }
 
   if (activity.isRunning()) {
     showSection("running");

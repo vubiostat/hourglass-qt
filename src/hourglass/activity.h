@@ -10,6 +10,7 @@
 #include <QMap>
 #include "model.h"
 #include "project.h"
+#include "tag.h"
 
 class Activity : public Model
 {
@@ -46,6 +47,7 @@ class Activity : public Model
     // Non-attribute getters/setters
     bool isRunning() const;
     void setRunning(bool running);
+    bool wasRunning() const;
     QString nameWithProject() const;
     void setNameWithProject(QString nameWithProject);
     QString startedAtMDY() const;
@@ -56,11 +58,13 @@ class Activity : public Model
     void setEndedAtMDY(const QString &mdy);
     QString endedAtHM() const;
     void setEndedAtHM(const QString &hm);
+    QString tagNames() const;
+    void setTagNames(const QString &tagNames);
 
     // Helpers
     Project project() const;
     QString projectName() const;
-    QString tagNames() const;
+    QList<Tag> tags() const;
     QString startedAtISO8601() const;
     QString endedAtISO8601() const;
     int duration() const;
@@ -70,21 +74,31 @@ class Activity : public Model
 
     bool save();
     bool destroy();
-    void beforeValidation();
 
   private:
     static const QString distinctNamesQuery;
     static const QString stopCurrentQuery;
     static const QString deleteShortQuery;
+    static const QString addTagQuery;
+    static const QString removeTagQuery;
     static QDate dateFromMDY(const QString &mdy);
     static QTime timeFromHM(const QString &hm);
 
     QVariant m_running;
+    QVariant m_wasRunning;
     QDate m_startedAtMDY;
     QTime m_startedAtHM;
     QDate m_endedAtMDY;
     QTime m_endedAtHM;
+    QList<Tag> m_tagsToAdd;
+
+    void addTags(const QList<Tag> &tags);
+    void removeTags(const QList<Tag> &tags);
+
+    void beforeValidation();
     bool validate();
+    void beforeSave();
+    void afterCreate();
 };
 
 #endif

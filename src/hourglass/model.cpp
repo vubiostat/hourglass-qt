@@ -95,6 +95,8 @@ bool Model::save(QString tableName)
     return false;
   }
 
+  beforeSave();
+
   QString queryString;
   if (newRecord) {
     queryString += "INSERT INTO ";
@@ -137,13 +139,22 @@ bool Model::save(QString tableName)
     query.bindValue(QString(":%1").arg(i.key()), i.value());
   }
 
-  qDebug() << queryString;
+  //qDebug() << queryString;
   bool result = query.exec();
   if (newRecord && result) {
     newRecord = false;
     set("id", query.lastInsertId().toInt());
+    afterCreate();
   }
   return result;
+}
+
+void Model::beforeSave()
+{
+}
+
+void Model::afterCreate()
+{
 }
 
 bool Model::destroy(QString tableName)
@@ -159,6 +170,11 @@ bool Model::destroy(QString tableName)
   query.prepare(queryString);
   query.addBindValue(id());
 
-  qDebug() << queryString;
+  //qDebug() << queryString;
   return query.exec();
+}
+
+bool Model::operator==(const Model &other)
+{
+  return !isNew() && !other.isNew() && id() == other.id();
 }

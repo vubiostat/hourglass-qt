@@ -5,39 +5,48 @@
 #include <QStringList>
 #include "tag.h"
 
-const QString Tag::findQuery = QString(
-    "SELECT id, name FROM tags");
-
 const QString Tag::findActivityTagsQuery = QString(
-    "SELECT tags.id, tags.name FROM activity_tags "
-    "JOIN tags ON activity_tags.tag_id = tags.id "
-    "WHERE activity_tags.activity_id = ?");
+    "SELECT tags.id, tags.name FROM activities_tags "
+    "JOIN tags ON activities_tags.tag_id = tags.id "
+    "WHERE activities_tags.activity_id = ?");
 
 const QString Tag::distinctNamesQuery = QString(
     "SELECT DISTINCT name FROM tags ORDER BY name");
 
+QList<Tag> Tag::find()
+{
+  return Model::find<Tag>("tags");
+}
+
 QList<Tag> Tag::find(QString conditions)
 {
-  QStringList queryStrings;
-  queryStrings << findQuery;
-  if (!conditions.isEmpty()) {
-    queryStrings << conditions;
+  return Model::find<Tag>("tags", conditions);
+}
+
+QList<Tag> Tag::find(QString conditions, const QList<QVariant> &bindValues)
+{
+  return Model::find<Tag>("tags", conditions, bindValues);
+}
+
+Tag Tag::findById(int id)
+{
+  return Model::findById<Tag>("tags", id);
+}
+
+Tag Tag::findOrCreateByName(const QString &name)
+{
+  QList<QVariant> bindValues;
+  bindValues << QVariant(name);
+  QList<Tag> tags = find("WHERE name = ?", bindValues);
+  if (tags.size() > 0) {
+    return tags[0];
   }
-  //qDebug() << queryStrings.join(" ");
-
-  QSqlDatabase &database = getDatabase();
-  QSqlQuery query = database.exec(queryStrings.join(" "));
-
-  QList<Tag> result;
-  while (query.next()) {
-    QMap<QString, QVariant> attributes;
-    attributes["id"] = query.value(0);
-    attributes["name"] = query.value(1);
-
-    Tag tag(attributes);
-    result << tag;
+  else {
+    Tag tag;
+    tag.setName(name);
+    tag.save();
+    return tag;
   }
-  return result;
 }
 
 QList<Tag> Tag::findActivityTags(int activityId)
@@ -54,7 +63,7 @@ QList<Tag> Tag::findActivityTags(int activityId)
     attributes["id"] = query.value(0);
     attributes["name"] = query.value(1);
 
-    Tag tag(attributes);
+    Tag tag(attributes, false);
     result << tag;
   }
   return result;
@@ -72,22 +81,17 @@ QList<QString> Tag::distinctNames()
   return names;
 }
 
-Tag::Tag(QObject *parent)
-  : Model(parent)
+QString Tag::name() const
 {
+  return get("name").toString();
 }
 
-Tag::Tag(QMap<QString, QVariant> &attributes, QObject *parent)
-  : Model(attributes, parent)
+void Tag::setName(const QString &name)
 {
+  set("name", name);
 }
 
 bool Tag::save()
 {
   return Model::save("tags");
-}
-
-QString Tag::name()
-{
-  return get("name").toString();
 }
