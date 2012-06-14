@@ -72,7 +72,7 @@ bool Project::save()
   return Model::save("projects");
 }
 
-QString Project::name()
+QString Project::name() const
 {
   return get("name").toString();
 }

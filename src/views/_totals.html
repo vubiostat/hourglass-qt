@@ -2,7 +2,7 @@
 {{#total}}
   <li class="project">
     {{projectName}}:
-    <span class="duration" data-duration="{{duration}}">{{durationInWords}}</span>h{{comma}}
+    <span class="duration" data-duration="{{duration}}">{{durationInWords}}</span>h{{#hasNext}},{{/hasNext}}
   </li>
 {{/total}}
 </ul>

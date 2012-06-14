@@ -153,7 +153,9 @@ void Controller::includeNames(Dictionary *dictionary, QList<QString> &names)
   while (i.hasNext()) {
     d2 = d->addSectionDictionary("name");
     d2->setValue("value", i.next());
-    d2->setValue("comma", i.hasNext() ? "," : "");
+    if (i.hasNext()) {
+      d2->showSection("hasNext");
+    }
   }
 }
 
@@ -227,7 +229,9 @@ void Controller::includeTotals(Dictionary *dictionary, bool addIncludeDictionary
     d2->setValue("duration", i.value());
     d2->setValue("durationInWords",
         QString("%1").arg(((double) i.value()) / 3600.0, 4, 'f', 2, '0'));
-    d2->setValue("comma", i.hasNext() ? "," : "");
+    if (i.hasNext()) {
+      d2->showSection("hasNext");
+    }
   }
 }
 
@@ -261,7 +265,9 @@ QString Controller::partialNames(QList<QString> &names)
     QString name = i.next();
     d2 = d->addSectionDictionary("name");
     d2->setValue("value", name);
-    d2->setValue("comma", i.hasNext() ? "," : "");
+    if (i.hasNext()) {
+      d2->showSection("hasNext");
+    }
   }
 
   return view.render();

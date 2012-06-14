@@ -93,12 +93,16 @@ class Model : public QObject
     bool save(QString tableName);
     bool destroy(QString tableName);
 
+    bool operator==(const Model &other);
+
   protected:
     Model(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
     static QSqlDatabase &getDatabase();
 
     virtual void beforeValidation();
     virtual bool validate();
+    virtual void beforeSave();
+    virtual void afterCreate();
 
   private:
     QMap<QString, QVariant> attributes;

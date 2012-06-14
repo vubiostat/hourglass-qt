@@ -17,7 +17,7 @@ void Browser::resizeView()
   QWebFrame *frame = page()->mainFrame();
   int width = frame->evaluateJavaScript("$('body').outerWidth(true);").toInt();
   int height = frame->evaluateJavaScript("$('body').outerHeight(true);").toInt();
-  qDebug() << "Width:" << width << "Height:" << height;
+  //qDebug() << "Width:" << width << "Height:" << height;
   resize(width, height);
   emit resized(width, height);
 }

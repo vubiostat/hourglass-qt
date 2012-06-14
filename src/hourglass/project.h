@@ -20,7 +20,7 @@ class Project : public Model
 
     bool save();
 
-    QString name();
+    QString name() const;
 
   private:
     static const QString findQuery;

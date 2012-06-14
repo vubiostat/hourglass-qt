@@ -24,6 +24,14 @@ const QString Activity::deleteShortQuery = QString(
       "CAST(strftime('%s', started_at, 'localtime') AS INTEGER) < 60"
     ")");
 
+const QString Activity::addTagQuery = QString(
+    "INSERT INTO activities_tags (activity_id, tag_id) "
+    "VALUES(:activity_id, :tag_id)");
+
+const QString Activity::removeTagQuery = QString(
+    "DELETE FROM activities_tags WHERE "
+    "activity_id = :activity_id AND tag_id = :tag_id");
+
 QList<Activity> Activity::find(QString conditions)
 {
   return Model::find<Activity>("activities", conditions);
@@ -107,12 +115,12 @@ bool Activity::startLike(const Activity &activity)
       return false;
     }
   }
-  stopCurrent();
 
   Activity result;
   result.setRunning(true);
   result.setNameWithProject(activity.nameWithProject());
   result.setStartedAt(QDateTime::currentDateTime());
+  result.setTagNames(activity.tagNames());
   return result.save();
 }
 
@@ -143,12 +151,14 @@ Activity::Activity(QObject *parent)
   : Model(parent)
 {
   m_running = QVariant(QVariant::Bool);
+  m_wasRunning = false;
 }
 
 Activity::Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
   : Model(attributes, newRecord, parent)
 {
   m_running = QVariant(QVariant::Bool);
+  m_wasRunning = isRunning();
 }
 
 // Attribute getters/setters
@@ -223,6 +233,9 @@ void Activity::setFromParams(const QList<QPair<QString, QString> > &params)
     else if (pair.first == "activity[ended_at_hm]") {
       setEndedAtHM(pair.second);
     }
+    else if (pair.first == "activity[tag_names]") {
+      setTagNames(pair.second);
+    }
   }
 }
 
@@ -240,6 +253,14 @@ bool Activity::isRunning() const
 void Activity::setRunning(bool running)
 {
   this->m_running = QVariant(running);
+  if (running) {
+    setEndedAt(QDateTime());
+  }
+}
+
+bool Activity::wasRunning() const
+{
+  return m_wasRunning.toBool();
 }
 
 QString Activity::nameWithProject() const
@@ -334,6 +355,43 @@ void Activity::setEndedAtHM(const QString &hm)
   m_endedAtHM = timeFromHM(hm);
 }
 
+QString Activity::tagNames() const
+{
+  QList<Tag> currentTags = tags();
+  QStringList names;
+  for (int i = 0; i < currentTags.size(); i++) {
+    names << currentTags[i].name();
+  }
+  return names.join(", ");
+}
+
+void Activity::setTagNames(const QString &tagNames)
+{
+  QList<Tag> previousTags = tags();
+  QList<Tag> newTags;
+
+  QString trimmedTagNames = tagNames.trimmed();
+  bool tagExists;
+  if (!trimmedTagNames.isEmpty()) {
+    QStringList names = trimmedTagNames.split(QRegExp(",\\s*"));
+    for (int i = 0; i < names.size(); i++) {
+      Tag tag = Tag::findOrCreateByName(names[i]);
+      tagExists = previousTags.removeOne(tag);
+      if (!tagExists && !newTags.contains(tag)) {
+        newTags << tag;
+      }
+    }
+  }
+
+  if (isNew()) {
+    m_tagsToAdd = newTags;
+  }
+  else {
+    addTags(newTags);
+    removeTags(previousTags);
+  }
+}
+
 // Helpers
 Project Activity::project() const
 {
@@ -347,14 +405,9 @@ QString Activity::projectName() const
   return id >= 0 ? Project::findById(id).name() : QString();
 }
 
-QString Activity::tagNames() const
+QList<Tag> Activity::tags() const
 {
-  QList<Tag> tags = Tag::findActivityTags(id());
-  QStringList names;
-  for (int i = 0; i < tags.size(); i++) {
-    names << tags[i].name();
-  }
-  return names.join(", ");
+  return Tag::findActivityTags(id());
 }
 
 QString Activity::startedAtISO8601() const
@@ -488,6 +541,35 @@ void Activity::beforeValidation()
   }
 }
 
+void Activity::addTags(const QList<Tag> &tags)
+{
+  QSqlDatabase &database = getDatabase();
+  QSqlQuery query(database);
+  query.prepare(addTagQuery);
+
+  for (int i = 0; i < tags.size(); i++) {
+    query.bindValue(":activity_id", id());
+    query.bindValue(":tag_id", tags[i].id());
+    query.exec();
+  }
+}
+
+void Activity::removeTags(const QList<Tag> &tags)
+{
+  QSqlDatabase &database = getDatabase();
+  QSqlQuery query(database);
+  query.prepare(removeTagQuery);
+
+  QVariantList activityIds, tagIds;
+  for (int i = 0; i < tags.size(); i++) {
+    activityIds << id();
+    tagIds << tags[i].id();
+  }
+  query.bindValue(":activity_id", activityIds);
+  query.bindValue(":tag_id", tagIds);
+  query.execBatch();
+}
+
 bool Activity::validate()
 {
   if (name().isEmpty()) {
@@ -508,4 +590,17 @@ bool Activity::validate()
   }
 
   return true;
+}
+
+void Activity::beforeSave()
+{
+  if (isRunning() && !wasRunning()) {
+    stopCurrent();
+  }
+}
+
+void Activity::afterCreate()
+{
+  addTags(m_tagsToAdd);
+  m_tagsToAdd.clear();
 }

@@ -2,7 +2,8 @@
 {{#activity}}
   <tr class="activity activity-{{id}}">
     <td class="activity-name">{{name}}</td>
-    <td class="activity-tags"></td>
+    <td class="project-name">{{projectName}}</td>
+    <td class="activity-tags">{{>tags}}</td>
     <td class="activity-duration activity-running" title="{{startedAtISO8601}}">{{durationInWords}}</td>
     <td class="button">
       <button class="stop-tracking">Stop tracking</button>
@@ -12,6 +13,7 @@
 {{#noCurrentActivity}}
   <tr>
     <td class="activity-name">No activity</td>
+    <td class="project-name">&nbsp;</td>
     <td class="activity-tags">&nbsp;</td>
     <td class="activity-duration">&nbsp;</td>
     <td class="button">

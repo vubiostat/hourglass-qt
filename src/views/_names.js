@@ -1,2 +1,2 @@
 {{%AUTOESCAPE context="JAVASCRIPT"}}
-[{{#name}}"{{value}}"{{comma}}{{/name}}]
+[{{#name}}"{{value}}"{{#hasNext}},{{/hasNext}}{{/name}}]
