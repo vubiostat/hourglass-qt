@@ -26,10 +26,15 @@ td.activity-tags ul li {
 }
 #current-activity td {
   white-space: nowrap;
+  line-height: 1.5em;
 }
 #current-activity .activity-name {
   font-weight: bold;
   font-size: 1.5em;
+}
+#current-activity .project-name {
+  padding-left: 1em;
+  color: #b8b8b8;
 }
 #current-activity .button {
   text-align: right;
