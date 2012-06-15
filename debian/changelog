@@ -1,3 +1,9 @@
+hourglass (0.0.2-0ubuntu2) precise; urgency=low
+
+  * Add copyright information
+
+ -- Jeremy Stephens <jeremy.f.stephens@gmail.com>  Fri, 15 Jun 2012 13:56:32 -0500
+
 hourglass (0.0.2-0ubuntu1) precise; urgency=low
 
   * Version bump
