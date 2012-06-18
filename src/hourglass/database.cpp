@@ -26,11 +26,26 @@ QSqlDatabase &DatabaseManager::getDatabase()
     database = QSqlDatabase::addDatabase("QSQLITE");
 
 #ifdef Q_OS_LINUX
-    QString path(QDir::home().path());
-    path.append(QDir::separator()).append(".hourglass").
-      append(QDir::separator()).append("hourglass.db");
-    path = QDir::toNativeSeparators(path);
-    database.setDatabaseName(path);
+    QDir path(QDir::home().path());
+    bool inMemory = false;
+    if (!path.exists(".hourglass") && !path.mkdir(".hourglass")) {
+      qDebug() << "Can't create directory:" << path.absoluteFilePath(".hourglass");
+      inMemory = true;
+    }
+    else {
+      if (!path.cd(".hourglass") || !path.isReadable()) {
+        qDebug() << "Directory is not readable:" << path.absolutePath();
+        inMemory = true;
+      }
+      else {
+        database.setDatabaseName(path.absoluteFilePath("hourglass.db"));
+      }
+    }
+
+    if (inMemory) {
+      qDebug() << "Using in-memory database instead.";
+      database.setDatabaseName(":memory:");
+    }
 #else
     database.setDatabaseName("hourglass.db");
 #endif
