@@ -9,7 +9,7 @@ Server::Server(QString root, quint16 port, QObject *parent)
   connect(http, SIGNAL(newRequest(QHttpRequest*, QHttpResponse*)),
       this, SLOT(handle(QHttpRequest*, QHttpResponse*)));
   this->root = QDir(root);
-  qDebug() << "Root directory:" << this->root.absolutePath() << this->root.exists();
+  //qDebug() << "Root directory:" << this->root.absolutePath() << this->root.exists();
 }
 
 void Server::handle(QHttpRequest *req, QHttpResponse *resp)
