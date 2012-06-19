@@ -15,6 +15,8 @@ Launcher::Launcher(QWidget *parent)
   connect(browser, SIGNAL(resized(int, int)), this, SLOT(browserResized(int, int)));
   layout->addWidget(browser);
   firstLoad = true;
+
+  setWindowIcon(QIcon(":/icons/hourglass.png"));
 }
 
 void Launcher::go()

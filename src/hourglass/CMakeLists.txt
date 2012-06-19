@@ -42,6 +42,7 @@ SET(hourglass_SOURCES ${hourglass_QT_SOURCES})
 SET(hourglass_RCS
   ${CMAKE_CURRENT_SOURCE_DIR}/../public/public.rcs
   ${CMAKE_CURRENT_SOURCE_DIR}/../views/views.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../icons/icons.rcs
 )
 
 QT4_WRAP_CPP(hourglass_QT_HEADERS_MOC ${hourglass_QT_HEADERS})
