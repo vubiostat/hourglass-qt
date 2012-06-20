@@ -34,7 +34,7 @@ const QString Activity::removeTagQuery = QString(
 
 QList<Activity> Activity::find(QString conditions)
 {
-  return Model::find<Activity>("activities", conditions);
+  return Model::find<Activity>("activities", conditions, "ORDER BY started_at");
 }
 
 Activity Activity::findById(int id)
