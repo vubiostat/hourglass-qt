@@ -4,6 +4,7 @@
 #include "controller.h"
 #include "project.h"
 #include "tag.h"
+#include "setting.h"
 
 const QString Controller::editActivityPattern =
   QString("^/activities/(\\d+)/edit$");
@@ -291,6 +292,26 @@ QString Controller::partialTagNames()
   return partialNames(distinctNames);
 }
 
+QString Controller::newOrEditActivity(const Activity &activity)
+{
+  View view("popup.html");
+  Dictionary *dictionary = view.dictionary();
+
+  if (activity.isNew()) {
+    view.setTitle("Add earlier activity");
+    dictionary->setValue("submitUrl", "/activities");
+  }
+  else {
+    view.setTitle("Edit activity");
+    dictionary->setValue("submitUrl", QString("/activities/%1").arg(activity.id()));
+  }
+
+  dictionary->setValue("dayStartTime", Setting::getValue("day_start", "08:00"));
+  dictionary->setValue("dayEndTime", Setting::getValue("day_end", "18:00"));
+  dictionary->addActivitySection(activity);
+  return view.render();
+}
+
 // GET /
 QString Controller::index()
 {
@@ -326,35 +347,23 @@ QString Controller::stopCurrentActivities()
 // GET /activities/new
 QString Controller::newActivity()
 {
-  View view("popup.html");
-  view.setTitle("Add earlier activity");
-  Dictionary *dictionary = view.dictionary();
-
-  QDateTime now = QDateTime::currentDateTime();
+  QPair<QDateTime, QDateTime> gap = Activity::lastGap();
+  qDebug() << "Last gap:" << gap;
   Activity activity = Activity();
-  activity.setStartedAt(now);
-  activity.setEndedAt(now);
-  activity.setRunning(true);
-  dictionary->setValue("submitUrl", "/activities");
-  dictionary->addActivitySection(activity);
-  return view.render();
+  activity.setStartedAt(gap.first);
+  activity.setEndedAt(gap.second);
+  activity.setRunning(false);
+  return newOrEditActivity(activity);
 }
 
 // GET /activities/1/edit
 QString Controller::editActivity(int activityId)
 {
-  View view("popup.html");
-  view.setTitle("Edit activity");
-  Dictionary *dictionary = view.dictionary();
-
-  QDateTime now = QDateTime::currentDateTime();
   Activity activity = Activity::findById(activityId);
   if (activity.isNew()) {
     return QString();
   }
-  dictionary->setValue("submitUrl", QString("/activities/%1").arg(activityId));
-  dictionary->addActivitySection(activity);
-  return view.render();
+  return newOrEditActivity(activity);
 }
 
 // POST /activities/1

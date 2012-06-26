@@ -52,7 +52,7 @@ void Dictionary::showSection(QString name)
   dictionary->ShowSection(name.toStdString());
 }
 
-void Dictionary::addActivity(Activity &activity)
+void Dictionary::addActivity(const Activity &activity)
 {
   setValue("id", activity.id());
   setValue("name", activity.name());
@@ -84,13 +84,13 @@ void Dictionary::addActivity(Activity &activity)
   }
 }
 
-void Dictionary::addActivitySection(Activity &activity)
+void Dictionary::addActivitySection(const Activity &activity)
 {
   Dictionary *section = addSectionDictionary("activity");
   section->addActivity(activity);
 }
 
-void Dictionary::addActivitySection(QList<Activity> &activities)
+void Dictionary::addActivitySection(const QList<Activity> &activities)
 {
   for (int i = 0; i < activities.size(); i++) {
     addActivitySection(activities[i]);

@@ -1,10 +1,11 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/public">
+  <file>js/autocomplete.js</file>
   <file>js/dictionary.js</file>
   <file>js/index.js</file>
   <file>js/jquery-ui-1.8.18.custom.min.js</file>
   <file>js/jquery-1.7.1.min.js</file>
-  <file>js/autocomplete.js</file>
+  <file>js/utils.js</file>
   <file>images/ui-anim_basic_16x16.gif</file>
   <file>css/black-tie/jquery.ui.progressbar.css</file>
   <file>css/black-tie/jquery.ui.autocomplete.css</file>

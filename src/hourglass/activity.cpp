@@ -5,6 +5,7 @@
 #include <QRegExp>
 #include "activity.h"
 #include "tag.h"
+#include "setting.h"
 
 // Static members
 const QString Activity::distinctNamesQuery = QString(
@@ -34,7 +35,12 @@ const QString Activity::removeTagQuery = QString(
 
 QList<Activity> Activity::find(QString conditions)
 {
-  return Model::find<Activity>("activities", conditions, "ORDER BY started_at");
+  return find(conditions, "ORDER BY started_at");
+}
+
+QList<Activity> Activity::find(QString conditions, QString predicate)
+{
+  return Model::find<Activity>("activities", conditions, predicate);
 }
 
 Activity Activity::findById(int id)
@@ -122,6 +128,61 @@ bool Activity::startLike(const Activity &activity)
   result.setStartedAt(QDateTime::currentDateTime());
   result.setTagNames(activity.tagNames());
   return result.save();
+}
+
+// Determine the last reasonably-sized gap between activities
+QPair<QDateTime, QDateTime> Activity::lastGap()
+{
+  QDateTime now = QDateTime::currentDateTime();
+  QDateTime dayStart(now.date(), Setting::getDayStart("08:00"));
+  QDateTime lowerBound;
+  int diff = dayStart.secsTo(now);
+  if (diff >= 0 && diff < 14400) {
+    lowerBound = dayStart;
+  }
+  else {
+    // 4 hours ago
+    lowerBound = now.addSecs(-14400);
+  }
+  QList<Activity> activities = find(
+      QString("WHERE datetime(activities.started_at) >= datetime('%1')").
+        arg(lowerBound.toString("yyyy-MM-dd hh:mm")));
+
+  QPair<QDateTime, QDateTime> gap;
+  if (activities.empty()) {
+    if (now < dayStart) {
+      // It's earlier than the start of the day, so just go 15 minutes back
+      gap.first = now.addSecs(-900);
+      gap.second = now;
+    }
+    else {
+      gap.first = dayStart;
+      gap.second = dayStart.addSecs(-900);
+    }
+    return gap;
+  }
+
+  gap.second = QDateTime::currentDateTime();
+  for (int i = activities.size() - 1; i >= 0; i--) {
+    if (!activities[i].isRunning()) {
+      gap.first = activities[i].endedAt();
+      if (gap.first.secsTo(gap.second) >= 900) {
+        return gap;
+      }
+    }
+    gap.second = activities[i].startedAt();
+  }
+
+  // No gap found, just pick the latest one possible
+  Activity &lastActivity = activities.last();
+  if (lastActivity.isRunning()) {
+    gap.first = now.addSecs(-900);
+  }
+  else {
+    gap.first = lastActivity.endedAt();
+  }
+  gap.second = now;
+  return gap;
 }
 
 QDate Activity::dateFromMDY(const QString &mdy)
@@ -253,9 +314,6 @@ bool Activity::isRunning() const
 void Activity::setRunning(bool running)
 {
   this->m_running = QVariant(running);
-  if (running) {
-    setEndedAt(QDateTime());
-  }
 }
 
 bool Activity::wasRunning() const
@@ -531,7 +589,10 @@ void Activity::beforeValidation()
     m_startedAtHM = QTime();
   }
 
-  if (m_endedAtMDY.isValid() && m_endedAtHM.isValid()) {
+  if (isRunning()) {
+    setEndedAt(QDateTime());
+  }
+  else if (m_endedAtMDY.isValid() && m_endedAtHM.isValid()) {
     QDateTime date;
     date.setDate(m_endedAtMDY);
     date.setTime(m_endedAtHM);

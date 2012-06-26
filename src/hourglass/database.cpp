@@ -4,9 +4,10 @@
 #include <QSqlError>
 #include <QtDebug>
 #include <QVariant>
+#include <QProcessEnvironment>
 #include "database.h"
 
-int DatabaseManager::CURRENT_DATABASE_VERSION = 1;
+int DatabaseManager::CURRENT_DATABASE_VERSION = 2;
 
 DatabaseManager::DatabaseManager(QObject *parent)
   : QObject(parent)
@@ -25,30 +26,44 @@ QSqlDatabase &DatabaseManager::getDatabase()
   if (!database.isValid()) {
     database = QSqlDatabase::addDatabase("QSQLITE");
 
-#ifdef Q_OS_LINUX
-    QDir path(QDir::home().path());
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    QDir *path = NULL;
+    QString databaseName;
     bool inMemory = false;
-    if (!path.exists(".hourglass") && !path.mkdir(".hourglass")) {
-      qDebug() << "Can't create directory:" << path.absoluteFilePath(".hourglass");
-      inMemory = true;
+    if (env.contains("HOURGLASS_PATH")) {
+      path = new QDir(env.value("HOURGLASS_PATH"));
     }
+#ifdef Q_OS_LINUX
     else {
-      if (!path.cd(".hourglass") || !path.isReadable()) {
-        qDebug() << "Directory is not readable:" << path.absolutePath();
+      QDir home(QDir::home().path());
+      if (!home.exists(".hourglass") && !home.mkdir(".hourglass")) {
+        qDebug() << "Can't create directory:" << home.absoluteFilePath(".hourglass");
         inMemory = true;
       }
       else {
-        database.setDatabaseName(path.absoluteFilePath("hourglass.db"));
+        path = new QDir(home.absoluteFilePath(".hourglass"));
       }
+    }
+#endif
+
+    if (path != NULL && !path->isReadable()) {
+      qDebug() << "Directory is not readable:" << path->absolutePath();
+      inMemory = true;
+      delete path;
     }
 
     if (inMemory) {
       qDebug() << "Using in-memory database instead.";
       database.setDatabaseName(":memory:");
     }
-#else
-    database.setDatabaseName("hourglass.db");
-#endif
+    else if (path != NULL) {
+      database.setDatabaseName(path->absoluteFilePath("hourglass.db"));
+      delete path;
+    }
+    else {
+      // Non-Linux
+      database.setDatabaseName("hourglass.db");
+    }
 
     database.open();
     migrateDatabase();
@@ -74,7 +89,12 @@ void DatabaseManager::migrateDatabase()
         database.exec("CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL, started_at TEXT, ended_at TEXT);");
         database.exec("CREATE TABLE tags (id INTEGER PRIMARY KEY, name TEXT);");
         database.exec("CREATE TABLE activities_tags (activity_id INTEGER REFERENCES activities(id) ON DELETE CASCADE, tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE);");
-        database.exec("INSERT INTO schema_info VALUES (1);");
+        break;
+      case 1:
+        database.exec("CREATE TABLE settings (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT, value TEXT);");
+        database.exec("INSERT INTO settings (key, value) VALUES ('theme', 'smoothness');");
+        database.exec("INSERT INTO settings (key, value) VALUES ('day_start', '08:00');");
+        database.exec("INSERT INTO settings (key, value) VALUES ('day_end', '18:00');");
         break;
     }
     if (database.lastError().isValid()) {
@@ -82,5 +102,11 @@ void DatabaseManager::migrateDatabase()
       break;
     }
     version++;
+    if (version == 1) {
+      database.exec("INSERT INTO schema_info VALUES (1);");
+    }
+    else {
+      database.exec(QString("UPDATE schema_info SET version = %1;").arg(version));
+    }
   }
 }

@@ -21,9 +21,9 @@ class Dictionary : public QObject
     void setValue(QString name, int value);
     void showSection(QString name);
 
-    void addActivity(Activity &activity);
-    void addActivitySection(Activity &activity);
-    void addActivitySection(QList<Activity> &activities);
+    void addActivity(const Activity &activity);
+    void addActivitySection(const Activity &activity);
+    void addActivitySection(const QList<Activity> &activities);
 
     ctemplate::TemplateDictionary *object();
 

@@ -169,7 +169,6 @@ table.times td.icons span.ui-icon-pencil {
 .ui-autocomplete.activity-time {
   width: auto;
   max-height: 150px;
-  overflow: hidden;
 }
 .ui-autocomplete-loading { background: white url('../images/ui-anim_basic_16x16.gif') right center no-repeat; }
 .ac-placeholder {
@@ -220,4 +219,22 @@ input.ui-button, .ui-button-text-only {
 #select-activity {
   width: 1.4em;
   height: 1.4em;
+}
+
+#time-slider {
+  margin-bottom: 0.5em;
+}
+#time-slider .labels .day-start {
+  float: left;
+  width: 33%;
+}
+#time-slider .labels .duration {
+  float: left;
+  width: 34%;
+  text-align: center;
+}
+#time-slider .labels .day-end {
+  float: left;
+  width: 33%;
+  text-align: right;
 }

@@ -50,6 +50,7 @@ class Controller : public QObject
     QString partialActivityNames();
     QString partialProjectNames();
     QString partialTagNames();
+    QString newOrEditActivity(const Activity &activity);
 
     QString index();
     QString createActivity(const QList<QPair<QString, QString> > &params);

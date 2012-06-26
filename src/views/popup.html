@@ -1,5 +1,14 @@
 <form>
   <div id="activity-popup" class="ui-widget ui-widget-content ui-corner-all" style="padding: 0.5em; font-size: 1em; overflow: auto;">
+    <div id="time-slider">
+      <div class="labels">
+        <div class="day-start">{{dayStartTime}}</div>
+        <div class="duration"></div>
+        <div class="day-end">{{dayEndTime}}</div>
+        <div class="clear"></div>
+      </div>
+      <div class="slider"></div>
+    </div>
     {{#activity}}
     <table>
       <tbody>
@@ -51,6 +60,42 @@
   </div>
 </form>
 <script type="text/javascript">
+  var dayStartTime = "{{dayStartTime}}";
+  var dayEndTime = "{{dayEndTime}}";
+
+  function dayStart() {
+    return new Date($(".activity-started-at-date").val() + " " + dayStartTime);
+  }
+  function dayEnd() {
+    return new Date($(".activity-started-at-date").val() + " " + dayEndTime);
+  }
+  function dateToYMD(d) {
+    var month = d.getMonth() + 1;
+    var day = d.getDate();
+    return "" + (month < 10 ? "0" + month : month) + "/" + (day < 10 ? "0" + day : day) + "/" + d.getFullYear();
+  }
+  function dateToHM(d) {
+    var hours = d.getHours();
+    var minutes = d.getMinutes();
+    return "" + (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes);
+  }
+  function startedAt() {
+    return new Date($(".activity-started-at-date").val() + " " + $(".activity-started-at-time").val());
+  }
+  function setStartedAt(minutes) {
+    var d = new Date(minutes * 60000);
+    $('.activity-started-at-date').val(dateToYMD(d));
+    $('.activity-started-at-time').val(dateToHM(d));
+  }
+  function endedAt() {
+    return new Date($(".activity-ended-at-date").val() + " " + $(".activity-ended-at-time").val());
+  }
+  function setEndedAt(minutes) {
+    var d = new Date(minutes * 60000);
+    $('.activity-ended-at-date').val(dateToYMD(d));
+    $('.activity-ended-at-time').val(dateToHM(d));
+  }
+
   $(function() {
     var form = $('form');
 
@@ -81,9 +126,25 @@
         }
       }, 'json');
     });
+
     $('#cancel-button').click(function(e) {
       e.preventDefault();
       window.close();
     });
+
+    var timeValues = [ startedAt().getTime() / 60000, endedAt().getTime() / 60000 ];
+    $('#time-slider .slider').slider({
+      range: true,
+      min: dayStart().getTime() / 60000,
+      max: dayEnd().getTime() / 60000,
+      values: timeValues,
+      slide: function(event, ui) {
+        var duration = millisecondsToWords((ui.values[1] - ui.values[0]) * 60000);
+        $("#time-slider .duration").html(duration);
+        setStartedAt(ui.values[0]);
+        setEndedAt(ui.values[1]);
+      }
+    });
+    $("#time-slider .duration").html(millisecondsToWords((timeValues[1] - timeValues[0]) * 60000));
   });
 </script>

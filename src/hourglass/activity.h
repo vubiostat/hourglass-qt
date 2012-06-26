@@ -18,6 +18,7 @@ class Activity : public Model
 
   public:
     static QList<Activity> find(QString conditions);
+    static QList<Activity> find(QString conditions, QString predicate);
     static Activity findById(int id);
     static QList<Activity> findCurrent();
     static QList<Activity> findToday();
@@ -27,6 +28,7 @@ class Activity : public Model
     static void stopCurrent();
     static QVariantList toVariantList(QList<Activity> &activities);
     static bool startLike(const Activity &activity);
+    static QPair<QDateTime, QDateTime> lastGap();
 
     Activity(QObject *parent = 0);
     Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);

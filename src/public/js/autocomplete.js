@@ -183,7 +183,13 @@ $(function() {
           this.menu.element.find('li:nth-child('+(index+1)+')'));
       }
     },
+    focus: function() {
+      // prevent value inserted on focus
+      return false;
+    }
   }).each(function() {
     $(this).data('autocomplete').menu.element.addClass('activity-time');
+  }).click(function() {
+    $(this).autocomplete('search', '');
   });
 });
