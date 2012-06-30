@@ -13,10 +13,36 @@ int Hourglass::sigintFd[2] = {0, 0};
 Hourglass::Hourglass(int &argc, char **argv)
   : QApplication(argc, argv)
 {
+  // Parse some arguments
+  serverOnly = false;
+  port = 5678;
+  QStringList args = arguments();
+  for (int i = 1; i < args.count(); i++) {
+    if (args[i] == "--server-only") {
+      serverOnly = true;
+      continue;
+    }
+    else if (args[i].startsWith("--port=")) {
+      QRegExp rx("^--port=(.+)$");
+      bool ok = false;
+      if (args[i].contains(rx)) {
+        int p = rx.cap(1).toInt(&ok);
+        if (ok) {
+          port = p;
+        }
+        else {
+          qDebug() << "Invalid port:" << rx.cap(1);
+        }
+        continue;
+      }
+    }
+    qDebug() << "Invalid argument:" << args[i];
+  }
+
   connect(this, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
 
   // Setup server
-  st = new ServerThread(":/public", this);
+  st = new ServerThread(port, ":/public", this);
 
   // Setup Ctemplate
   QDir views(":/views");
@@ -33,6 +59,12 @@ Hourglass::Hourglass(int &argc, char **argv)
         bytes.data(), bytes.size(), ctemplate::DO_NOT_STRIP);
   }
 
+  // Setup launcher
+  if (!serverOnly) {
+    launcher = new Launcher(port);
+    connect(st, SIGNAL(serverStarted()), launcher, SLOT(go()));
+  }
+
   if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigintFd))
     qFatal("Couldn't create INT socketpair");
 
@@ -42,10 +74,11 @@ Hourglass::Hourglass(int &argc, char **argv)
 
 int Hourglass::exec()
 {
-  connect(st, SIGNAL(serverStarted()), &launcher, SLOT(go()));
   connect(st, SIGNAL(finished()), this, SLOT(quit()));
   st->start();
-  launcher.show();
+  if (!serverOnly) {
+    launcher->show();
+  }
 
   return QApplication::exec();
 }

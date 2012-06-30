@@ -21,7 +21,9 @@ class Hourglass : public QApplication
     void cleanUp();
 
   private:
-    Launcher launcher;
+    bool serverOnly;
+    int port;
+    Launcher *launcher;
     ServerThread *st;
 
     static int sigintFd[2];

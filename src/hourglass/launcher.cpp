@@ -4,8 +4,8 @@
 #include "launcher.h"
 #include "browser.h"
 
-Launcher::Launcher(QWidget *parent)
-  : QWidget(parent)
+Launcher::Launcher(int port, QWidget *parent)
+  : QWidget(parent), port(port)
 {
   layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
@@ -21,7 +21,9 @@ Launcher::Launcher(QWidget *parent)
 
 void Launcher::go()
 {
-  browser->load(QUrl("http://127.0.0.1:5678/"));
+  QUrl url("http://127.0.0.1/");
+  url.setPort(port);
+  browser->load(url);
 }
 
 void Launcher::browserResized(int width, int height)

@@ -10,7 +10,7 @@ class Launcher : public QWidget
   Q_OBJECT
 
   public:
-    Launcher(QWidget *parent = 0);
+    Launcher(int port, QWidget *parent = 0);
 
   public slots:
     void go();
@@ -20,6 +20,7 @@ class Launcher : public QWidget
     void viewTitleChanged(const QString &title);
 
   private:
+    int port;
     QVBoxLayout *layout;
     Browser *browser;
     bool firstLoad;
