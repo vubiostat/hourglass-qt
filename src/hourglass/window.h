@@ -2,7 +2,8 @@
 #define WINDOW_H
 
 #include <QMainWindow>
-#include <QVBoxLayout>
+#include <QMenu>
+#include <QAction>
 #include "browser.h"
 
 class Window : public QMainWindow
@@ -18,10 +19,23 @@ class Window : public QMainWindow
   private slots:
     void browserResized(int width, int height);
     void viewTitleChanged(const QString &title);
+    void editPreferences();
+    void about();
+    void aboutQt();
 
   private:
     int port;
     Browser *browser;
+    QMenu *fileMenu;
+    QMenu *editMenu;
+    QMenu *helpMenu;
+    QAction *quitAct;
+    QAction *preferencesAct;
+    QAction *aboutAct;
+    QAction *aboutQtAct;
+
+    void createActions();
+    void createMenus();
 };
 
 #endif

@@ -19,6 +19,7 @@ SET(hourglass_QT_SOURCES
   dictionary.cpp
   controller.cpp
   setting.cpp
+  about.cpp
 )
 
 SET(hourglass_QT_HEADERS
@@ -37,6 +38,7 @@ SET(hourglass_QT_HEADERS
   hourglass.h
   controller.h
   setting.h
+  about.h
 )
 
 SET(hourglass_SOURCES ${hourglass_QT_SOURCES})
