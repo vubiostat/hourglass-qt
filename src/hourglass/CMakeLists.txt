@@ -4,7 +4,7 @@ SET(QT_USE_QTSQL TRUE)
 
 SET(hourglass_QT_SOURCES
   browser.cpp
-  launcher.cpp
+  window.cpp
   main.cpp
   popup.cpp
   thread.cpp
@@ -23,7 +23,7 @@ SET(hourglass_QT_SOURCES
 
 SET(hourglass_QT_HEADERS
   browser.h
-  launcher.h
+  window.h
   popup.h
   thread.h
   database.h

@@ -1,16 +1,16 @@
-#ifndef LAUNCHER_H
-#define LAUNCHER_H
+#ifndef WINDOW_H
+#define WINDOW_H
 
-#include <QWidget>
+#include <QMainWindow>
 #include <QVBoxLayout>
 #include "browser.h"
 
-class Launcher : public QWidget
+class Window : public QMainWindow
 {
   Q_OBJECT
 
   public:
-    Launcher(int port, QWidget *parent = 0);
+    Window(int port, QWidget *parent = 0);
 
   public slots:
     void go();
@@ -21,9 +21,7 @@ class Launcher : public QWidget
 
   private:
     int port;
-    QVBoxLayout *layout;
     Browser *browser;
-    bool firstLoad;
 };
 
 #endif

@@ -59,10 +59,10 @@ Hourglass::Hourglass(int &argc, char **argv)
         bytes.data(), bytes.size(), ctemplate::DO_NOT_STRIP);
   }
 
-  // Setup launcher
+  // Setup main window
   if (!serverOnly) {
-    launcher = new Launcher(port);
-    connect(st, SIGNAL(serverStarted()), launcher, SLOT(go()));
+    window = new Window(port);
+    connect(st, SIGNAL(serverStarted()), window, SLOT(go()));
   }
 
   if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigintFd))
@@ -77,7 +77,7 @@ int Hourglass::exec()
   connect(st, SIGNAL(finished()), this, SLOT(quit()));
   st->start();
   if (!serverOnly) {
-    launcher->show();
+    window->show();
   }
 
   return QApplication::exec();

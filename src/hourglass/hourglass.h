@@ -3,7 +3,7 @@
 
 #include <QApplication>
 #include <QSocketNotifier>
-#include "launcher.h"
+#include "window.h"
 #include "thread.h"
 
 class Hourglass : public QApplication
@@ -23,7 +23,7 @@ class Hourglass : public QApplication
   private:
     bool serverOnly;
     int port;
-    Launcher *launcher;
+    Window *window;
     ServerThread *st;
 
     static int sigintFd[2];
