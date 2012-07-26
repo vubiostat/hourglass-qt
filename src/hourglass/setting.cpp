@@ -1,5 +1,7 @@
 #include "setting.h"
 
+const QRegExp Setting::timePattern = QRegExp("^\\d{2}:\\d{2}$");
+
 QList<Setting> Setting::find()
 {
   return Model::find<Setting>("settings");
@@ -45,6 +47,16 @@ QTime Setting::getDayEnd(QString defaultValue)
   return QTime::fromString(getValue("day_end", defaultValue), "hh:mm");
 }
 
+bool Setting::setValue(QString key, QString value)
+{
+  Setting setting = findByKey(key);
+  if (setting.isNew()) {
+    setting.setKey(key);
+  }
+  setting.setValue(value);
+  return setting.save();
+}
+
 QString Setting::key() const
 {
   return get("key").toString();
@@ -68,4 +80,19 @@ void Setting::setValue(const QString &value)
 bool Setting::save()
 {
   return Model::save("settings");
+}
+
+bool Setting::validate()
+{
+  QString k = key();
+  QString v = value();
+  if (k.isNull() || k.isEmpty() || v.isNull() || v.isEmpty()) {
+    return false;
+  }
+
+  if ((k == "day_start" || k == "day_end") && timePattern.indexIn(v) == -1) {
+    return false;
+  }
+
+  return true;
 }

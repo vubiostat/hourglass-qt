@@ -54,6 +54,7 @@ void Controller::route()
 {
   QString path = m_req->path();
   QString method = m_req->method();
+  //qDebug() << method << path;
 
   QString result;
   QStringList matchData;
@@ -99,6 +100,9 @@ void Controller::route()
       result = partialTotals();
       isJSON = true;
     }
+    else if (path == "/settings/edit") {
+      result = editSettings();
+    }
   }
   else if (method == "POST") {
     QList<QPair<QString, QString> > params = decodePost(data);
@@ -122,6 +126,10 @@ void Controller::route()
         result = restartActivity(activityId);
         isJSON = true;
       }
+    }
+    else if (path == "/settings") {
+      result = updateSettings(params);
+      isJSON = true;
     }
   }
 
@@ -348,7 +356,6 @@ QString Controller::stopCurrentActivities()
 QString Controller::newActivity()
 {
   QPair<QDateTime, QDateTime> gap = Activity::lastGap();
-  qDebug() << "Last gap:" << gap;
   Activity activity = Activity();
   activity.setStartedAt(gap.first);
   activity.setEndedAt(gap.second);
@@ -404,6 +411,40 @@ QString Controller::restartActivity(int activityId)
     return partialUpdates();
   }
   return QString("{\"failed\": true}");
+}
+
+// GET /settings/edit
+QString Controller::editSettings()
+{
+  View view("settings.html");
+  view.setTitle("Preferences");
+  Dictionary *dictionary = view.dictionary();
+  dictionary->setValue("dayStart", Setting::getValue("day_start", "08:00"));
+  dictionary->setValue("dayEnd", Setting::getValue("day_end", "18:00"));
+  return view.render();
+}
+
+// POST /settings
+QString Controller::updateSettings(const QList<QPair<QString, QString> > &params)
+{
+  bool success = true;
+  for (int i = 0; i < params.size(); i++) {
+    const QPair<QString, QString> pair = params[i];
+
+    if (pair.first == "settings[day_start][value]") {
+      success = success && Setting::setValue("day_start", pair.second);
+    }
+    else if (pair.first == "settings[day_end][value]") {
+      success = success && Setting::setValue("day_end", pair.second);
+    }
+  }
+
+  if (success) {
+    return QString("{\"success\": true}");
+  }
+  else {
+    return QString("{\"errors\": \"There were errors!\"}");
+  }
 }
 
 bool Controller::pathMatches(const QString &path, const QString &pattern, QStringList &matchData)

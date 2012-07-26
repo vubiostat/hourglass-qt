@@ -60,6 +60,8 @@ class Controller : public QObject
     QString updateActivity(int activityId, const QList<QPair<QString, QString> > &params);
     QString deleteActivity(int activityId);
     QString restartActivity(int activityId);
+    QString editSettings();
+    QString updateSettings(const QList<QPair<QString, QString> > &params);
 
     bool pathMatches(const QString &path, const QString &pattern, QStringList &matchData);
     void serveFile(const QString &path);

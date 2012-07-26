@@ -11,5 +11,6 @@
   <file>index.html</file>
   <file>popup.html</file>
   <file>layout.html</file>
+  <file>settings.html</file>
 </qresource>
 </RCC>

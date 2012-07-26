@@ -2,6 +2,7 @@
 #define SETTING_H
 
 #include <QTime>
+#include <QRegExp>
 #include "model.h"
 
 class Setting : public Model
@@ -17,6 +18,7 @@ class Setting : public Model
     static QString getValue(QString key, QString defaultValue);
     static QTime getDayStart(QString defaultValue);
     static QTime getDayEnd(QString defaultValue);
+    static bool setValue(QString key, QString value);
 
     Setting(QObject *parent = 0) : Model(parent) {}
     Setting(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0)
@@ -28,6 +30,11 @@ class Setting : public Model
     void setValue(const QString &value);
 
     bool save();
+
+  private:
+    static const QRegExp timePattern;
+
+    bool validate();
 };
 
 #endif

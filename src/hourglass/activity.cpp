@@ -157,7 +157,7 @@ QPair<QDateTime, QDateTime> Activity::lastGap()
     }
     else {
       gap.first = dayStart;
-      gap.second = dayStart.addSecs(-900);
+      gap.second = dayStart.addSecs(900);
     }
     return gap;
   }

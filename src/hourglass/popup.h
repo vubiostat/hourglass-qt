@@ -3,6 +3,7 @@
 
 #include <QVBoxLayout>
 #include <QDialog>
+#include <QUrl>
 #include "browser.h"
 
 class Popup : public QDialog
@@ -11,6 +12,7 @@ class Popup : public QDialog
 
   public:
     Popup(QWidget *parent = 0);
+    Popup(const QUrl &location, QWidget *parent = 0);
     Browser *browser;
 
   private slots:
@@ -20,6 +22,8 @@ class Popup : public QDialog
 
   private:
     QVBoxLayout *layout;
+
+    void setup();
 };
 
 #endif

@@ -7,6 +7,7 @@
 #include <QtDebug>
 #include "window.h"
 #include "browser.h"
+#include "popup.h"
 #include "about.h"
 
 Window::Window(int port, QWidget *parent)
@@ -44,25 +45,14 @@ void Window::viewTitleChanged(const QString &title)
 
 void Window::editPreferences()
 {
+  QUrl url("http://127.0.0.1/settings/edit");
+  url.setPort(port);
+  Popup *popup = new Popup(url, this);
+  popup->exec();
 }
 
 void Window::about()
 {
-  /*
-  QChar copyright(0x00a9);
-  QString text = QString("Version %1.%2.%3%5\n\nCopyright %4 2012 Vanderbilt University").
-    arg(HOURGLASS_MAJOR_VERSION).
-    arg(HOURGLASS_MINOR_VERSION).
-    arg(HOURGLASS_PATCH_VERSION).
-    arg(copyright).
-#ifdef HOURGLASS_DEV
-    arg("dev");
-#else
-    arg(QString());
-#endif
-
-  QMessageBox::about(this, "About Hourglass", text);
-  */
   AboutDialog about(this);
   about.exec();
 }
