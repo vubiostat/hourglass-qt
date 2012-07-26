@@ -42,7 +42,7 @@ class Controller : public QObject
     void includeCurrent(Dictionary *dictionary);
     void includeToday(Dictionary *dictionary);
     void includeWeek(Dictionary *dictionary);
-    void includeTotals(Dictionary *dictionary, bool addIncludeDictionary = true);
+    void includeTotals(QDate day, Dictionary *dictionary, bool addIncludeDictionary = true);
 
     QString partialTotals();
     QString partialUpdates();

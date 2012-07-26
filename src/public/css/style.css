@@ -197,15 +197,20 @@ input.ui-button, .ui-button-text-only {
   white-space: nowrap;
 }
 
-#totals {
+.totals {
   float: left;
   overflow: auto;
+  font-family: 'georgia';
+  font-size: 16px;
 }
-#totals ul {
+ul.day-times li .totals {
+  padding-top: 0.5em;
+}
+.totals ul {
   margin: 0;
   padding: 0;
 }
-#totals ul li {
+.totals ul li {
   margin: 0;
   display: inline;
   line-height: 2em;

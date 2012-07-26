@@ -210,13 +210,15 @@ void Controller::includeWeek(Dictionary *dictionary)
     dayOfWeek = day.dayOfWeek();
     d2->setValue("dayName", QDate::longDayName(dayOfWeek));
     d2->setValue("dayNumber", i);
+    d2->setValue("ymd", day.toString("yyyy-MM-dd"));
     includeActivities(d2, activities);
+    includeTotals(day, d2);
 
     day = day.addDays(1);
   }
 }
 
-void Controller::includeTotals(Dictionary *dictionary, bool addIncludeDictionary)
+void Controller::includeTotals(QDate day, Dictionary *dictionary, bool addIncludeDictionary)
 {
   Dictionary *d;
   if (addIncludeDictionary) {
@@ -226,7 +228,7 @@ void Controller::includeTotals(Dictionary *dictionary, bool addIncludeDictionary
     d = dictionary;
   }
 
-  QList<Activity> activities = Activity::findToday();
+  QList<Activity> activities = Activity::findDay(day);
   QMap<QString, int> projectTotals = Activity::projectTotals(activities);
 
   Dictionary *d2;
@@ -248,7 +250,7 @@ QString Controller::partialTotals()
 {
   View view("_totals.html", false);
   Dictionary *dictionary = view.dictionary();
-  includeTotals(dictionary, false);
+  includeTotals(QDate::currentDate(), dictionary, false);
   return view.render();
 }
 
@@ -259,7 +261,7 @@ QString Controller::partialUpdates()
   includeCurrent(dictionary);
   includeToday(dictionary);
   includeWeek(dictionary);
-  includeTotals(dictionary);
+  includeTotals(QDate::currentDate(), dictionary);
   return view.render();
 }
 
@@ -329,7 +331,7 @@ QString Controller::index()
   includeCurrent(dictionary);
   includeToday(dictionary);
   includeWeek(dictionary);
-  includeTotals(dictionary);
+  includeTotals(QDate::currentDate(), dictionary);
   return view.render();
 }
 

@@ -21,7 +21,7 @@ function updateUI(data) {
   $('.stop-tracking').button();
   $('#today-tab').html(data.today);
   $('#week-tab').html(data.week);
-  $('#totals').html(data.totals);
+  $('#totals, .day-' + dateToYMD(new Date()) + ' .totals').html(data.totals);
   $('tr.activity td').disableSelection();
 
   if (typeof(activities) == "object") {
@@ -61,7 +61,9 @@ function updateCurrent() {
   });
 }
 function updateTotals() {
-  $('#totals').load('/totals');
+  $.get('/totals', function(data) {
+    $('#totals, .day-' + dateToYMD(new Date()) + ' .totals').html(data);
+  }, 'html')
 }
 
 $(function() {
