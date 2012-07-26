@@ -5,6 +5,8 @@
   <file>js/index.js</file>
   <file>js/jquery-ui.min.js</file>
   <file>js/jquery.min.js</file>
+  <file>js/jquery-ui.js</file>
+  <file>js/jquery.js</file>
   <file>js/utils.js</file>
   <file>images/ui-anim_basic_16x16.gif</file>
   <file>css/black-tie/jquery.ui.progressbar.css</file>

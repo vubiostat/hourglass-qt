@@ -90,8 +90,8 @@ $(function() {
   });
 
   $('#select-activity').click(function(e) {
-    $('input.activity-name').focus().autocomplete('search', '');
     e.preventDefault();
+    $('input.activity-name').focus().autocomplete('search', '');
   });
 
   $('input.activity-tags')

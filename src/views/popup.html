@@ -140,11 +140,12 @@
       values: timeValues,
       slide: function(event, ui) {
         var duration = millisecondsToWords((ui.values[1] - ui.values[0]) * 60000);
-        $("#time-slider .duration").html(duration);
+        $("#time-slider .duration").html(duration == "" ? "&nbsp;" : duration);
         setStartedAt(ui.values[0]);
         setEndedAt(ui.values[1]);
       }
     });
-    $("#time-slider .duration").html(millisecondsToWords((timeValues[1] - timeValues[0]) * 60000));
+    var duration = millisecondsToWords((timeValues[1] - timeValues[0]) * 60000);
+    $("#time-slider .duration").html(duration == "" ? "&nbsp;" : duration);
   });
 </script>
