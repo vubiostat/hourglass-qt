@@ -3,8 +3,8 @@
   <file>js/autocomplete.js</file>
   <file>js/dictionary.js</file>
   <file>js/index.js</file>
-  <file>js/jquery-ui-1.8.18.custom.min.js</file>
-  <file>js/jquery-1.7.1.min.js</file>
+  <file>js/jquery-ui.min.js</file>
+  <file>js/jquery.min.js</file>
   <file>js/utils.js</file>
   <file>images/ui-anim_basic_16x16.gif</file>
   <file>css/black-tie/jquery.ui.progressbar.css</file>
@@ -89,8 +89,6 @@
   <file>css/base/minified/jquery.ui.button.min.css</file>
   <file>css/base/minified/jquery.ui.datepicker.min.css</file>
   <file>css/base/minified/jquery.ui.slider.min.css</file>
-  <file>css/base/minified/jquery.ui.all.min.css</file>
-  <file>css/base/minified/jquery.ui.base.min.css</file>
   <file>css/base/jquery.ui.dialog.css</file>
   <file>css/base/jquery.ui.datepicker.css</file>
   <file>css/smoothness/jquery.ui.progressbar.css</file>
