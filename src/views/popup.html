@@ -16,18 +16,18 @@
           <td>Time:</td>
           <td>
             <div class="no-wrap">
-              <input class="activity-started-at-date" type="text" name="activity[started_at_mdy]" value="{{startedAtMDY}}" size="10" maxlength="10" />
-              <input class="activity-started-at-time" type="text" name="activity[started_at_hm]" value="{{startedAtHM}}" size="5" maxlength="5" />
+              <input class="activity-started-at-date activity-started-at" type="text" name="activity[started_at_mdy]" value="{{startedAtMDY}}" size="10" maxlength="10" />
+              <input class="activity-started-at-time activity-started-at" type="text" name="activity[started_at_hm]" value="{{startedAtHM}}" size="5" maxlength="5" />
               to
             </div>
             <div class="no-wrap">
             {{#running}}
-              <input class="activity-ended-at-time" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" disabled="disabled" />
-              <input class="activity-ended-at-date" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" disabled="disabled" />
+              <input class="activity-ended-at-time activity-ended-at" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" disabled="disabled" />
+              <input class="activity-ended-at-date activity-ended-at" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" disabled="disabled" />
             {{/running}}
             {{#notRunning}}
-              <input class="activity-ended-at-time" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" />
-              <input class="activity-ended-at-date" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" />
+              <input class="activity-ended-at-time activity-ended-at" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" />
+              <input class="activity-ended-at-date activity-ended-at" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" />
             {{/notRunning}}
             </div>
             <div class="no-wrap">
@@ -62,25 +62,25 @@
 <script type="text/javascript">
   var dayStartTime = "{{dayStartTime}}";
   var dayEndTime = "{{dayEndTime}}";
+  var slider;
 
   function dayStart() {
     return new Date($(".activity-started-at-date").val() + " " + dayStartTime);
   }
+  function dayStartMinutes() {
+    return dateToMinutes(dayStart());
+  }
   function dayEnd() {
     return new Date($(".activity-started-at-date").val() + " " + dayEndTime);
   }
-  function dateToYMD(d) {
-    var month = d.getMonth() + 1;
-    var day = d.getDate();
-    return "" + (month < 10 ? "0" + month : month) + "/" + (day < 10 ? "0" + day : day) + "/" + d.getFullYear();
-  }
-  function dateToHM(d) {
-    var hours = d.getHours();
-    var minutes = d.getMinutes();
-    return "" + (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes);
+  function dayEndMinutes() {
+    return dateToMinutes(dayEnd());
   }
   function startedAt() {
     return new Date($(".activity-started-at-date").val() + " " + $(".activity-started-at-time").val());
+  }
+  function startedAtMinutes() {
+    return dateToMinutes(startedAt());
   }
   function setStartedAt(minutes) {
     var d = new Date(minutes * 60000);
@@ -90,10 +90,33 @@
   function endedAt() {
     return new Date($(".activity-ended-at-date").val() + " " + $(".activity-ended-at-time").val());
   }
+  function endedAtMinutes() {
+    return dateToMinutes(endedAt());
+  }
   function setEndedAt(minutes) {
     var d = new Date(minutes * 60000);
     $('.activity-ended-at-date').val(dateToYMD(d));
     $('.activity-ended-at-time').val(dateToHM(d));
+  }
+  function updateDuration() {
+    var duration = diffMinutesToWords(endedAtMinutes(), startedAtMinutes());
+    $("#time-slider .duration").html(duration == "" ? "&nbsp;" : duration);
+  }
+  function updateSlider() {
+    var demin = dayEndMinutes();
+    var dsmin = dayStartMinutes();
+    var emin = endedAtMinutes();
+    var smin = startedAtMinutes();
+    if (isSameDay(startedAt(), endedAt()) && demin > dsmin &&
+        emin >= smin && emin <= demin && emin >= dsmin &&
+        smin >= dsmin && smin <= demin) {
+      slider.slider('enable');
+      slider.slider('values', 0, startedAtMinutes());
+      slider.slider('values', 1, endedAtMinutes());
+    }
+    else {
+      slider.slider('disable');
+    }
   }
 
   $(function() {
@@ -106,10 +129,12 @@
       if (checkbox.is(':checked')) {
         form.find('.activity-ended-at-time').attr('disabled', true);
         form.find('.activity-ended-at-date').attr('disabled', true);
+        slider.slider('disable');
       }
       else {
         form.find('.activity-ended-at-time').attr('disabled', false);
         form.find('.activity-ended-at-date').attr('disabled', false);
+        slider.slider('enable');
       }
     });
 
@@ -132,20 +157,25 @@
       window.close();
     });
 
-    var timeValues = [ startedAt().getTime() / 60000, endedAt().getTime() / 60000 ];
-    $('#time-slider .slider').slider({
+    slider = $('#time-slider .slider').slider({
       range: true,
-      min: dayStart().getTime() / 60000,
-      max: dayEnd().getTime() / 60000,
-      values: timeValues,
+      min: dayStartMinutes(),
+      max: dayEndMinutes(),
+      values: [0, 0],
       slide: function(event, ui) {
-        var duration = millisecondsToWords((ui.values[1] - ui.values[0]) * 60000);
-        $("#time-slider .duration").html(duration == "" ? "&nbsp;" : duration);
         setStartedAt(ui.values[0]);
         setEndedAt(ui.values[1]);
+        updateDuration();
       }
     });
-    var duration = millisecondsToWords((timeValues[1] - timeValues[0]) * 60000);
-    $("#time-slider .duration").html(duration == "" ? "&nbsp;" : duration);
+
+    updateSlider();
+
+    $('input.activity-started-at, input.activity-ended-at').change(function() {
+      updateDuration();
+      updateSlider();
+    });
+
+    updateDuration();
   });
 </script>

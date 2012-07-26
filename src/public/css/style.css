@@ -48,7 +48,6 @@ td.activity-tags ul li {
 }
 #new-activity .activity {
   width: 50%;
-  font-weight: bold;
 }
 #new-activity .activity input {
   width: 99%;
@@ -167,7 +166,7 @@ table.times td.icons span.ui-icon-pencil {
   /* add padding to account for vertical scrollbar */
 }
 .ui-autocomplete.activity-time {
-  width: auto;
+  width: 80px;
   max-height: 150px;
 }
 .ui-autocomplete-loading { background: white url('../images/ui-anim_basic_16x16.gif') right center no-repeat; }
@@ -238,3 +237,10 @@ input.ui-button, .ui-button-text-only {
   width: 33%;
   text-align: right;
 }
+
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }

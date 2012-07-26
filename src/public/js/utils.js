@@ -22,3 +22,29 @@ function millisecondsToWords(num) {
 
   return(strings.join(" "));
 }
+
+function diffMinutesToWords(first, second) {
+  return(millisecondsToWords((first - second) * 60000));
+}
+
+function dateToMinutes(date) {
+  return date.getTime() / 60000;
+}
+
+function dateToYMD(d) {
+  var month = d.getMonth() + 1;
+  var day = d.getDate();
+  return "" + (month < 10 ? "0" + month : month) + "/" + (day < 10 ? "0" + day : day) + "/" + d.getFullYear();
+}
+
+function dateToHM(d) {
+  var hours = d.getHours();
+  var minutes = d.getMinutes();
+  return "" + (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes);
+}
+
+function isSameDay(first, second) {
+  return first.getUTCDate() == second.getUTCDate() &&
+    first.getUTCMonth() == second.getUTCMonth() &&
+    first.getUTCFullYear() == second.getUTCFullYear();
+}
