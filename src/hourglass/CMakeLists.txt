@@ -44,7 +44,10 @@ SET(hourglass_QT_HEADERS
 SET(hourglass_SOURCES ${hourglass_QT_SOURCES})
 
 SET(hourglass_RCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/../public/public.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../public/css/css.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../public/images/images.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../public/js/js.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../public/themes/themes.rcs
   ${CMAKE_CURRENT_SOURCE_DIR}/../views/views.rcs
   ${CMAKE_CURRENT_SOURCE_DIR}/../icons/icons.rcs
 )

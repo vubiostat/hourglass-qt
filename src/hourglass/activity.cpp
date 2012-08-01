@@ -16,7 +16,7 @@ const QString Activity::distinctNamesQuery = QString(
 
 const QString Activity::stopCurrentQuery = QString(
     "UPDATE activities SET ended_at = datetime('now', 'localtime') "
-    "WHERE ended_at IS NULL");
+    "WHERE ended_at IS NULL AND untimed != 0");
 
 const QString Activity::deleteShortQuery = QString(
     "DELETE FROM activities "
@@ -35,7 +35,7 @@ const QString Activity::removeTagQuery = QString(
 
 QList<Activity> Activity::find(QString conditions)
 {
-  return find(conditions, "ORDER BY started_at");
+  return find(conditions, "ORDER BY untimed, started_at, id");
 }
 
 QList<Activity> Activity::find(QString conditions, QString predicate)
@@ -50,7 +50,7 @@ Activity Activity::findById(int id)
 
 QList<Activity> Activity::findCurrent()
 {
-  return find("WHERE activities.ended_at IS NULL");
+  return find("WHERE activities.ended_at IS NULL AND activities.untimed != 1");
 }
 
 QList<Activity> Activity::findToday()
@@ -60,7 +60,7 @@ QList<Activity> Activity::findToday()
 
 QList<Activity> Activity::findDay(QDate date)
 {
-  return find(QString("WHERE date(activities.started_at) = date('%1')").arg(date.toString(Qt::ISODate)));
+  return find(QString("WHERE date(activities.started_at) = date('%1') OR (activities.untimed = 1 AND date(activities.day) = date('%1'))").arg(date.toString(Qt::ISODate)));
 }
 
 QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)
@@ -272,6 +272,65 @@ void Activity::setEndedAt(QDateTime endedAt)
   set("ended_at", endedAt);
 }
 
+bool Activity::isUntimed() const
+{
+  int untimed = get("untimed").toInt();
+  return untimed == 1;
+}
+
+void Activity::setUntimed(bool untimed)
+{
+  set("untimed", untimed ? 1 : 0);
+}
+
+int Activity::duration() const
+{
+  if (isUntimed()) {
+    return get("duration").toInt();
+  }
+  else {
+    QDateTime start = startedAt();
+    if (start.isValid()) {
+      QDateTime end = endedAt();
+      if (end.isValid()) {
+        return start.secsTo(end);
+      }
+      else {
+        return start.secsTo(QDateTime::currentDateTime());
+      }
+    }
+    else {
+      return -1;
+    }
+  }
+}
+
+void Activity::setDuration(int duration)
+{
+  set("duration", duration);
+}
+
+QDate Activity::day() const
+{
+  if (isUntimed()) {
+    return get("day").toDate();
+  }
+  else {
+    QDateTime start = startedAt();
+    if (start.isValid()) {
+      return start.date();
+    }
+    else {
+      return QDate();
+    }
+  }
+}
+
+void Activity::setDay(QDate day)
+{
+  set("day", day);
+}
+
 void Activity::setFromParams(const QList<QPair<QString, QString> > &params)
 {
   for (int i = 0; i < params.size(); i++) {
@@ -297,13 +356,33 @@ void Activity::setFromParams(const QList<QPair<QString, QString> > &params)
     else if (pair.first == "activity[tag_names]") {
       setTagNames(pair.second);
     }
+    else if (pair.first == "activity[untimed]") {
+      bool ok = false;
+      int value = pair.second.toInt(&ok);
+      if (ok) {
+        setUntimed(value != 0);
+      }
+    }
+    else if (pair.first == "activity[duration]") {
+      bool ok = false;
+      int value = pair.second.toInt(&ok);
+      if (ok) {
+        setDuration(value);
+      }
+    }
+    else if (pair.first == "activity[day_mdy]") {
+      setDayMDY(pair.second);
+    }
   }
 }
 
 // Non-attribute getters and setters
 bool Activity::isRunning() const
 {
-  if (isNew() || !m_running.isNull()) {
+  if (isUntimed()) {
+    return false;
+  }
+  else if (isNew() || !m_running.isNull()) {
     return m_running.toBool();
   }
   else {
@@ -413,6 +492,25 @@ void Activity::setEndedAtHM(const QString &hm)
   m_endedAtHM = timeFromHM(hm);
 }
 
+QString Activity::dayMDY() const
+{
+  QDate date = day();
+  if (date.isValid()) {
+    return date.toString("MM/dd/yyyy");
+  }
+  else {
+    return QString();
+  }
+}
+
+void Activity::setDayMDY(const QString &mdy)
+{
+  QDate date = dateFromMDY(mdy);
+  if (date.isValid()) {
+    setDay(date);
+  }
+}
+
 QString Activity::tagNames() const
 {
   QList<Tag> currentTags = tags();
@@ -487,23 +585,6 @@ QString Activity::endedAtISO8601() const
   }
   else {
     return QString();
-  }
-}
-
-int Activity::duration() const
-{
-  QDateTime start = startedAt();
-  if (start.isValid()) {
-    QDateTime end = endedAt();
-    if (end.isValid()) {
-      return start.secsTo(end);
-    }
-    else {
-      return start.secsTo(QDateTime::currentDateTime());
-    }
-  }
-  else {
-    return -1;
   }
 }
 
@@ -637,17 +718,30 @@ bool Activity::validate()
     qDebug() << "name was empty";
     return false;
   }
-  if (!startedAt().isValid()) {
-    qDebug() << "startedAt was empty";
-    return false;
+
+  if (isUntimed()) {
+    if (duration() <= 0) {
+      qDebug() << "duration was less than or equal to 0";
+      return false;
+    }
+    if (!day().isValid()) {
+      qDebug() << "day was empty";
+      return false;
+    }
   }
-  if (endedAt().isValid() && duration() < 0) {
-    qDebug() << "endedAt was earlier than startedAt";
-    return false;
-  }
-  if (!isRunning() && !endedAt().isValid()) {
-    qDebug() << "endedAt was empty";
-    return false;
+  else {
+    if (!startedAt().isValid()) {
+      qDebug() << "startedAt was empty";
+      return false;
+    }
+    if (endedAt().isValid() && duration() < 0) {
+      qDebug() << "endedAt was earlier than startedAt";
+      return false;
+    }
+    if (!isRunning() && !endedAt().isValid()) {
+      qDebug() << "endedAt was empty";
+      return false;
+    }
   }
 
   return true;
@@ -657,6 +751,14 @@ void Activity::beforeSave()
 {
   if (isRunning() && !wasRunning()) {
     stopCurrent();
+  }
+  if (isUntimed()) {
+    unset("started_at");
+    unset("ended_at");
+  }
+  else {
+    unset("duration");
+    unset("day");
   }
 }
 

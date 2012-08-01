@@ -136,6 +136,6 @@ $(function() {
       }
     });
 
-  $('.activity-started-at-date, .activity-ended-at-date').datepicker();
+  $('.activity-started-at-date, .activity-ended-at-date, .activity-day').datepicker();
   $('.activity-started-at-time, .activity-ended-at-time').timepicker({});
 });

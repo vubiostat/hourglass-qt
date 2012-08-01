@@ -56,13 +56,20 @@ void Dictionary::addActivity(const Activity &activity)
 {
   setValue("id", activity.id());
   setValue("name", activity.name());
+  setValue("nameWithProject", activity.nameWithProject());
   setValue("startedAtISO8601", activity.startedAtISO8601());
   setValue("startedAtHM", activity.startedAtHM());
   setValue("startedAtMDY", activity.startedAtMDY());
   setValue("endedAtHM", activity.endedAtHM());
   setValue("endedAtMDY", activity.endedAtMDY());
+  setValue("dayMDY", activity.dayMDY());
+
+  int duration = activity.duration();
+  int minutes = duration / 60;
+  setValue("duration", duration);
+  setValue("durationHours", minutes / 60);
+  setValue("durationMinutes", minutes % 60);
   setValue("durationInWords", activity.durationInWords());
-  setValue("nameWithProject", activity.nameWithProject());
 
   QString projectName = activity.projectName();
   setValue("projectName", projectName.isEmpty() ? "unsorted" : projectName);
@@ -82,9 +89,21 @@ void Dictionary::addActivity(const Activity &activity)
   else {
     showSection("notRunning");
   }
+
+  if (activity.isUntimed()) {
+    showSection("untimed");
+  }
+  else {
+    showSection("timed");
+  }
 }
 
 void Dictionary::addActivitySection(const Activity &activity)
+{
+  addActivitySection(activity, "activity");
+}
+
+void Dictionary::addActivitySection(const Activity &activity, const QString &sectionName)
 {
   Dictionary *section = addSectionDictionary("activity");
   section->addActivity(activity);
@@ -92,8 +111,13 @@ void Dictionary::addActivitySection(const Activity &activity)
 
 void Dictionary::addActivitySection(const QList<Activity> &activities)
 {
+  addActivitySection(activities, "activity");
+}
+
+void Dictionary::addActivitySection(const QList<Activity> &activities, const QString &sectionName)
+{
   for (int i = 0; i < activities.size(); i++) {
-    addActivitySection(activities[i]);
+    addActivitySection(activities[i], sectionName);
   }
 }
 

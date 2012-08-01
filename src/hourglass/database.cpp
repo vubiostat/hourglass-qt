@@ -7,7 +7,7 @@
 #include <QProcessEnvironment>
 #include "database.h"
 
-int DatabaseManager::CURRENT_DATABASE_VERSION = 2;
+int DatabaseManager::CURRENT_DATABASE_VERSION = 3;
 
 DatabaseManager::DatabaseManager(QObject *parent)
   : QObject(parent)
@@ -95,6 +95,11 @@ void DatabaseManager::migrateDatabase()
         database.exec("INSERT INTO settings (key, value) VALUES ('theme', 'smoothness');");
         database.exec("INSERT INTO settings (key, value) VALUES ('day_start', '08:00');");
         database.exec("INSERT INTO settings (key, value) VALUES ('day_end', '18:00');");
+        break;
+      case 2:
+        database.exec("ALTER TABLE activities ADD COLUMN untimed INTEGER DEFAULT 0");
+        database.exec("ALTER TABLE activities ADD COLUMN duration INTEGER");
+        database.exec("ALTER TABLE activities ADD COLUMN day TEXT");
         break;
     }
     if (database.lastError().isValid()) {

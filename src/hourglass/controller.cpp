@@ -305,6 +305,7 @@ QString Controller::partialTagNames()
 QString Controller::newOrEditActivity(const Activity &activity)
 {
   View view("popup.html");
+  view.addJavascript("/js/popup.js");
   Dictionary *dictionary = view.dictionary();
 
   if (activity.isNew()) {

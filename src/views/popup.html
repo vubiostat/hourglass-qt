@@ -1,181 +1,143 @@
-<form>
-  <div id="activity-popup" class="ui-widget ui-widget-content ui-corner-all" style="padding: 0.5em; font-size: 1em; overflow: auto;">
-    <div id="time-slider">
-      <div class="labels">
-        <div class="day-start">{{dayStartTime}}</div>
-        <div class="duration">&nbsp;</div>
-        <div class="day-end">{{dayEndTime}}</div>
-        <div class="clear"></div>
+<div id="tabs" class="popup-tabs">
+  <ul>
+    <li><a href="#timed-tab">Timed</a></li>
+    <li><a href="#untimed-tab">Untimed</a></li>
+  </ul>
+  <div id="timed-tab">
+    <form>
+      {{#activity}}
+      <div style="display: none;">
+        <input type="hidden" name="activity[untimed]" value="0" />
       </div>
-      <div class="slider"></div>
-    </div>
-    {{#activity}}
-    <table>
-      <tbody>
-        <tr>
-          <td>Time:</td>
-          <td>
-            <div class="no-wrap">
-              <input class="activity-started-at-date activity-started-at" type="text" name="activity[started_at_mdy]" value="{{startedAtMDY}}" size="10" maxlength="10" />
-              <input class="activity-started-at-time activity-started-at" type="text" name="activity[started_at_hm]" value="{{startedAtHM}}" size="5" maxlength="5" />
-              to
-            </div>
-            <div class="no-wrap">
-            {{#running}}
-              <input class="activity-ended-at-time activity-ended-at" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" disabled="disabled" />
-              <input class="activity-ended-at-date activity-ended-at" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" disabled="disabled" />
-            {{/running}}
-            {{#notRunning}}
-              <input class="activity-ended-at-time activity-ended-at" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" />
-              <input class="activity-ended-at-date activity-ended-at" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" />
-            {{/notRunning}}
-            </div>
-            <div class="no-wrap">
-            {{#running}}
-              <input id="in-progress-checkbox" class="activity-running" type="checkbox" name="activity[running]" value="true" checked="checked" />
-            {{/running}}
-            {{#notRunning}}
-              <input id="in-progress-checkbox" class="activity-running" type="checkbox" name="activity[running]" value="true" />
-            {{/notRunning}}
-              <label for="in-progress-checkbox">in progress</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>Activity:</td>
-          <td colspan="2"><input class="activity-name" type="text" name="activity[name_with_project]" value="{{nameWithProject}}" /></td>
-        </tr>
-        <tr>
-          <td>Tags:</td>
-          <td colspan="2"><input class="activity-tags" type="text" name="activity[tag_names]" value="{{tagNames}}" /></td>
-        </tr>
-      </tbody>
-    </table>
-    {{/activity}}
-    <div class="ac-placeholder">&nbsp;</div>
+      <div id="timed-slider">
+        <div class="labels">
+          <div class="day-start">{{dayStartTime}}</div>
+          <div class="duration">{{durationInWords}}</div>
+          <div class="day-end">{{dayEndTime}}</div>
+          <div class="clear"></div>
+        </div>
+        <div class="slider"></div>
+      </div>
+      <table>
+        <tbody>
+          <tr>
+            <td>Time:</td>
+            <td>
+              <div class="no-wrap">
+                <input class="activity-started-at-date activity-started-at" type="text" name="activity[started_at_mdy]" value="{{startedAtMDY}}" size="10" maxlength="10" />
+                <input class="activity-started-at-time activity-started-at" type="text" name="activity[started_at_hm]" value="{{startedAtHM}}" size="5" maxlength="5" />
+                to
+              </div>
+              <div class="no-wrap">
+              {{#running}}
+                <input class="activity-ended-at-time activity-ended-at" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" disabled="disabled" />
+                <input class="activity-ended-at-date activity-ended-at" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" disabled="disabled" />
+              {{/running}}
+              {{#notRunning}}
+                <input class="activity-ended-at-time activity-ended-at" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" />
+                <input class="activity-ended-at-date activity-ended-at" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" />
+              {{/notRunning}}
+              </div>
+              <div class="no-wrap">
+              {{#running}}
+                <input id="in-progress-checkbox" class="activity-running" type="checkbox" name="activity[running]" value="true" checked="checked" />
+              {{/running}}
+              {{#notRunning}}
+                <input id="in-progress-checkbox" class="activity-running" type="checkbox" name="activity[running]" value="true" />
+              {{/notRunning}}
+                <label for="in-progress-checkbox">in progress</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Activity:</td>
+            <td colspan="2"><input class="activity-name" type="text" name="activity[name_with_project]" value="{{nameWithProject}}" /></td>
+          </tr>
+          <tr>
+            <td>Tags:</td>
+            <td colspan="2"><input class="activity-tags" type="text" name="activity[tag_names]" value="{{tagNames}}" /></td>
+          </tr>
+        </tbody>
+      </table>
+      {{/activity}}
+      <div class="ac-placeholder">&nbsp;</div>
+    </form>
   </div>
-  <div class="right-align" style="margin: 0.5em 0";>
-    <input id="save-button" type="submit" value="Save" />
-    <input id="cancel-button" type="button" value="Cancel" />
+  <div id="untimed-tab">
+    <form>
+      {{#activity}}
+      <div style="display: none;">
+        <input type="hidden" name="activity[untimed]" value="1" />
+        <input class="activity-duration" type="hidden" name="activity[duration]" value="{{duration}}" />
+      </div>
+      <table>
+        <tbody>
+          <tr>
+            <td>Date:</td>
+            <td>
+              <input class="activity-day" type="text" name="activity[day_mdy]" value="{{dayMDY}}" size="10" maxlength="10" />
+            </td>
+          <tr>
+            <td>Time:</td>
+            <td class="untimed-duration">
+              <div class="hours">
+                <div class="input">
+                  <input class="activity-duration-hours" type="text" maxlength="2" size="3" value="{{durationHours}}" />
+                </div>
+                <div class="up-down">
+                  <span class="up"></span>
+                  <span class="down"></span>
+                  <div class="clear"></div>
+                </div>
+                <div class="label">
+                  hour(s)
+                </div>
+                <div class="clear"></div>
+              </div>
+              <div class="minutes">
+                <div class="input">
+                  <input class="activity-duration-minutes" type="text" maxlength="2" size="3" value="{{durationMinutes}}" />
+                </div>
+                <div class="up-down">
+                  <span class="up"></span>
+                  <span class="down"></span>
+                  <div class="clear"></div>
+                </div>
+                <div class="label">
+                  minute(s)
+                </div>
+                <div class="clear"></div>
+              </div>
+              <div class="clear"></div>
+            </td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td>
+              <div id="untimed-slider"></div>
+            </td>
+          <tr>
+            <td>Activity:</td>
+            <td><input class="activity-name" type="text" name="activity[name_with_project]" value="{{nameWithProject}}" /></td>
+          </tr>
+          <tr>
+            <td>Tags:</td>
+            <td><input class="activity-tags" type="text" name="activity[tag_names]" value="{{tagNames}}" /></td>
+          </tr>
+        </tbody>
+      </table>
+      {{/activity}}
+    </form>
   </div>
-</form>
+</div>
+<div class="right-align" style="margin: 0.5em 0";>
+  <button id="save-button">Save</button>
+  <button id="cancel-button">Cancel</button>
+</div>
 <script type="text/javascript">
   var dayStartTime = "{{dayStartTime}}";
   var dayEndTime = "{{dayEndTime}}";
-  var slider;
-
-  function dayStart() {
-    return new Date($(".activity-started-at-date").val() + " " + dayStartTime);
-  }
-  function dayStartMinutes() {
-    return dateToMinutes(dayStart());
-  }
-  function dayEnd() {
-    return new Date($(".activity-started-at-date").val() + " " + dayEndTime);
-  }
-  function dayEndMinutes() {
-    return dateToMinutes(dayEnd());
-  }
-  function startedAt() {
-    return new Date($(".activity-started-at-date").val() + " " + $(".activity-started-at-time").val());
-  }
-  function startedAtMinutes() {
-    return dateToMinutes(startedAt());
-  }
-  function setStartedAt(minutes) {
-    var d = new Date(minutes * 60000);
-    $('.activity-started-at-date').val(dateToYMD(d));
-    $('.activity-started-at-time').val(dateToHM(d));
-  }
-  function endedAt() {
-    return new Date($(".activity-ended-at-date").val() + " " + $(".activity-ended-at-time").val());
-  }
-  function endedAtMinutes() {
-    return dateToMinutes(endedAt());
-  }
-  function setEndedAt(minutes) {
-    var d = new Date(minutes * 60000);
-    $('.activity-ended-at-date').val(dateToYMD(d));
-    $('.activity-ended-at-time').val(dateToHM(d));
-  }
-  function updateDuration() {
-    var duration = diffMinutesToWords(endedAtMinutes(), startedAtMinutes());
-    $("#time-slider .duration").html(duration == "" ? "&nbsp;" : duration);
-  }
-  function updateSlider() {
-    var demin = dayEndMinutes();
-    var dsmin = dayStartMinutes();
-    var emin = endedAtMinutes();
-    var smin = startedAtMinutes();
-    if (isSameDay(startedAt(), endedAt()) && demin > dsmin &&
-        emin >= smin && emin <= demin && emin >= dsmin &&
-        smin >= dsmin && smin <= demin) {
-      slider.slider('enable');
-      slider.slider('values', 0, startedAtMinutes());
-      slider.slider('values', 1, endedAtMinutes());
-    }
-    else {
-      slider.slider('disable');
-    }
-  }
-
-  $(function() {
-    var form = $('form');
-
-    $('#save-button, #cancel-button').button();
-
-    var checkbox = $('#in-progress-checkbox');
-    checkbox.click(function(e) {
-      if (checkbox.is(':checked')) {
-        form.find('.activity-ended-at-time').attr('disabled', true);
-        form.find('.activity-ended-at-date').attr('disabled', true);
-        slider.slider('disable');
-      }
-      else {
-        form.find('.activity-ended-at-time').attr('disabled', false);
-        form.find('.activity-ended-at-date').attr('disabled', false);
-        slider.slider('enable');
-      }
-    });
-
-    var submitUrl = "{{submitUrl}}";
-    form.submit(function(e) {
-      e.preventDefault();
-      $.post(submitUrl, form.serialize(), function(data, status) {
-        if (data && !data.errors) {
-          window.opener.updateUI(data);
-          window.close();
-        }
-        else {
-          // TODO: show reason for failure
-        }
-      }, 'json');
-    });
-
-    $('#cancel-button').click(function(e) {
-      e.preventDefault();
-      window.close();
-    });
-
-    slider = $('#time-slider .slider').slider({
-      range: true,
-      min: dayStartMinutes(),
-      max: dayEndMinutes(),
-      values: [0, 0],
-      slide: function(event, ui) {
-        setStartedAt(ui.values[0]);
-        setEndedAt(ui.values[1]);
-        updateDuration();
-      }
-    });
-
-    updateSlider();
-
-    $('input.activity-started-at, input.activity-ended-at').change(function() {
-      updateDuration();
-      updateSlider();
-    });
-
-    updateDuration();
-  });
+  var submitUrl = "{{submitUrl}}";
+  var timedDurationSlider, untimedDurationSlider;
+  var untimed = {{#activity}}{{#timed}}false{{/timed}}{{#untimed}}true{{/untimed}}{{/activity}};
 </script>

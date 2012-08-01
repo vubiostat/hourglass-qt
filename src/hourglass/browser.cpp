@@ -10,6 +10,9 @@ Browser::Browser(QWidget *parent)
 {
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   connect(this, SIGNAL(loadFinished(bool)), this, SLOT(resizeView()));
+
+  QWebFrame *frame = page()->mainFrame();
+  frame->addToJavaScriptWindowObject("qt", this);
 }
 
 void Browser::resizeView()
@@ -17,12 +20,21 @@ void Browser::resizeView()
   QWebFrame *frame = page()->mainFrame();
   int width = frame->evaluateJavaScript("$('body').outerWidth(true);").toInt();
   int height = frame->evaluateJavaScript("$('body').outerHeight(true);").toInt();
-  //qDebug() << "Width:" << width << "Height:" << height;
+  qDebug() << "Width:" << width << "Height:" << height;
   resize(width, height);
   emit resized(width, height);
 }
 
-QWebView * Browser::createWindow(QWebPage::WebWindowType type)
+void Browser::resizeViewHeight()
+{
+  QWebFrame *frame = page()->mainFrame();
+  int height = frame->evaluateJavaScript("$('body').outerHeight(true);").toInt();
+  qDebug() << "Height:" << height;
+  resize(width(), height);
+  emit resized(width(), height);
+}
+
+QWebView *Browser::createWindow(QWebPage::WebWindowType type)
 {
   Popup *popup = new Popup(parentWidget());
   return popup->browser;

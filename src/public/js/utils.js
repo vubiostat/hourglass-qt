@@ -1,5 +1,4 @@
-function millisecondsToWords(num) {
-  var total_minutes = Math.floor(num / 60000);
+function minutesToWords(total_minutes) {
   if (total_minutes == 0) {
     return("0min");
   }
@@ -23,8 +22,12 @@ function millisecondsToWords(num) {
   return(strings.join(" "));
 }
 
+function millisecondsToWords(num) {
+  return minutesToWords(Math.floor(num / 60000));
+}
+
 function diffMinutesToWords(first, second) {
-  return(millisecondsToWords((first - second) * 60000));
+  return minutesToWords(first - second);
 }
 
 function dateToMinutes(date) {

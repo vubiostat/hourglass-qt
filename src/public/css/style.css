@@ -109,10 +109,10 @@ table.times td {
 table.times td.activity-started-at {
   padding-right: 0.3em;
 }
+table.times td.time-separator {
+}
 table.times td.activity-ended-at {
   padding-left: 0.3em;
-}
-table.times td.time-separator {
 }
 table.times td.activity-name {
   padding: 0 0.3em 0 1em;
@@ -137,13 +137,13 @@ table.times td.icons span.ui-icon-pencil {
   margin-left: 0.7em;
 }
 
-#activity-popup table {
+.popup-tabs table {
   width: 100%;
 }
-#activity-popup table td:nth-child(2) {
+.popup-tabs table td:nth-child(2) {
 }
-#activity-popup .activity-name,
-#activity-popup .activity-tags {
+.popup-tabs .activity-name,
+.popup-tabs .activity-tags {
   width: 100%;
 }
 
@@ -171,7 +171,7 @@ table.times td.icons span.ui-icon-pencil {
 }
 .ui-autocomplete-loading { background: white url('../images/ui-anim_basic_16x16.gif') right center no-repeat; }
 .ac-placeholder {
-  height: 100px;
+  height: 50px;
 }
 .ui-autocomplete-header {
   font-weight: bold;
@@ -225,19 +225,19 @@ ul.day-times li .totals {
   height: 1.4em;
 }
 
-#time-slider {
+#timed-slider {
   margin-bottom: 0.5em;
 }
-#time-slider .labels .day-start {
+#timed-slider .labels .day-start {
   float: left;
   width: 33%;
 }
-#time-slider .labels .duration {
+#timed-slider .labels .duration {
   float: left;
   width: 34%;
   text-align: center;
 }
-#time-slider .labels .day-end {
+#timed-slider .labels .day-end {
   float: left;
   width: 33%;
   text-align: right;
@@ -249,3 +249,44 @@ ul.day-times li .totals {
 .ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
 .ui-timepicker-div td { font-size: 90%; }
 .ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+td.untimed-duration div.hours {
+  float: left;
+  line-height: 2em;
+  margin-right: 0.3em;
+}
+td.untimed-duration div.minutes {
+  float: left;
+  line-height: 2em;
+}
+td.untimed-duration div.input { float: left; }
+td.untimed-duration input { }
+td.untimed-duration div.up-down {
+  float: left;
+  margin-left: -20px;
+  margin-right: 0.3em;
+  height: 2em;
+  position: relative;
+}
+td.untimed-duration div.up-down span {
+  display: block;
+  text-indent: -99999px;
+  overflow: hidden;
+  background-repeat: no-repeat;
+  width: 16px;
+  height: 16px;
+}
+td.untimed-duration div.up-down .up {
+  background-image: url(../images/up.png);
+  margin-top: 4px;
+}
+td.untimed-duration div.up-down .down {
+  background-image: url(../images/down.png);
+  margin-top: -4px;
+}
+td.untimed-duration div.label { float: left; }
+
+/* fix slider handle going over the datepicker */
+.ui-slider .ui-slider-handle {
+  z-index: 1;
+}
