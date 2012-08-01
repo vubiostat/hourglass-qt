@@ -42,7 +42,7 @@ class Controller : public QObject
     void includeCurrent(Dictionary *dictionary);
     void includeToday(Dictionary *dictionary);
     void includeWeek(Dictionary *dictionary);
-    void includeTotals(Dictionary *dictionary, bool addIncludeDictionary = true);
+    void includeTotals(QDate day, Dictionary *dictionary, bool addIncludeDictionary = true);
 
     QString partialTotals();
     QString partialUpdates();
@@ -50,6 +50,7 @@ class Controller : public QObject
     QString partialActivityNames();
     QString partialProjectNames();
     QString partialTagNames();
+    QString newOrEditActivity(const Activity &activity);
 
     QString index();
     QString createActivity(const QList<QPair<QString, QString> > &params);
@@ -59,6 +60,8 @@ class Controller : public QObject
     QString updateActivity(int activityId, const QList<QPair<QString, QString> > &params);
     QString deleteActivity(int activityId);
     QString restartActivity(int activityId);
+    QString editSettings();
+    QString updateSettings(const QList<QPair<QString, QString> > &params);
 
     bool pathMatches(const QString &path, const QString &pattern, QStringList &matchData);
     void serveFile(const QString &path);

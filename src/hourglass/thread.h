@@ -9,13 +9,14 @@ class ServerThread : public QThread
   Q_OBJECT
 
   public:
-    ServerThread(QString root, QObject *parent = 0);
+    ServerThread(int port, QString root, QObject *parent = 0);
     void run();
 
   signals:
     void serverStarted();
 
   private:
+    int port;
     QString root;
     Server *s;
 

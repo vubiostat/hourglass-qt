@@ -4,6 +4,7 @@
 #include "controller.h"
 #include "project.h"
 #include "tag.h"
+#include "setting.h"
 
 const QString Controller::editActivityPattern =
   QString("^/activities/(\\d+)/edit$");
@@ -53,6 +54,7 @@ void Controller::route()
 {
   QString path = m_req->path();
   QString method = m_req->method();
+  //qDebug() << method << path;
 
   QString result;
   QStringList matchData;
@@ -98,6 +100,9 @@ void Controller::route()
       result = partialTotals();
       isJSON = true;
     }
+    else if (path == "/settings/edit") {
+      result = editSettings();
+    }
   }
   else if (method == "POST") {
     QList<QPair<QString, QString> > params = decodePost(data);
@@ -121,6 +126,10 @@ void Controller::route()
         result = restartActivity(activityId);
         isJSON = true;
       }
+    }
+    else if (path == "/settings") {
+      result = updateSettings(params);
+      isJSON = true;
     }
   }
 
@@ -201,13 +210,15 @@ void Controller::includeWeek(Dictionary *dictionary)
     dayOfWeek = day.dayOfWeek();
     d2->setValue("dayName", QDate::longDayName(dayOfWeek));
     d2->setValue("dayNumber", i);
+    d2->setValue("ymd", day.toString("yyyy-MM-dd"));
     includeActivities(d2, activities);
+    includeTotals(day, d2);
 
     day = day.addDays(1);
   }
 }
 
-void Controller::includeTotals(Dictionary *dictionary, bool addIncludeDictionary)
+void Controller::includeTotals(QDate day, Dictionary *dictionary, bool addIncludeDictionary)
 {
   Dictionary *d;
   if (addIncludeDictionary) {
@@ -217,7 +228,7 @@ void Controller::includeTotals(Dictionary *dictionary, bool addIncludeDictionary
     d = dictionary;
   }
 
-  QList<Activity> activities = Activity::findToday();
+  QList<Activity> activities = Activity::findDay(day);
   QMap<QString, int> projectTotals = Activity::projectTotals(activities);
 
   Dictionary *d2;
@@ -239,7 +250,7 @@ QString Controller::partialTotals()
 {
   View view("_totals.html", false);
   Dictionary *dictionary = view.dictionary();
-  includeTotals(dictionary, false);
+  includeTotals(QDate::currentDate(), dictionary, false);
   return view.render();
 }
 
@@ -250,7 +261,7 @@ QString Controller::partialUpdates()
   includeCurrent(dictionary);
   includeToday(dictionary);
   includeWeek(dictionary);
-  includeTotals(dictionary);
+  includeTotals(QDate::currentDate(), dictionary);
   return view.render();
 }
 
@@ -291,6 +302,27 @@ QString Controller::partialTagNames()
   return partialNames(distinctNames);
 }
 
+QString Controller::newOrEditActivity(const Activity &activity)
+{
+  View view("popup.html");
+  view.addJavascript("/js/popup.js");
+  Dictionary *dictionary = view.dictionary();
+
+  if (activity.isNew()) {
+    view.setTitle("Add earlier activity");
+    dictionary->setValue("submitUrl", "/activities");
+  }
+  else {
+    view.setTitle("Edit activity");
+    dictionary->setValue("submitUrl", QString("/activities/%1").arg(activity.id()));
+  }
+
+  dictionary->setValue("dayStartTime", Setting::getValue("day_start", "08:00"));
+  dictionary->setValue("dayEndTime", Setting::getValue("day_end", "18:00"));
+  dictionary->addActivitySection(activity);
+  return view.render();
+}
+
 // GET /
 QString Controller::index()
 {
@@ -300,7 +332,7 @@ QString Controller::index()
   includeCurrent(dictionary);
   includeToday(dictionary);
   includeWeek(dictionary);
-  includeTotals(dictionary);
+  includeTotals(QDate::currentDate(), dictionary);
   return view.render();
 }
 
@@ -326,35 +358,22 @@ QString Controller::stopCurrentActivities()
 // GET /activities/new
 QString Controller::newActivity()
 {
-  View view("popup.html");
-  view.setTitle("Add earlier activity");
-  Dictionary *dictionary = view.dictionary();
-
-  QDateTime now = QDateTime::currentDateTime();
+  QPair<QDateTime, QDateTime> gap = Activity::lastGap();
   Activity activity = Activity();
-  activity.setStartedAt(now);
-  activity.setEndedAt(now);
-  activity.setRunning(true);
-  dictionary->setValue("submitUrl", "/activities");
-  dictionary->addActivitySection(activity);
-  return view.render();
+  activity.setStartedAt(gap.first);
+  activity.setEndedAt(gap.second);
+  activity.setRunning(false);
+  return newOrEditActivity(activity);
 }
 
 // GET /activities/1/edit
 QString Controller::editActivity(int activityId)
 {
-  View view("popup.html");
-  view.setTitle("Edit activity");
-  Dictionary *dictionary = view.dictionary();
-
-  QDateTime now = QDateTime::currentDateTime();
   Activity activity = Activity::findById(activityId);
   if (activity.isNew()) {
     return QString();
   }
-  dictionary->setValue("submitUrl", QString("/activities/%1").arg(activityId));
-  dictionary->addActivitySection(activity);
-  return view.render();
+  return newOrEditActivity(activity);
 }
 
 // POST /activities/1
@@ -395,6 +414,40 @@ QString Controller::restartActivity(int activityId)
     return partialUpdates();
   }
   return QString("{\"failed\": true}");
+}
+
+// GET /settings/edit
+QString Controller::editSettings()
+{
+  View view("settings.html");
+  view.setTitle("Preferences");
+  Dictionary *dictionary = view.dictionary();
+  dictionary->setValue("dayStart", Setting::getValue("day_start", "08:00"));
+  dictionary->setValue("dayEnd", Setting::getValue("day_end", "18:00"));
+  return view.render();
+}
+
+// POST /settings
+QString Controller::updateSettings(const QList<QPair<QString, QString> > &params)
+{
+  bool success = true;
+  for (int i = 0; i < params.size(); i++) {
+    const QPair<QString, QString> pair = params[i];
+
+    if (pair.first == "settings[day_start][value]") {
+      success = success && Setting::setValue("day_start", pair.second);
+    }
+    else if (pair.first == "settings[day_end][value]") {
+      success = success && Setting::setValue("day_end", pair.second);
+    }
+  }
+
+  if (success) {
+    return QString("{\"success\": true}");
+  }
+  else {
+    return QString("{\"errors\": \"There were errors!\"}");
+  }
 }
 
 bool Controller::pathMatches(const QString &path, const QString &pattern, QStringList &matchData)

@@ -1,0 +1,41 @@
+<form method="post" action="/settings">
+  <div class="ui-widget ui-widget-content ui-corner-all" style="padding: 0.5em; font-size: 1em; overflow: auto;">
+    <table>
+      <tbody>
+        <tr>
+          <td>Work day start:</td>
+          <td><input type="text" name="settings[day_start][value]" value="{{dayStart}}" /></td>
+        </tr>
+        <tr>
+          <td>Work day end:</td>
+          <td><input type="text" name="settings[day_end][value]" value="{{dayEnd}}" /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="right-align" style="margin: 0.5em 0";>
+    <input id="save-button" type="submit" value="Save" />
+    <input id="cancel-button" type="button" value="Cancel" />
+  </div>
+</form>
+<script type="text/javascript">
+  $(function() {
+    $('#save-button, #cancel-button').button();
+    var form = $('form');
+    form.submit(function(e) {
+      e.preventDefault();
+      $.post(form.attr('action'), form.serialize(), function(data, status) {
+        if (data && !data.errors) {
+          window.close();
+        }
+        else {
+          // TODO: show reason for failure
+        }
+      }, 'json');
+    });
+    $('#cancel-button').click(function(e) {
+      e.preventDefault();
+      window.close();
+    });
+  });
+</script>

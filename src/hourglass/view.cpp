@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include "view.h"
+#include "setting.h"
 
 View::View(QString name, bool useLayout, QObject *parent)
   : QObject(parent), useLayout(useLayout)
@@ -9,6 +10,7 @@ View::View(QString name, bool useLayout, QObject *parent)
   if (useLayout) {
     _rootDictionary = _layoutDictionary = new Dictionary("layout", this);
     _layoutDictionary->setValue("title", "Hourglass");
+    _layoutDictionary->setValue("theme", Setting::getValue("theme", "smoothness"));
     _contentDictionary = _layoutDictionary->addIncludeDictionary("content", name);
     templateName = "layout.html";
   }

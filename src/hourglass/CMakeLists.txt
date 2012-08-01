@@ -4,7 +4,7 @@ SET(QT_USE_QTSQL TRUE)
 
 SET(hourglass_QT_SOURCES
   browser.cpp
-  launcher.cpp
+  window.cpp
   main.cpp
   popup.cpp
   thread.cpp
@@ -18,11 +18,13 @@ SET(hourglass_QT_SOURCES
   hourglass.cpp
   dictionary.cpp
   controller.cpp
+  setting.cpp
+  about.cpp
 )
 
 SET(hourglass_QT_HEADERS
   browser.h
-  launcher.h
+  window.h
   popup.h
   thread.h
   database.h
@@ -35,13 +37,19 @@ SET(hourglass_QT_HEADERS
   dictionary.h
   hourglass.h
   controller.h
+  setting.h
+  about.h
 )
 
 SET(hourglass_SOURCES ${hourglass_QT_SOURCES})
 
 SET(hourglass_RCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/../public/public.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../public/css/css.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../public/images/images.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../public/js/js.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../public/themes/themes.rcs
   ${CMAKE_CURRENT_SOURCE_DIR}/../views/views.rcs
+  ${CMAKE_CURRENT_SOURCE_DIR}/../icons/icons.rcs
 )
 
 QT4_WRAP_CPP(hourglass_QT_HEADERS_MOC ${hourglass_QT_HEADERS})

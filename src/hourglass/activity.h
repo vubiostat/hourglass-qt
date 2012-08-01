@@ -18,6 +18,7 @@ class Activity : public Model
 
   public:
     static QList<Activity> find(QString conditions);
+    static QList<Activity> find(QString conditions, QString predicate);
     static Activity findById(int id);
     static QList<Activity> findCurrent();
     static QList<Activity> findToday();
@@ -27,6 +28,7 @@ class Activity : public Model
     static void stopCurrent();
     static QVariantList toVariantList(QList<Activity> &activities);
     static bool startLike(const Activity &activity);
+    static QPair<QDateTime, QDateTime> lastGap();
 
     Activity(QObject *parent = 0);
     Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
@@ -36,12 +38,18 @@ class Activity : public Model
     int projectId() const;
     QDateTime startedAt() const;
     QDateTime endedAt() const;
+    bool isUntimed() const;
+    int duration() const;
+    QDate day() const;
 
     // Attribute setters
     void setName(QString name);
     void setProjectId(int projectId);
     void setStartedAt(QDateTime startedAt);
     void setEndedAt(QDateTime endedAt);
+    void setUntimed(bool untimed);
+    void setDuration(int duration);
+    void setDay(QDate day);
     void setFromParams(const QList<QPair<QString, QString> > &params);
 
     // Non-attribute getters/setters
@@ -58,6 +66,8 @@ class Activity : public Model
     void setEndedAtMDY(const QString &mdy);
     QString endedAtHM() const;
     void setEndedAtHM(const QString &hm);
+    QString dayMDY() const;
+    void setDayMDY(const QString &mdy);
     QString tagNames() const;
     void setTagNames(const QString &tagNames);
 
@@ -67,7 +77,6 @@ class Activity : public Model
     QList<Tag> tags() const;
     QString startedAtISO8601() const;
     QString endedAtISO8601() const;
-    int duration() const;
     QString durationInWords() const;
     QVariantMap toVariantMap() const;
     bool isSimilarTo(const Activity &other) const;

@@ -13,12 +13,13 @@ class Browser : public QWebView
 
   public slots:
     void resizeView();
+    void resizeViewHeight();
 
   signals:
     void resized(int width, int height);
 
   private:
-    QWebView * createWindow(QWebPage::WebWindowType type);
+    QWebView *createWindow(QWebPage::WebWindowType type);
 };
 
 #endif

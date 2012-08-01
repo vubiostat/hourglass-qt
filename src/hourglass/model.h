@@ -31,6 +31,13 @@ class Model : public QObject
     }
 
     template <class T>
+    static QList<T> find(QString tableName, QString conditions, QString predicate)
+    {
+      QList<QVariant> emptyBindValues;
+      return find<T>(tableName, conditions, emptyBindValues, predicate);
+    }
+
+    template <class T>
     static T findById(QString tableName, int id)
     {
       QList<QVariant> bindValues;
@@ -45,11 +52,20 @@ class Model : public QObject
     template <class T>
     static QList<T> find(QString tableName, QString conditions, const QList<QVariant> &bindValues)
     {
+      return find<T>(tableName, conditions, bindValues, QString());
+    }
+
+    template <class T>
+    static QList<T> find(QString tableName, QString conditions, const QList<QVariant> &bindValues, QString predicate)
+    {
       QStringList queryStrings;
       queryStrings << "SELECT * FROM";
       queryStrings << tableName;
       if (!conditions.isEmpty()) {
         queryStrings << conditions;
+      }
+      if (!predicate.isEmpty()) {
+        queryStrings << predicate;
       }
       QString queryString = queryStrings.join(" ");
 
