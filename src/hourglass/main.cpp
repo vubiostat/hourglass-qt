@@ -1,6 +1,7 @@
-#include <signal.h>
 #include "hourglass.h"
 
+#ifndef Q_OS_WIN32
+#include <signal.h>
 static int setup_unix_signal_handlers()
 {
   struct sigaction interrupt;
@@ -14,10 +15,13 @@ static int setup_unix_signal_handlers()
 
   return 0;
 }
+#endif
 
 int main(int argc, char **argv)
 {
   Hourglass app(argc, argv);
+#ifndef Q_OS_WIN32
   setup_unix_signal_handlers();
+#endif
   return app.exec();
 }
