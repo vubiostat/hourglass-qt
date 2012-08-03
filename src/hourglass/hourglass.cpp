@@ -87,9 +87,9 @@ int Hourglass::exec()
   return QApplication::exec();
 }
 
-#ifndef Q_OS_WIN32
 void Hourglass::handleSigInt()
 {
+#ifndef Q_OS_WIN32
   snInt->setEnabled(false);
   char tmp;
   ::read(sigintFd[1], &tmp, sizeof(tmp));
@@ -97,14 +97,16 @@ void Hourglass::handleSigInt()
   quit();
 
   snInt->setEnabled(true);
+#endif
 }
 
 void Hourglass::intSignalHandler(int)
 {
+#ifndef Q_OS_WIN32
   char a = 1;
   ::write(sigintFd[0], &a, sizeof(a));
-}
 #endif
+}
 
 void Hourglass::cleanUp()
 {

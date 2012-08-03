@@ -14,14 +14,10 @@ class Hourglass : public QApplication
     Hourglass(int &argc, char **argv);
     int exec();
 
-#ifndef Q_OS_WIN32
     static void intSignalHandler(int unused);
-#endif
 
   public slots:
-#ifndef Q_OS_WIN32
     void handleSigInt();
-#endif
     void cleanUp();
 
   private:
@@ -30,10 +26,8 @@ class Hourglass : public QApplication
     Window *window;
     ServerThread *st;
 
-#ifndef Q_OS_WIN32
     static int sigintFd[2];
     QSocketNotifier *snInt;
-#endif
 };
 
 #endif
