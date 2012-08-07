@@ -16,7 +16,7 @@ const QString Activity::distinctNamesQuery = QString(
 
 const QString Activity::stopCurrentQuery = QString(
     "UPDATE activities SET ended_at = datetime('now', 'localtime') "
-    "WHERE ended_at IS NULL AND untimed != 0");
+    "WHERE ended_at IS NULL AND untimed != 1");
 
 const QString Activity::deleteShortQuery = QString(
     "DELETE FROM activities "
