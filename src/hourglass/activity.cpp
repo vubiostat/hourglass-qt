@@ -145,8 +145,9 @@ QPair<QDateTime, QDateTime> Activity::lastGap()
     lowerBound = now.addSecs(-14400);
   }
   QList<Activity> activities = find(
-      QString("WHERE datetime(activities.started_at) >= datetime('%1')").
-        arg(lowerBound.toString("yyyy-MM-dd hh:mm")));
+      QString("WHERE datetime(activities.started_at) >= datetime('%1') AND datetime(activities.started_at) <= datetime('%2')").
+        arg(lowerBound.toString("yyyy-MM-dd hh:mm")).
+        arg(now.toString("yyyy-MM-dd hh:mm")));
 
   QPair<QDateTime, QDateTime> gap;
   if (activities.empty()) {
