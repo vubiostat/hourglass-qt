@@ -10,22 +10,30 @@ function dayEnd() {
 function dayEndMinutes() {
   return dateToMinutes(dayEnd());
 }
-function startedAt() {
-  return new Date($(".activity-started-at-date").val() + " " + $(".activity-started-at-time").val());
+function startedAt(previous) {
+  var dateObj = $('.activity-started-at-date');
+  var timeObj = $('.activity-started-at-time');
+  var dateValue = previous ? dateObj.data('previousValue') : dateObj.val();
+  var timeValue = previous ? timeObj.data('previousValue') : timeObj.val();
+  return new Date(dateValue + " " + timeValue);
 }
-function startedAtMinutes() {
-  return dateToMinutes(startedAt());
+function startedAtMinutes(previous) {
+  return dateToMinutes(startedAt(previous));
 }
 function setStartedAt(minutes) {
   var d = new Date(minutes * 60000);
   $('.activity-started-at-date').val(dateToYMD(d));
   $('.activity-started-at-time').val(dateToHM(d));
 }
-function endedAt() {
-  return new Date($(".activity-ended-at-date").val() + " " + $(".activity-ended-at-time").val());
+function endedAt(previous) {
+  var dateObj = $('.activity-ended-at-date');
+  var timeObj = $('.activity-ended-at-time');
+  var dateValue = previous ? dateObj.data('previousValue') : dateObj.val();
+  var timeValue = previous ? timeObj.data('previousValue') : timeObj.val();
+  return new Date(dateValue + " " + timeValue);
 }
-function endedAtMinutes() {
-  return dateToMinutes(endedAt());
+function endedAtMinutes(previous) {
+  return dateToMinutes(endedAt(previous));
 }
 function setEndedAt(minutes) {
   var d = new Date(minutes * 60000);
@@ -195,9 +203,52 @@ $(function() {
   });
   updateTimedDurationSlider();
 
-  $('input.activity-started-at, input.activity-ended-at').change(function() {
+  var checking = false;
+  $('input.activity-started-at, input.activity-ended-at').each(function() {
+    var obj = $(this);
+    var value = obj.val();
+    obj.data('originalValue', value);
+    obj.data('previousValue', value);
+  }).change(function() {
+    var obj = $(this);
+    var startDate = startedAt();
+    var endDate = endedAt();
+    if (startDate > endDate && !checking) {
+      /* Try to automatically fix some stuff */
+      checking = true;
+      var prevStartDate = startedAt(true);
+      var prevEndDate = endedAt(true);
+
+      if (obj.hasClass('activity-time')) {
+        if (obj.hasClass('activity-started-at')) {
+          /* started-at-time changed, so let's change ended-at-time */
+          var diff = diffInMinutes(endDate, prevStartDate);
+          setEndedAt(startedAtMinutes() + diff);
+        }
+        else {
+          /* ended-at-time changed, so let's change started-at-time */
+          var diff = diffInMinutes(prevEndDate, startDate);
+          setStartedAt(endedAtMinutes() - diff);
+        }
+      }
+      else {
+        var num = Math.ceil(diffInDays(startDate, endDate));
+        if (obj.hasClass('activity-started-at')) {
+          /* started-at-date changed, so let's change ended-at-date */
+          var newDate = addDays(endDate, num);
+          setEndedAt(dateToMinutes(newDate));
+        }
+        else {
+          /* ended-at-time changed, so let's change started-at-time */
+          var newDate = addDays(startDate, -num);
+          setStartedAt(dateToMinutes(newDate));
+        }
+      }
+      checking = false;
+    }
     updateTimedDuration();
     updateTimedDurationSlider();
+    obj.data('previousValue', obj.val());
   });
   updateTimedDuration();
 

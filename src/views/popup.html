@@ -24,14 +24,14 @@
             <td>Time:</td>
             <td>
               <div class="no-wrap">
-                <input class="activity-started-at-date activity-started-at" type="text" name="activity[started_at_mdy]" value="{{startedAtMDY}}" size="10" maxlength="10" />
-                <input class="activity-started-at-time activity-started-at" type="text" name="activity[started_at_hm]" value="{{startedAtHM}}" size="5" maxlength="5" />
+                <input class="activity-started-at-date activity-started-at activity-date" type="text" name="activity[started_at_mdy]" value="{{startedAtMDY}}" size="10" maxlength="10" />
+                <input class="activity-started-at-time activity-started-at activity-time" type="text" name="activity[started_at_hm]" value="{{startedAtHM}}" size="5" maxlength="5" />
                 to
               </div>
               <div class="no-wrap">
               {{#running}}
-                <input class="activity-ended-at-time activity-ended-at" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" disabled="disabled" />
-                <input class="activity-ended-at-date activity-ended-at" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" disabled="disabled" />
+                <input class="activity-ended-at-time activity-ended-at activity-time" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" disabled="disabled" />
+                <input class="activity-ended-at-date activity-ended-at activity-date" type="text" name="activity[ended_at_mdy]" value="{{endedAtMDY}}" size="10" maxlength="10" disabled="disabled" />
               {{/running}}
               {{#notRunning}}
                 <input class="activity-ended-at-time activity-ended-at" type="text" name="activity[ended_at_hm]" value="{{endedAtHM}}" size="5" maxlength="5" />

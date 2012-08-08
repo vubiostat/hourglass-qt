@@ -4,11 +4,13 @@
 #include <QFileInfoList>
 #include <QByteArray>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <ctemplate/template.h>
 #include "hourglass.h"
 
+#ifndef Q_OS_WIN32
+#include <sys/socket.h>
 int Hourglass::sigintFd[2] = {0, 0};
+#endif
 
 Hourglass::Hourglass(int &argc, char **argv)
   : QApplication(argc, argv)
@@ -65,11 +67,13 @@ Hourglass::Hourglass(int &argc, char **argv)
     connect(st, SIGNAL(serverStarted()), window, SLOT(go()));
   }
 
+#ifndef Q_OS_WIN32
   if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigintFd))
     qFatal("Couldn't create INT socketpair");
 
   snInt = new QSocketNotifier(sigintFd[1], QSocketNotifier::Read, this);
   connect(snInt, SIGNAL(activated(int)), this, SLOT(handleSigInt()));
+#endif
 }
 
 int Hourglass::exec()
@@ -85,6 +89,7 @@ int Hourglass::exec()
 
 void Hourglass::handleSigInt()
 {
+#ifndef Q_OS_WIN32
   snInt->setEnabled(false);
   char tmp;
   ::read(sigintFd[1], &tmp, sizeof(tmp));
@@ -92,12 +97,15 @@ void Hourglass::handleSigInt()
   quit();
 
   snInt->setEnabled(true);
+#endif
 }
 
 void Hourglass::intSignalHandler(int)
 {
+#ifndef Q_OS_WIN32
   char a = 1;
   ::write(sigintFd[0], &a, sizeof(a));
+#endif
 }
 
 void Hourglass::cleanUp()

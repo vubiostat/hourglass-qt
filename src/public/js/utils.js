@@ -6,7 +6,7 @@ function minutesToWords(total_minutes) {
   var minutes = total_minutes % 60;
   var total_hours = Math.floor(total_minutes / 60);
   var hours = total_hours % 24;
-  var days = Math.floor(hours / 24);
+  var days = Math.floor(total_hours / 24);
 
   var strings = [];
   if (days > 0) {
@@ -32,6 +32,22 @@ function diffMinutesToWords(first, second) {
 
 function dateToMinutes(date) {
   return date.getTime() / 60000;
+}
+
+function dateToDays(date) {
+  return date.getTime() / 86400000;
+}
+
+function diffInMinutes(first, second) {
+  return dateToMinutes(first) - dateToMinutes(second);
+}
+
+function diffInDays(first, second) {
+  return dateToDays(first) - dateToDays(second);
+}
+
+function addDays(date, num) {
+  return new Date(date.getTime() + (num * 86400000));
 }
 
 function dateToYMD(d) {

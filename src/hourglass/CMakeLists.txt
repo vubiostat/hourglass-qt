@@ -1,7 +1,3 @@
-FIND_PACKAGE(Qt4 COMPONENTS QtCore QtSql QtNetwork QtGui REQUIRED)
-SET(QT_USE_QTWEBKIT TRUE)
-SET(QT_USE_QTSQL TRUE)
-
 SET(hourglass_QT_SOURCES
   browser.cpp
   window.cpp

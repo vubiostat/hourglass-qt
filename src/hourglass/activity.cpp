@@ -16,7 +16,7 @@ const QString Activity::distinctNamesQuery = QString(
 
 const QString Activity::stopCurrentQuery = QString(
     "UPDATE activities SET ended_at = datetime('now', 'localtime') "
-    "WHERE ended_at IS NULL AND untimed != 0");
+    "WHERE ended_at IS NULL AND untimed != 1");
 
 const QString Activity::deleteShortQuery = QString(
     "DELETE FROM activities "
@@ -145,8 +145,9 @@ QPair<QDateTime, QDateTime> Activity::lastGap()
     lowerBound = now.addSecs(-14400);
   }
   QList<Activity> activities = find(
-      QString("WHERE datetime(activities.started_at) >= datetime('%1')").
-        arg(lowerBound.toString("yyyy-MM-dd hh:mm")));
+      QString("WHERE datetime(activities.started_at) >= datetime('%1') AND datetime(activities.started_at) <= datetime('%2')").
+        arg(lowerBound.toString("yyyy-MM-dd hh:mm")).
+        arg(now.toString("yyyy-MM-dd hh:mm")));
 
   QPair<QDateTime, QDateTime> gap;
   if (activities.empty()) {
