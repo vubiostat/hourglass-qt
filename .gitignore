@@ -1,1 +1,6 @@
-build
+Makefile
+bin
+.ui
+.moc
+.obj
+.rcc
