@@ -1,5 +1,5 @@
-#ifndef BROWSER_H
-#define BROWSER_H
+#ifndef __BROWSER_H
+#define __BROWSER_H
 
 #include <QWebView>
 #include <QWebPage>

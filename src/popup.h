@@ -1,5 +1,5 @@
-#ifndef POPUP_H
-#define POPUP_H
+#ifndef __POPUP_H
+#define __POPUP_H
 
 #include <QVBoxLayout>
 #include <QDialog>

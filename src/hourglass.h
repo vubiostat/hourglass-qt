@@ -1,5 +1,5 @@
-#ifndef HOURGLASS_H
-#define HOURGLASS_H
+#ifndef __HOURGLASS_H
+#define __HOURGLASS_H
 
 #include <QApplication>
 #include <QSocketNotifier>

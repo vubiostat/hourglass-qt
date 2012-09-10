@@ -1,5 +1,5 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef __SERVER_H
+#define __SERVER_H
 
 #include <QObject>
 #include <QString>

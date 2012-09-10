@@ -1,5 +1,5 @@
-#ifndef PROJECT_H
-#define PROJECT_H
+#ifndef __PROJECT_H
+#define __PROJECT_H
 
 #include "model.h"
 

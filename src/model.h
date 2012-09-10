@@ -1,5 +1,5 @@
-#ifndef MODEL_H
-#define MODEL_H
+#ifndef __MODEL_H
+#define __MODEL_H
 
 #include <QtDebug>
 #include <QObject>

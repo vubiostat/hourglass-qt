@@ -1,5 +1,5 @@
-#ifndef ABOUT_H
-#define ABOUT_H
+#ifndef __ABOUT_H
+#define __ABOUT_H
 
 #include <QDialog>
 

@@ -1,5 +1,5 @@
-#ifndef SETTING_H
-#define SETTING_H
+#ifndef __SETTING_H
+#define __SETTING_H
 
 #include <QTime>
 #include <QRegExp>

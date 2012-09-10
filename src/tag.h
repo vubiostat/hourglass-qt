@@ -1,5 +1,5 @@
-#ifndef TAG_H
-#define TAG_H
+#ifndef __TAG_H
+#define __TAG_H
 
 #include "model.h"
 

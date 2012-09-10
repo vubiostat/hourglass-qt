@@ -1,5 +1,5 @@
-#ifndef THREAD_H
-#define THREAD_H
+#ifndef __THREAD_H
+#define __THREAD_H
 
 #include <QThread>
 #include "server.h"

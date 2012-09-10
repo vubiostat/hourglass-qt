@@ -1,5 +1,5 @@
-#ifndef ACTIVITY_H
-#define ACTIVITY_H
+#ifndef __ACTIVITY_H
+#define __ACTIVITY_H
 
 #include <QSqlDatabase>
 #include <QString>

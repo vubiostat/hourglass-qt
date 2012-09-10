@@ -1,5 +1,5 @@
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef __DATABASE_H
+#define __DATABASE_H
 
 #include <QObject>
 #include <QSqlDatabase>

@@ -1,5 +1,5 @@
-#ifndef VIEW_H
-#define VIEW_H
+#ifndef __VIEW_H
+#define __VIEW_H
 
 #include <QObject>
 #include <QString>

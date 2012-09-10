@@ -1,5 +1,5 @@
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#ifndef __DICTIONARY_H
+#define __DICTIONARY_H
 
 #include <QObject>
 #include <ctemplate/template_dictionary.h>

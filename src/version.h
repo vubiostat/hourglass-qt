@@ -1,5 +1,5 @@
-#ifndef VERSION_H
-#define VERSION_H
+#ifndef __VERSION_H
+#define __VERSION_H
 
 #define HOURGLASS_MAJOR_VERSION 0
 #define HOURGLASS_MINOR_VERSION 0

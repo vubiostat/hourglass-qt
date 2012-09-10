@@ -1,5 +1,5 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#ifndef __CONTROLLER_H
+#define __CONTROLLER_H
 
 #include <QDir>
 #include <QObject>

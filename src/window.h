@@ -1,5 +1,5 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef __WINDOW_H
+#define __WINDOW_H
 
 #include <QMainWindow>
 #include <QMenu>
