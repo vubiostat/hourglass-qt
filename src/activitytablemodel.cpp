@@ -1,6 +1,5 @@
 #include "activitytablemodel.h"
-#include <QSqlQuery>
-#include <QDateTime>
+#include <QSqlRecord>
 #include <QStringList>
 #include <QIcon>
 #include <QtDebug>
@@ -11,25 +10,31 @@ const QString ActivityTableModel::s_queryString = QString(
     "activities.ended_at, activities.untimed, activities.duration, "
     "activities.day FROM activities LEFT JOIN projects "
     "ON activities.project_id = projects.id ORDER BY activities.id");
+
+const QString ActivityTableModel::s_dayQueryString = QString(
+    "SELECT activities.id, activities.name, "
+    "projects.name as project_name, activities.started_at, "
+    "activities.ended_at, activities.untimed, activities.duration, "
+    "activities.day FROM activities LEFT JOIN projects "
+    "ON activities.project_id = projects.id "
+    "WHERE date(activities.started_at) = date('%1') OR "
+    "(activities.untimed = 1 AND date(activities.day) = date('%1')) "
+    "ORDER BY activities.id");
+
 const QString ActivityTableModel::s_timeSeparator = QString("-");
 
 ActivityTableModel::ActivityTableModel(QObject *parent, QSqlDatabase database)
   : QAbstractTableModel(parent), m_database(database)
 {
-  QSqlQuery query(s_queryString, m_database);
-  while (query.next()) {
-    QVariantHash hash;
-    QSqlRecord record = query.record();
-    hash.insert("id",           record.value("id"));
-    hash.insert("name",         record.value("name"));
-    hash.insert("project_name", record.value("project_name"));
-    hash.insert("started_at",   record.value("started_at"));
-    hash.insert("ended_at",     record.value("ended_at"));
-    hash.insert("untimed",      record.value("untimed"));
-    hash.insert("duration",     record.value("duration"));
-    hash.insert("day",          record.value("day"));
-    m_activities.append(hash);
-  }
+  m_query = QSqlQuery(s_queryString, m_database);
+  getActivities();
+}
+
+ActivityTableModel::ActivityTableModel(QDate date, QObject *parent, QSqlDatabase database)
+  : QAbstractTableModel(parent), m_database(database)
+{
+  m_query = QSqlQuery(s_dayQueryString.arg(date.toString(Qt::ISODate)), m_database);
+  getActivities();
 }
 
 Qt::ItemFlags ActivityTableModel::flags(const QModelIndex &index) const
@@ -124,6 +129,23 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
       return QVariant();
   }
   return QVariant();
+}
+
+void ActivityTableModel::getActivities()
+{
+  while (m_query.next()) {
+    QVariantHash hash;
+    QSqlRecord record = m_query.record();
+    hash.insert("id",           record.value("id"));
+    hash.insert("name",         record.value("name"));
+    hash.insert("project_name", record.value("project_name"));
+    hash.insert("started_at",   record.value("started_at"));
+    hash.insert("ended_at",     record.value("ended_at"));
+    hash.insert("untimed",      record.value("untimed"));
+    hash.insert("duration",     record.value("duration"));
+    hash.insert("day",          record.value("day"));
+    m_activities.append(hash);
+  }
 }
 
 QString ActivityTableModel::formatDateTime(QVariant value) const

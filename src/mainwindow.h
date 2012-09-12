@@ -14,7 +14,6 @@ class MainWindow : public QMainWindow
 
   private:
     Ui::MainWindow m_ui;
-    ActivityTableModel *m_activityTableModel;
 };
 
 #endif

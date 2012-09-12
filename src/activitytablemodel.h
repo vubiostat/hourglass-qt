@@ -3,8 +3,9 @@
 
 #include <QAbstractTableModel>
 #include <QSqlDatabase>
-#include <QSqlRecord>
+#include <QSqlQuery>
 #include <QVariant>
+#include <QDateTime>
 #include "database.h"
 
 class ActivityTableModel : public QAbstractTableModel
@@ -13,6 +14,8 @@ class ActivityTableModel : public QAbstractTableModel
 
   public:
     ActivityTableModel(QObject *parent = 0, QSqlDatabase database = QSqlDatabase::database());
+    ActivityTableModel(QDate date, QObject *parent = 0, QSqlDatabase database = QSqlDatabase::database());
+    ActivityTableModel(QDate startDate, QDate endDate, QObject *parent = 0, QSqlDatabase database = QSqlDatabase::database());
 
     Qt::ItemFlags flags(const QModelIndex &index) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
@@ -21,10 +24,14 @@ class ActivityTableModel : public QAbstractTableModel
 
   private:
     static const QString s_queryString;
+    static const QString s_dayQueryString;
     static const QString s_timeSeparator;
+
     QSqlDatabase m_database;
+    QSqlQuery m_query;
     QList<QVariantHash> m_activities;
 
+    void getActivities();
     QString formatDateTime(QVariant value) const;
     int duration(const QVariantHash &hash) const;
     QString durationInWords(int duration) const;
