@@ -1,116 +1,109 @@
-#include <QtDebug>
-#include <QDir>
-#include <QFile>
-#include <QFileInfoList>
-#include <QByteArray>
-#include <sys/types.h>
-#include <ctemplate/template.h>
 #include "hourglass.h"
-
-#ifndef Q_OS_WIN32
-#include <sys/socket.h>
-int Hourglass::sigintFd[2] = {0, 0};
-#endif
+#include <QSettings>
+#include <QMessageBox>
+#include <QDir>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QtDebug>
 
 Hourglass::Hourglass(int &argc, char **argv)
   : QApplication(argc, argv)
 {
-  // Parse some arguments
-  serverOnly = false;
-  port = 5678;
-  QStringList args = arguments();
-  for (int i = 1; i < args.count(); i++) {
-    if (args[i] == "--server-only") {
-      serverOnly = true;
-      continue;
+  QCoreApplication::setOrganizationName("vubiostat");
+  QCoreApplication::setOrganizationDomain("biostat.mc.vanderbilt.edu");
+  QCoreApplication::setApplicationName("hourglass");
+
+  if (setupDatabase()) {
+    m_mainwindow = new MainWindow();
+    m_mainwindow->show();
+  }
+  else {
+    quit();
+  }
+}
+
+bool Hourglass::setupDatabase()
+{
+  bool ok = true;
+  QSettings settings;
+  QSqlDatabase database = QSqlDatabase::addDatabase("QSQLITE");
+
+  if (settings.contains("databasePath")) {
+    database.setDatabaseName(settings.value("databasePath").toString());
+  }
+  else {
+#ifdef Q_OS_LINUX
+    QDir path(QDir::home().path());
+    if ((path.exists(".hourglass") || path.mkdir(".hourglass")) && path.cd(".hourglass")) {
+      QString databasePath = path.absoluteFilePath("hourglass.db");
+      database.setDatabaseName(databasePath);
+      settings.setValue("databasePath", databasePath);
     }
-    else if (args[i].startsWith("--port=")) {
-      QRegExp rx("^--port=(.+)$");
-      bool ok = false;
-      if (args[i].contains(rx)) {
-        int p = rx.cap(1).toInt(&ok);
-        if (ok) {
-          port = p;
-        }
-        else {
-          qDebug() << "Invalid port:" << rx.cap(1);
-        }
-        continue;
-      }
+#else
+    // Non-Linux
+    database.setDatabaseName("hourglass.db");
+#endif
+  }
+
+  if (database.databaseName().isEmpty() || !database.open()) {
+    // Try to use in-memory database
+    database.setDatabaseName(":memory:");
+    if (database.open()) {
+      QMessageBox::warning(NULL, "In memory database", "Couldn't create a local database; using an in-memory database instead. Your activities will not be saved.");
     }
-    qDebug() << "Invalid argument:" << args[i];
+    else {
+      QMessageBox::critical(NULL, "Database", "Couldn't create a local database or use an in-memory database. Closing...");
+      ok = false;
+    }
   }
 
-  connect(this, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
-
-  // Setup server
-  st = new ServerThread(port, ":/public", this);
-
-  // Setup Ctemplate
-  QDir views(":/views");
-  views.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
-  QFileInfoList list = views.entryInfoList();
-  for (int i = 0; i < list.size(); ++i) {
-    QFileInfo fileInfo = list.at(i);
-    QFile file(fileInfo.absoluteFilePath());
-    file.open(QIODevice::ReadOnly);
-    QByteArray bytes = file.readAll();
-    file.close();
-
-    ctemplate::StringToTemplateCache(fileInfo.fileName().toStdString(),
-        bytes.data(), bytes.size(), ctemplate::DO_NOT_STRIP);
+  if (ok) {
+    migrateDatabase(database);
   }
+  return ok;
+}
 
-  // Setup main window
-  if (!serverOnly) {
-    window = new Window(port);
-    connect(st, SIGNAL(serverStarted()), window, SLOT(go()));
+void Hourglass::migrateDatabase(QSqlDatabase &database)
+{
+  int version = 0;
+
+  QSqlQuery query = database.exec("SELECT version FROM schema_info");
+  while (query.next()) {
+    version = query.value(0).toInt();
   }
+  //qDebug() << "Version:" << version;
 
-#ifndef Q_OS_WIN32
-  if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigintFd))
-    qFatal("Couldn't create INT socketpair");
-
-  snInt = new QSocketNotifier(sigintFd[1], QSocketNotifier::Read, this);
-  connect(snInt, SIGNAL(activated(int)), this, SLOT(handleSigInt()));
-#endif
-}
-
-int Hourglass::exec()
-{
-  connect(st, SIGNAL(finished()), this, SLOT(quit()));
-  st->start();
-  if (!serverOnly) {
-    window->show();
+  while (version < CURRENT_DATABASE_VERSION) {
+    switch (version) {
+      case 0:
+        database.exec("CREATE TABLE schema_info (version INTEGER);");
+        database.exec("CREATE TABLE projects (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT);");
+        database.exec("CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL, started_at TEXT, ended_at TEXT);");
+        database.exec("CREATE TABLE tags (id INTEGER PRIMARY KEY, name TEXT);");
+        database.exec("CREATE TABLE activities_tags (activity_id INTEGER REFERENCES activities(id) ON DELETE CASCADE, tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE);");
+        break;
+      case 1:
+        database.exec("CREATE TABLE settings (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT, value TEXT);");
+        database.exec("INSERT INTO settings (key, value) VALUES ('theme', 'smoothness');");
+        database.exec("INSERT INTO settings (key, value) VALUES ('day_start', '08:00');");
+        database.exec("INSERT INTO settings (key, value) VALUES ('day_end', '18:00');");
+        break;
+      case 2:
+        database.exec("ALTER TABLE activities ADD COLUMN untimed INTEGER DEFAULT 0");
+        database.exec("ALTER TABLE activities ADD COLUMN duration INTEGER");
+        database.exec("ALTER TABLE activities ADD COLUMN day TEXT");
+        break;
+    }
+    if (database.lastError().isValid()) {
+      qDebug() << database.lastError().text();
+      break;
+    }
+    version++;
+    if (version == 1) {
+      database.exec("INSERT INTO schema_info VALUES (1);");
+    }
+    else {
+      database.exec(QString("UPDATE schema_info SET version = %1;").arg(version));
+    }
   }
-
-  return QApplication::exec();
-}
-
-void Hourglass::handleSigInt()
-{
-#ifndef Q_OS_WIN32
-  snInt->setEnabled(false);
-  char tmp;
-  ::read(sigintFd[1], &tmp, sizeof(tmp));
-
-  quit();
-
-  snInt->setEnabled(true);
-#endif
-}
-
-void Hourglass::intSignalHandler(int)
-{
-#ifndef Q_OS_WIN32
-  char a = 1;
-  ::write(sigintFd[0], &a, sizeof(a));
-#endif
-}
-
-void Hourglass::cleanUp()
-{
-  qDebug() << "Cleaning up...";
-  st->quit();
-  st->wait();
 }

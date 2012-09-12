@@ -2,9 +2,10 @@
 #define __HOURGLASS_H
 
 #include <QApplication>
-#include <QSocketNotifier>
-#include "window.h"
-#include "thread.h"
+#include <QSqlDatabase>
+#include "mainwindow.h"
+
+#define CURRENT_DATABASE_VERSION 3
 
 class Hourglass : public QApplication
 {
@@ -12,22 +13,12 @@ class Hourglass : public QApplication
 
   public:
     Hourglass(int &argc, char **argv);
-    int exec();
-
-    static void intSignalHandler(int unused);
-
-  public slots:
-    void handleSigInt();
-    void cleanUp();
 
   private:
-    bool serverOnly;
-    int port;
-    Window *window;
-    ServerThread *st;
+    MainWindow *m_mainwindow;
 
-    static int sigintFd[2];
-    QSocketNotifier *snInt;
+    bool setupDatabase();
+    void migrateDatabase(QSqlDatabase &database);
 };
 
 #endif
