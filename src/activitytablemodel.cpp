@@ -1,40 +1,19 @@
 #include "activitytablemodel.h"
-#include <QSqlRecord>
-#include <QStringList>
 #include <QIcon>
 #include <QtDebug>
 
-const QString ActivityTableModel::s_queryString = QString(
-    "SELECT activities.id, activities.name, "
-    "projects.name as project_name, activities.started_at, "
-    "activities.ended_at, activities.untimed, activities.duration, "
-    "activities.day FROM activities LEFT JOIN projects "
-    "ON activities.project_id = projects.id ORDER BY activities.id");
-
-const QString ActivityTableModel::s_dayQueryString = QString(
-    "SELECT activities.id, activities.name, "
-    "projects.name as project_name, activities.started_at, "
-    "activities.ended_at, activities.untimed, activities.duration, "
-    "activities.day FROM activities LEFT JOIN projects "
-    "ON activities.project_id = projects.id "
-    "WHERE date(activities.started_at) = date('%1') OR "
-    "(activities.untimed = 1 AND date(activities.day) = date('%1')) "
-    "ORDER BY activities.id");
-
 const QString ActivityTableModel::s_timeSeparator = QString("-");
 
-ActivityTableModel::ActivityTableModel(QObject *parent, QSqlDatabase database)
-  : QAbstractTableModel(parent), m_database(database)
+ActivityTableModel::ActivityTableModel(QObject *parent)
+  : QAbstractTableModel(parent)
 {
-  m_query = QSqlQuery(s_queryString, m_database);
-  getActivities();
+  m_activities = Activity::find();
 }
 
-ActivityTableModel::ActivityTableModel(QDate date, QObject *parent, QSqlDatabase database)
-  : QAbstractTableModel(parent), m_database(database)
+ActivityTableModel::ActivityTableModel(QDate date, QObject *parent)
+  : QAbstractTableModel(parent)
 {
-  m_query = QSqlQuery(s_dayQueryString.arg(date.toString(Qt::ISODate)), m_database);
-  getActivities();
+  m_activities = Activity::findDay(date);
 }
 
 Qt::ItemFlags ActivityTableModel::flags(const QModelIndex &index) const
@@ -61,40 +40,40 @@ int ActivityTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 {
-  const QVariantHash &hash = m_activities.at(index.row());
+  const Activity &activity = m_activities.at(index.row());
   switch (role) {
     case Qt::DisplayRole:
       switch (index.column()) {
         case 0:
-          if (hash.value("untimed").toInt() == 1) {
+          if (activity.isUntimed()) {
             return QVariant();
           }
-          return formatDateTime(hash.value("started_at"));
+          return activity.startedAtHM();
 
         case 1:
-          if (hash.value("untimed").toInt() == 1) {
+          if (activity.isUntimed()) {
             return QVariant();
           }
           return s_timeSeparator;
 
         case 2:
-          if (hash.value("untimed").toInt() == 1) {
+          if (activity.isUntimed()) {
             return QVariant();
           }
-          return formatDateTime(hash.value("ended_at"));
+          return activity.endedAtHM();
 
         case 3:
-          return hash.value("name");
+          return activity.name();
 
         case 4:
-          return hash.value("project_name");
+          return activity.projectName();
 
         case 5:
           /* Tags */
-          return QVariant();
+          return activity.tagNames();
 
         case 6:
-          return durationInWords(duration(hash));
+          return activity.durationInWords();
       }
       break;
 
@@ -129,81 +108,4 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
       return QVariant();
   }
   return QVariant();
-}
-
-void ActivityTableModel::getActivities()
-{
-  while (m_query.next()) {
-    QVariantHash hash;
-    QSqlRecord record = m_query.record();
-    hash.insert("id",           record.value("id"));
-    hash.insert("name",         record.value("name"));
-    hash.insert("project_name", record.value("project_name"));
-    hash.insert("started_at",   record.value("started_at"));
-    hash.insert("ended_at",     record.value("ended_at"));
-    hash.insert("untimed",      record.value("untimed"));
-    hash.insert("duration",     record.value("duration"));
-    hash.insert("day",          record.value("day"));
-    m_activities.append(hash);
-  }
-}
-
-QString ActivityTableModel::formatDateTime(QVariant value) const
-{
-  return value.toDateTime().toString("hh:mm");
-}
-
-int ActivityTableModel::duration(const QVariantHash &hash) const
-{
-  if (hash.value("untimed").toInt() == 1) {
-    return hash.value("duration").toInt();
-  }
-  else {
-    QDateTime startedAt = hash.value("started_at").toDateTime();
-    if (startedAt.isValid()) {
-      QDateTime endedAt = hash.value("ended_at").toDateTime();
-      if (endedAt.isValid()) {
-        return startedAt.secsTo(endedAt);
-      }
-      else {
-        return startedAt.secsTo(QDateTime::currentDateTime());
-      }
-    }
-    else {
-      return -1;
-    }
-  }
-}
-
-QString ActivityTableModel::durationInWords(int duration) const
-{
-  if (duration >= 0) {
-    int totalMinutes = duration / 60;
-
-    if (totalMinutes == 0) {
-      return QString("0min");
-    }
-    else {
-      int minutes = totalMinutes % 60;
-      int totalHours = totalMinutes / 60;
-      int hours = totalHours % 24;
-      int days = totalHours / 24;
-      //qDebug() << "minutes:" << minutes << "; hours:" << hours << "; days:" << days;
-
-      QStringList strings;
-      if (days > 0) {
-        strings << QString("%1d").arg(days);
-      }
-      if (hours > 0) {
-        strings << QString("%1h").arg(hours);
-      }
-      if (minutes > 0) {
-        strings << QString("%1min").arg(minutes);
-      }
-      return strings.join(" ");
-    }
-  }
-  else {
-    return QString();
-  }
 }

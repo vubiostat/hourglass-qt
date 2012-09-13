@@ -17,6 +17,7 @@ class Activity : public Record
   Q_OBJECT
 
   public:
+    static QList<Activity> find();
     static QList<Activity> find(QString conditions);
     static QList<Activity> find(QString conditions, QString predicate);
     static Activity findById(int id);

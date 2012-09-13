@@ -92,7 +92,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabToday">
        <attribute name="title">
@@ -115,7 +115,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-485</y>
              <width>743</width>
              <height>873</height>
             </rect>
@@ -131,9 +131,6 @@
                 <widget class="ActivityTableView" name="tblSunday">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="verticalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
                  </property>
                 </widget>
                </item>
@@ -151,9 +148,6 @@
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
-                 <property name="verticalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
-                 </property>
                 </widget>
                </item>
               </layout>
@@ -169,9 +163,6 @@
                 <widget class="ActivityTableView" name="tblTuesday">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="verticalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
                  </property>
                 </widget>
                </item>
@@ -189,9 +180,6 @@
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
-                 <property name="verticalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
-                 </property>
                 </widget>
                </item>
               </layout>
@@ -207,9 +195,6 @@
                 <widget class="ActivityTableView" name="tblThursday">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="verticalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
                  </property>
                 </widget>
                </item>
@@ -227,9 +212,6 @@
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
-                 <property name="verticalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
-                 </property>
                 </widget>
                </item>
               </layout>
@@ -245,9 +227,6 @@
                 <widget class="ActivityTableView" name="tblSaturday">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="verticalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
                  </property>
                 </widget>
                </item>

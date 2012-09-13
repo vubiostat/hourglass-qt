@@ -33,6 +33,11 @@ const QString Activity::removeTagQuery = QString(
     "DELETE FROM activities_tags WHERE "
     "activity_id = :activity_id AND tag_id = :tag_id");
 
+QList<Activity> Activity::find()
+{
+  return find(QString(), "ORDER BY untimed, started_at, id");
+}
+
 QList<Activity> Activity::find(QString conditions)
 {
   return find(conditions, "ORDER BY untimed, started_at, id");
