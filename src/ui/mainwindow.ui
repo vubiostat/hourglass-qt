@@ -67,7 +67,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="leActivity">
+       <widget class="ActivityLineEdit" name="leActivity">
         <property name="placeholderText">
          <string>Activity</string>
         </property>
@@ -262,6 +262,30 @@
       </widget>
      </widget>
     </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnAddEarlierActivity">
+        <property name="text">
+         <string>Add earlier activity</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -281,7 +305,6 @@
    </widget>
    <addaction name="menu_File"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="action_Quit">
    <property name="text">
     <string>&amp;Quit</string>
@@ -293,6 +316,11 @@
    <class>ActivityTableView</class>
    <extends>QTableView</extends>
    <header>activitytableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ActivityLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>activitylineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

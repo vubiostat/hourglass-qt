@@ -12,6 +12,9 @@ class MainWindow : public QMainWindow
   public:
     MainWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
+  private slots:
+    void on_btnAddEarlierActivity_clicked();
+
   private:
     Ui::MainWindow m_ui;
 };

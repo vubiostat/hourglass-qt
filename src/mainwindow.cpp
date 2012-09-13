@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "activitydelegate.h"
+#include "activitydialog.h"
 #include <QPalette>
 #include <QDate>
 #include <QtDebug>
@@ -73,4 +73,11 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
   else {
     m_ui.tblSaturday->setDate(sunday.addDays(6));
   }
+}
+
+void MainWindow::on_btnAddEarlierActivity_clicked()
+{
+  ActivityDialog dialog(this);
+  dialog.setModal(true);
+  dialog.exec();
 }
