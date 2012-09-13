@@ -24,9 +24,14 @@ void ActivityTableView::setDate(const QDate &date)
   setModel(newModel);
 }
 
-void ActivityTableView::setModel(QAbstractItemModel *model)
+ActivityTableModel *ActivityTableView::model() const
 {
-  QTableView::setModel(model);
+  return static_cast<ActivityTableModel *>(QTableView::model());
+}
+
+void ActivityTableView::setModel(ActivityTableModel *model)
+{
+  QTableView::setModel((QAbstractItemModel *) model);
 
   if (model) {
     horizontalHeader()->setResizeMode(5, QHeaderView::Stretch);

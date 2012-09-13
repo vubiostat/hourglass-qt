@@ -7,13 +7,13 @@ const QString ActivityTableModel::s_timeSeparator = QString("-");
 ActivityTableModel::ActivityTableModel(QObject *parent)
   : QAbstractTableModel(parent)
 {
-  m_activities = Activity::find();
+  getActivities();
 }
 
 ActivityTableModel::ActivityTableModel(QDate date, QObject *parent)
-  : QAbstractTableModel(parent)
+  : QAbstractTableModel(parent), m_date(date)
 {
-  m_activities = Activity::findDay(date);
+  getActivities();
 }
 
 Qt::ItemFlags ActivityTableModel::flags(const QModelIndex &index) const
@@ -108,4 +108,23 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
       return QVariant();
   }
   return QVariant();
+}
+
+void ActivityTableModel::activityCreated(const Activity &activity)
+{
+  if (!m_date.isValid() || activity.occursOn(m_date)) {
+    getActivities();
+  }
+}
+
+void ActivityTableModel::getActivities()
+{
+  beginResetModel();
+  if (m_date.isValid()) {
+    m_activities = Activity::findDay(m_date);
+  }
+  else {
+    m_activities = Activity::find();
+  }
+  endResetModel();
 }

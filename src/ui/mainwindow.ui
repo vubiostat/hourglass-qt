@@ -92,7 +92,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabToday">
        <attribute name="title">
@@ -302,6 +302,24 @@
    <header>activitylineedit.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>btnStopActivity</tabstop>
+  <tabstop>leActivity</tabstop>
+  <tabstop>leTags</tabstop>
+  <tabstop>btnStartActivity</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>tblToday</tabstop>
+  <tabstop>toolButton</tabstop>
+  <tabstop>saWeek</tabstop>
+  <tabstop>tblSunday</tabstop>
+  <tabstop>tblMonday</tabstop>
+  <tabstop>tblTuesday</tabstop>
+  <tabstop>tblWednesday</tabstop>
+  <tabstop>tblThursday</tabstop>
+  <tabstop>tblFriday</tabstop>
+  <tabstop>tblSaturday</tabstop>
+  <tabstop>btnAddEarlierActivity</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

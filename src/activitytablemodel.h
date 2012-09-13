@@ -19,9 +19,15 @@ class ActivityTableModel : public QAbstractTableModel
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
+  public slots:
+    void activityCreated(const Activity &activity);
+
   private:
     static const QString s_timeSeparator;
+    QDate m_date;
     QList<Activity> m_activities;
+
+    void getActivities();
 };
 
 #endif

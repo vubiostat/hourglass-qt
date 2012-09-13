@@ -655,6 +655,11 @@ bool Activity::isSimilarTo(const Activity &other) const
     other.tagNames() == tagNames();
 }
 
+bool Activity::occursOn(const QDate &date) const
+{
+  return (isUntimed() && day() == date) || (!isUntimed() && startedAt().date() == date);
+}
+
 // Overriden Record functions
 bool Activity::save()
 {

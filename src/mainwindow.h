@@ -12,11 +12,19 @@ class MainWindow : public QMainWindow
   public:
     MainWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
+  signals:
+    void activityCreated(const Activity &activity);
+
   private slots:
+    void on_btnStartActivity_clicked();
+    void on_leActivity_returnPressed();
+    void on_leTags_returnPressed();
     void on_btnAddEarlierActivity_clicked();
 
   private:
     Ui::MainWindow m_ui;
+
+    void startActivity();
 };
 
 #endif

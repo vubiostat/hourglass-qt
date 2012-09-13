@@ -81,6 +81,7 @@ class Activity : public Record
     QString durationInWords() const;
     QVariantMap toVariantMap() const;
     bool isSimilarTo(const Activity &other) const;
+    bool occursOn(const QDate &date) const;
 
     bool save();
     bool destroy();
