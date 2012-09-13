@@ -8,11 +8,11 @@
 #include <QList>
 #include <QPair>
 #include <QMap>
-#include "model.h"
+#include "record.h"
 #include "project.h"
 #include "tag.h"
 
-class Activity : public Model
+class Activity : public Record
 {
   Q_OBJECT
 

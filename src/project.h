@@ -1,9 +1,9 @@
 #ifndef __PROJECT_H
 #define __PROJECT_H
 
-#include "model.h"
+#include "record.h"
 
-class Project : public Model
+class Project : public Record
 {
   Q_OBJECT
 
@@ -14,9 +14,9 @@ class Project : public Model
     static int findOrCreateByName(const QString &name);
     static QList<QString> distinctNames();
 
-    Project(QObject *parent = 0) : Model(parent) {}
+    Project(QObject *parent = 0) : Record(parent) {}
     Project(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0)
-      : Model(attributes, newRecord, parent) {}
+      : Record(attributes, newRecord, parent) {}
 
     bool save();
 

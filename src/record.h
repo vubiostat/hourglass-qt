@@ -1,5 +1,5 @@
-#ifndef __MODEL_H
-#define __MODEL_H
+#ifndef __RECORD_H
+#define __RECORD_H
 
 #include <QtDebug>
 #include <QObject>
@@ -11,7 +11,7 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 
-class Model : public QObject
+class Record : public QObject
 {
   Q_OBJECT
 
@@ -69,7 +69,7 @@ class Model : public QObject
       }
       QString queryString = queryStrings.join(" ");
 
-      QSqlDatabase &database = getDatabase();
+      QSqlDatabase database = Record::database();
       QSqlQuery query(database);
       query.prepare(queryString);
       for (int i = 0; i < bindValues.size(); i++) {
@@ -94,9 +94,9 @@ class Model : public QObject
       return result;
     }
 
-    Model(QObject *parent = 0);
-    Model(const Model &other);
-    Model &operator=(const Model &other);
+    Record(QObject *parent = 0);
+    Record(const Record &other);
+    Record &operator=(const Record &other);
 
     QVariant get(const QString &attributeName) const;
     void set(const QString &attributeName, QVariant value);
@@ -109,11 +109,11 @@ class Model : public QObject
     bool save(QString tableName);
     bool destroy(QString tableName);
 
-    bool operator==(const Model &other);
+    bool operator==(const Record &other);
 
   protected:
-    Model(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
-    static QSqlDatabase &getDatabase();
+    Record(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
+    static QSqlDatabase database();
 
     virtual void beforeValidation();
     virtual bool validate();

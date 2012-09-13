@@ -3,9 +3,9 @@
 #include <QSqlError>
 #include <QStringList>
 #include <QRegExp>
+#include <QSettings>
 #include "activity.h"
 #include "tag.h"
-#include "setting.h"
 
 // Static members
 const QString Activity::distinctNamesQuery = QString(
@@ -40,12 +40,12 @@ QList<Activity> Activity::find(QString conditions)
 
 QList<Activity> Activity::find(QString conditions, QString predicate)
 {
-  return Model::find<Activity>("activities", conditions, predicate);
+  return Record::find<Activity>("activities", conditions, predicate);
 }
 
 Activity Activity::findById(int id)
 {
-  return Model::findById<Activity>("activities", id);
+  return Record::findById<Activity>("activities", id);
 }
 
 QList<Activity> Activity::findCurrent()
@@ -77,7 +77,7 @@ QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)
 
 QList<QString> Activity::distinctNames()
 {
-  QSqlDatabase &database = getDatabase();
+  QSqlDatabase database = Activity::database();
   QSqlQuery query = database.exec(distinctNamesQuery);
 
   QList<QString> names;
@@ -96,7 +96,7 @@ QList<QString> Activity::distinctNames()
 
 void Activity::stopCurrent()
 {
-  QSqlDatabase &database = getDatabase();
+  QSqlDatabase database = Activity::database();
   database.exec(stopCurrentQuery);
   //qDebug() << deleteShortQuery;
   database.exec(deleteShortQuery);
@@ -133,8 +133,9 @@ bool Activity::startLike(const Activity &activity)
 // Determine the last reasonably-sized gap between activities
 QPair<QDateTime, QDateTime> Activity::lastGap()
 {
+  QSettings settings;
   QDateTime now = QDateTime::currentDateTime();
-  QDateTime dayStart(now.date(), Setting::getDayStart("08:00"));
+  QDateTime dayStart(now.date(), settings.value("day_start", QTime(8, 0)).toTime());
   QDateTime lowerBound;
   int diff = dayStart.secsTo(now);
   if (diff >= 0 && diff < 14400) {
@@ -210,14 +211,14 @@ QTime Activity::timeFromHM(const QString &hm)
 
 // Constructors
 Activity::Activity(QObject *parent)
-  : Model(parent)
+  : Record(parent)
 {
   m_running = QVariant(QVariant::Bool);
   m_wasRunning = false;
 }
 
 Activity::Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
-  : Model(attributes, newRecord, parent)
+  : Record(attributes, newRecord, parent)
 {
   m_running = QVariant(QVariant::Bool);
   m_wasRunning = isRunning();
@@ -649,15 +650,15 @@ bool Activity::isSimilarTo(const Activity &other) const
     other.tagNames() == tagNames();
 }
 
-// Overriden Model functions
+// Overriden Record functions
 bool Activity::save()
 {
-  return Model::save("activities");
+  return Record::save("activities");
 }
 
 bool Activity::destroy()
 {
-  return Model::destroy("activities");
+  return Record::destroy("activities");
 }
 
 void Activity::beforeValidation()
@@ -686,7 +687,7 @@ void Activity::beforeValidation()
 
 void Activity::addTags(const QList<Tag> &tags)
 {
-  QSqlDatabase &database = getDatabase();
+  QSqlDatabase database = Activity::database();
   QSqlQuery query(database);
   query.prepare(addTagQuery);
 
@@ -699,7 +700,7 @@ void Activity::addTags(const QList<Tag> &tags)
 
 void Activity::removeTags(const QList<Tag> &tags)
 {
-  QSqlDatabase &database = getDatabase();
+  QSqlDatabase database = Activity::database();
   QSqlQuery query(database);
   query.prepare(removeTagQuery);
 

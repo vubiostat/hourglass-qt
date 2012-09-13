@@ -1,19 +1,18 @@
-#include "model.h"
-#include "database.h"
+#include "record.h"
 
-QSqlDatabase &Model::getDatabase()
+QSqlDatabase Record::database()
 {
-  return DatabaseManager::getInstance().getDatabase();
+  return QSqlDatabase::database();
 }
 
-Model::Model(QObject *parent)
+Record::Record(QObject *parent)
   : QObject(parent)
 {
   newRecord = true;
   modified = false;
 }
 
-Model::Model(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
+Record::Record(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
   : QObject(parent), attributes(attributes), newRecord(newRecord)
 {
   if (id() == -1) {
@@ -23,7 +22,7 @@ Model::Model(QMap<QString, QVariant> &attributes, bool newRecord, QObject *paren
   modified = false;
 }
 
-Model::Model(const Model &other)
+Record::Record(const Record &other)
   : QObject(other.parent())
 {
   newRecord = other.isNew();
@@ -31,31 +30,32 @@ Model::Model(const Model &other)
   attributes = other.attributes;
 }
 
-Model &Model::operator=(const Model &other)
+Record &Record::operator=(const Record &other)
 {
   newRecord = other.isNew();
   modified = other.isModified();
   attributes = other.attributes;
+  return *this;
 }
 
-QVariant Model::get(const QString &attributeName) const
+QVariant Record::get(const QString &attributeName) const
 {
   return attributes[attributeName];
 }
 
-void Model::set(const QString &attributeName, QVariant value)
+void Record::set(const QString &attributeName, QVariant value)
 {
   attributes[attributeName] = value;
   modified = true;
 }
 
-void Model::unset(const QString &attributeName)
+void Record::unset(const QString &attributeName)
 {
   attributes.remove(attributeName);
   modified = true;
 }
 
-int Model::id() const
+int Record::id() const
 {
   QVariant id = get("id");
   if (id.isNull() || !id.isValid()) {
@@ -64,32 +64,32 @@ int Model::id() const
   return id.toInt();
 }
 
-bool Model::isNew() const
+bool Record::isNew() const
 {
   return newRecord;
 }
 
-bool Model::isModified() const
+bool Record::isModified() const
 {
   return modified;
 }
 
-bool Model::isValid()
+bool Record::isValid()
 {
   beforeValidation();
   return validate();
 }
 
-void Model::beforeValidation()
+void Record::beforeValidation()
 {
 }
 
-bool Model::validate()
+bool Record::validate()
 {
   return true;
 }
 
-bool Model::save(QString tableName)
+bool Record::save(QString tableName)
 {
   if (attributes.empty() || !isValid()) {
     return false;
@@ -129,7 +129,7 @@ bool Model::save(QString tableName)
     queryString += "WHERE id = :id";
   }
 
-  QSqlDatabase &database = getDatabase();
+  QSqlDatabase database = Record::database();
   QSqlQuery query(database);
   query.prepare(queryString);
 
@@ -149,15 +149,15 @@ bool Model::save(QString tableName)
   return result;
 }
 
-void Model::beforeSave()
+void Record::beforeSave()
 {
 }
 
-void Model::afterCreate()
+void Record::afterCreate()
 {
 }
 
-bool Model::destroy(QString tableName)
+bool Record::destroy(QString tableName)
 {
   if (newRecord) {
     return false;
@@ -165,7 +165,7 @@ bool Model::destroy(QString tableName)
 
   QString queryString("DELETE FROM " + tableName + " WHERE id = ?");
 
-  QSqlDatabase &database = getDatabase();
+  QSqlDatabase database = Record::database();
   QSqlQuery query(database);
   query.prepare(queryString);
   query.addBindValue(id());
@@ -174,7 +174,7 @@ bool Model::destroy(QString tableName)
   return query.exec();
 }
 
-bool Model::operator==(const Model &other)
+bool Record::operator==(const Record &other)
 {
   return !isNew() && !other.isNew() && id() == other.id();
 }

@@ -16,12 +16,12 @@ const QString Project::distinctNamesQuery = QString(
 
 QList<Project> Project::find(QString conditions)
 {
-  return Model::find<Project>("projects", conditions);
+  return Record::find<Project>("projects", conditions);
 }
 
 QList<Project> Project::find(QString conditions, const QList<QVariant> &bindValues)
 {
-  return Model::find<Project>("projects", conditions, bindValues);
+  return Record::find<Project>("projects", conditions, bindValues);
 }
 
 Project Project::findById(int id)
@@ -42,7 +42,7 @@ int Project::findOrCreateByName(const QString &name)
     return projects[0].id();
   }
   else {
-    QSqlDatabase &database = getDatabase();
+    QSqlDatabase database = Project::database();
     QSqlQuery query(database);
     query.prepare(insertQuery);
     query.addBindValue(QVariant(name));
@@ -57,7 +57,7 @@ int Project::findOrCreateByName(const QString &name)
 
 QList<QString> Project::distinctNames()
 {
-  QSqlDatabase &database = getDatabase();
+  QSqlDatabase database = Project::database();
   QSqlQuery query = database.exec(distinctNamesQuery);
 
   QList<QString> names;
@@ -69,7 +69,7 @@ QList<QString> Project::distinctNames()
 
 bool Project::save()
 {
-  return Model::save("projects");
+  return Record::save("projects");
 }
 
 QString Project::name() const

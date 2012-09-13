@@ -1,9 +1,9 @@
 #ifndef __TAG_H
 #define __TAG_H
 
-#include "model.h"
+#include "record.h"
 
-class Tag : public Model
+class Tag : public Record
 {
   Q_OBJECT
 
@@ -16,9 +16,9 @@ class Tag : public Model
     static QList<Tag> findActivityTags(int activityId);
     static QList<QString> distinctNames();
 
-    Tag(QObject *parent = 0) : Model(parent) {}
+    Tag(QObject *parent = 0) : Record(parent) {}
     Tag(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0)
-      : Model(attributes, newRecord, parent) {}
+      : Record(attributes, newRecord, parent) {}
 
     QString name() const;
     void setName(const QString &name);
