@@ -1,8 +1,47 @@
 #include "record.h"
+#include <QDateTime>
 
 QSqlDatabase Record::database()
 {
   return QSqlDatabase::database();
+}
+
+int Record::count(QString tableName)
+{
+  return count(tableName, QString());
+}
+
+int Record::count(QString tableName, QString conditions)
+{
+  QList<QVariant> emptyBindValues;
+  return count(tableName, conditions, emptyBindValues);
+}
+
+int Record::count(QString tableName, QString conditions, const QList<QVariant> &bindValues)
+{
+  QStringList queryStrings;
+  queryStrings << "SELECT COUNT(*) FROM";
+  queryStrings << tableName;
+  if (!conditions.isEmpty()) {
+    queryStrings << conditions;
+  }
+  QString queryString = queryStrings.join(" ");
+
+  QSqlDatabase database = Record::database();
+  QSqlQuery query(database);
+  query.prepare(queryString);
+  for (int i = 0; i < bindValues.size(); i++) {
+    query.addBindValue(bindValues[i]);
+  }
+  if (!query.exec()) {
+    qDebug() << "Query failed:" << queryString;
+    return -1;
+  }
+
+  if (query.next()) {
+    return query.value(0).toInt();
+  }
+  return -1;
 }
 
 Record::Record(QObject *parent)
@@ -95,6 +134,9 @@ bool Record::save(QString tableName)
     return false;
   }
 
+  if (newRecord) {
+    beforeCreate();
+  }
   beforeSave();
 
   QString queryString;
@@ -146,10 +188,21 @@ bool Record::save(QString tableName)
     set("id", query.lastInsertId().toInt());
     afterCreate();
   }
+  afterSave();
   return result;
 }
 
+void Record::beforeCreate()
+{
+  set("created_at", QDateTime::currentDateTime());
+}
+
 void Record::beforeSave()
+{
+  set("updated_at", QDateTime::currentDateTime());
+}
+
+void Record::afterSave()
 {
 }
 

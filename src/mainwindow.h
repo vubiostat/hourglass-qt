@@ -13,7 +13,7 @@ class MainWindow : public QMainWindow
     MainWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
   signals:
-    void activityCreated(const Activity &activity);
+    void activityChanged();
 
   private slots:
     void on_btnStartActivity_clicked();

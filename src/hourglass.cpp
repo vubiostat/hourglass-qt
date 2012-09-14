@@ -93,6 +93,15 @@ void Hourglass::migrateDatabase(QSqlDatabase &database)
         database.exec("ALTER TABLE activities ADD COLUMN duration INTEGER");
         database.exec("ALTER TABLE activities ADD COLUMN day TEXT");
         break;
+      case 3:
+        database.exec("DROP TABLE settings");
+        database.exec("ALTER TABLE projects ADD COLUMN created_at TEXT");
+        database.exec("ALTER TABLE projects ADD COLUMN updated_at TEXT");
+        database.exec("ALTER TABLE activities ADD COLUMN created_at TEXT");
+        database.exec("ALTER TABLE activities ADD COLUMN updated_at TEXT");
+        database.exec("ALTER TABLE tags ADD COLUMN created_at TEXT");
+        database.exec("ALTER TABLE tags ADD COLUMN updated_at TEXT");
+        break;
     }
     if (database.lastError().isValid()) {
       qDebug() << database.lastError().text();

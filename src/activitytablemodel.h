@@ -20,14 +20,13 @@ class ActivityTableModel : public QAbstractTableModel
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
   public slots:
-    void activityCreated(const Activity &activity);
+    void fetchActivities();
 
   private:
     static const QString s_timeSeparator;
     QDate m_date;
+    QDateTime m_lastFetchedAt;
     QList<Activity> m_activities;
-
-    void getActivities();
 };
 
 #endif

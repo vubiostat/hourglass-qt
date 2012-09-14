@@ -8,7 +8,7 @@
 #include "tag.h"
 
 // Static members
-const QString Activity::s_tableName = QString(s_tableName);
+const QString Activity::s_tableName = QString("activities");
 
 const QString Activity::s_distinctNamesQuery = QString(
     "SELECT DISTINCT activities.name, projects.name AS project_name "
@@ -35,7 +35,7 @@ const QString Activity::s_removeTagQuery = QString(
     "DELETE FROM activities_tags WHERE "
     "activity_id = :activity_id AND tag_id = :tag_id");
 
-const QString Activity::s_findPeriodQueryTemplate = QString(
+const QString Activity::s_findPeriodConditionsTemplate = QString(
     "WHERE (activities.untimed != 1 AND date(activities.started_at) "
     ">= date('%1') AND date(activities.started_at) <= date('%2')) OR "
     "(activities.untimed = 1 AND date(activities.day) >= date('%1') AND "
@@ -44,12 +44,22 @@ const QString Activity::s_findPeriodQueryTemplate = QString(
 const QString Activity::s_defaultQueryPredicate = QString(
     "ORDER BY untimed, started_at, id");
 
-const QString Activity::s_findCurrentQuery = QString(
+const QString Activity::s_findCurrentConditions = QString(
     "WHERE activities.ended_at IS NULL AND activities.untimed != 1");
 
-const QString Activity::s_findDayQueryTemplate = QString(
+const QString Activity::s_findDayConditionsTemplate = QString(
     "WHERE date(activities.started_at) = date('%1') OR "
     "(activities.untimed = 1 AND date(activities.day) = date('%1'))");
+
+const QString Activity::s_countChangesSinceConditionsTemplate = QString(
+    "WHERE datetime(activities.created_at) > datetime('%1') OR "
+    "datetime(activities.updated_at) > datetime('%1')");
+
+const QString Activity::s_countChangesSinceWithDayConditionsTemplate = QString(
+    "WHERE (date(activities.started_at) = date('%1') OR "
+    "(activities.untimed = 1 AND date(activities.day) = date('%1'))) AND"
+    "(datetime(activities.created_at) > datetime('%2') OR "
+    "datetime(activities.updated_at) > datetime('%2'))");
 
 QList<Activity> Activity::find()
 {
@@ -73,7 +83,7 @@ Activity Activity::findById(int id)
 
 QList<Activity> Activity::findCurrent()
 {
-  return find(s_findCurrentQuery);
+  return find(s_findCurrentConditions);
 }
 
 QList<Activity> Activity::findToday()
@@ -83,12 +93,31 @@ QList<Activity> Activity::findToday()
 
 QList<Activity> Activity::findDay(QDate date)
 {
-  return find(s_findDayQueryTemplate.arg(date.toString(Qt::ISODate)));
+  return find(s_findDayConditionsTemplate.arg(date.toString(Qt::ISODate)));
 }
 
 QList<Activity> Activity::findPeriod(const QDate &startDate, const QDate &endDate)
 {
-  return find(s_findPeriodQueryTemplate.arg(startDate.toString(Qt::ISODate)).arg(endDate.toString(Qt::ISODate)));
+  return find(s_findPeriodConditionsTemplate.arg(startDate.toString(Qt::ISODate)).arg(endDate.toString(Qt::ISODate)));
+}
+
+int Activity::count() {
+  return Record::count(s_tableName);
+}
+
+int Activity::count(QString conditions)
+{
+  return Record::count(s_tableName, conditions);
+}
+
+int Activity::countChangesSince(const QDateTime &dateTime)
+{
+  return count(s_countChangesSinceConditionsTemplate.arg(dateTime.toString(Qt::ISODate)));
+}
+
+int Activity::countChangesSince(const QDate &day, const QDateTime &dateTime)
+{
+  return count(s_countChangesSinceWithDayConditionsTemplate.arg(day.toString(Qt::ISODate)).arg(dateTime.toString(Qt::ISODate)));
 }
 
 QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)

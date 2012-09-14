@@ -80,9 +80,9 @@ class Record : public QObject
         return QList<T>();
       }
 
-      QSqlRecord record = query.record();
       QList<T> result;
       while (query.next()) {
+        QSqlRecord record = query.record();
         QMap<QString, QVariant> attributes;
         for (int i = 0; i < record.count(); i++) {
           attributes.insert(record.fieldName(i), query.value(i));
@@ -93,6 +93,10 @@ class Record : public QObject
       }
       return result;
     }
+
+    static int count(QString tableName);
+    static int count(QString tableName, QString conditions);
+    static int count(QString tableName, QString conditions, const QList<QVariant> &bindValues);
 
     Record(QObject *parent = 0);
     Record(const Record &other);
@@ -117,7 +121,9 @@ class Record : public QObject
 
     virtual void beforeValidation();
     virtual bool validate();
+    virtual void beforeCreate();
     virtual void beforeSave();
+    virtual void afterSave();
     virtual void afterCreate();
 
   private:

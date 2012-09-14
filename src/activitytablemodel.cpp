@@ -7,13 +7,13 @@ const QString ActivityTableModel::s_timeSeparator = QString("-");
 ActivityTableModel::ActivityTableModel(QObject *parent)
   : QAbstractTableModel(parent)
 {
-  getActivities();
+  fetchActivities();
 }
 
 ActivityTableModel::ActivityTableModel(QDate date, QObject *parent)
   : QAbstractTableModel(parent), m_date(date)
 {
-  getActivities();
+  fetchActivities();
 }
 
 Qt::ItemFlags ActivityTableModel::flags(const QModelIndex &index) const
@@ -110,21 +110,31 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
   return QVariant();
 }
 
-void ActivityTableModel::activityCreated(const Activity &activity)
+void ActivityTableModel::fetchActivities()
 {
-  if (!m_date.isValid() || activity.occursOn(m_date)) {
-    getActivities();
-  }
-}
+  int num;
 
-void ActivityTableModel::getActivities()
-{
-  beginResetModel();
-  if (m_date.isValid()) {
-    m_activities = Activity::findDay(m_date);
+  if (m_lastFetchedAt.isValid()) {
+    if (m_date.isValid()) {
+      num = Activity::countChangesSince(m_date, m_lastFetchedAt);
+    }
+    else {
+      num = Activity::countChangesSince(m_lastFetchedAt);
+    }
   }
   else {
-    m_activities = Activity::find();
+    num = 1;
   }
-  endResetModel();
+
+  if (num > 0) {
+    beginResetModel();
+    if (m_date.isValid()) {
+      m_activities = Activity::findDay(m_date);
+    }
+    else {
+      m_activities = Activity::find();
+    }
+    m_lastFetchedAt = QDateTime::currentDateTime();
+    endResetModel();
+  }
 }

@@ -32,7 +32,6 @@ QSize ActivityDelegate::sizeHint(const QStyleOptionViewItem &option, const QMode
       size.setWidth(option.fontMetrics.width("00:00") + 7);
       break;
     case 1:
-      /* FIXME: this seems to have no effect */
       size.setWidth(option.fontMetrics.width("-"));
       break;
     case 3:

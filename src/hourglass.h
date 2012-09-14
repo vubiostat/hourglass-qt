@@ -5,7 +5,7 @@
 #include <QSqlDatabase>
 #include "mainwindow.h"
 
-#define CURRENT_DATABASE_VERSION 3
+#define CURRENT_DATABASE_VERSION 4
 
 class Hourglass : public QApplication
 {
