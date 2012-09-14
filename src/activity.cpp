@@ -8,56 +8,72 @@
 #include "tag.h"
 
 // Static members
-const QString Activity::distinctNamesQuery = QString(
+const QString Activity::s_tableName = QString(s_tableName);
+
+const QString Activity::s_distinctNamesQuery = QString(
     "SELECT DISTINCT activities.name, projects.name AS project_name "
     "FROM activities "
     "LEFT JOIN projects ON activities.project_id = projects.id "
     "ORDER BY activities.name, projects.name");
 
-const QString Activity::stopCurrentQuery = QString(
+const QString Activity::s_stopCurrentQuery = QString(
     "UPDATE activities SET ended_at = datetime('now', 'localtime') "
     "WHERE ended_at IS NULL AND untimed != 1");
 
-const QString Activity::deleteShortQuery = QString(
+const QString Activity::s_deleteShortQuery = QString(
     "DELETE FROM activities "
     "WHERE ended_at IS NOT NULL AND ("
       "CAST(strftime('%s', ended_at, 'localtime') AS INTEGER) - "
       "CAST(strftime('%s', started_at, 'localtime') AS INTEGER) < 60"
     ")");
 
-const QString Activity::addTagQuery = QString(
+const QString Activity::s_addTagQuery = QString(
     "INSERT INTO activities_tags (activity_id, tag_id) "
     "VALUES(:activity_id, :tag_id)");
 
-const QString Activity::removeTagQuery = QString(
+const QString Activity::s_removeTagQuery = QString(
     "DELETE FROM activities_tags WHERE "
     "activity_id = :activity_id AND tag_id = :tag_id");
 
-const QString Activity::s_findPeriodQueryTemplate = QString("WHERE (activities.untimed != 1 AND date(activities.started_at) >= date('%1') AND date(activities.started_at) <= date('%2')) OR (activities.untimed = 1 AND date(activities.day) >= date('%1') AND date(activities.day) <= date('%2'))");
+const QString Activity::s_findPeriodQueryTemplate = QString(
+    "WHERE (activities.untimed != 1 AND date(activities.started_at) "
+    ">= date('%1') AND date(activities.started_at) <= date('%2')) OR "
+    "(activities.untimed = 1 AND date(activities.day) >= date('%1') AND "
+    "date(activities.day) <= date('%2'))");
+
+const QString Activity::s_defaultQueryPredicate = QString(
+    "ORDER BY untimed, started_at, id");
+
+const QString Activity::s_findCurrentQuery = QString(
+    "WHERE activities.ended_at IS NULL AND activities.untimed != 1");
+
+const QString Activity::s_findDayQueryTemplate = QString(
+    "WHERE date(activities.started_at) = date('%1') OR "
+    "(activities.untimed = 1 AND date(activities.day) = date('%1'))");
 
 QList<Activity> Activity::find()
 {
-  return find(QString(), "ORDER BY untimed, started_at, id");
+  return find(QString(), s_defaultQueryPredicate);
 }
 
 QList<Activity> Activity::find(QString conditions)
 {
-  return find(conditions, "ORDER BY untimed, started_at, id");
+  return find(conditions, s_defaultQueryPredicate);
 }
 
 QList<Activity> Activity::find(QString conditions, QString predicate)
 {
-  return Record::find<Activity>("activities", conditions, predicate);
+  return Record::find<Activity>(s_tableName, conditions, predicate);
 }
 
 Activity Activity::findById(int id)
 {
-  return Record::findById<Activity>("activities", id);
+  return Record::findById<Activity>(s_tableName, id);
 }
 
 QList<Activity> Activity::findCurrent()
 {
-  return find("WHERE activities.ended_at IS NULL AND activities.untimed != 1");
+  return find(s_findCurrentQuery);
 }
 
 QList<Activity> Activity::findToday()
@@ -67,7 +83,7 @@ QList<Activity> Activity::findToday()
 
 QList<Activity> Activity::findDay(QDate date)
 {
-  return find(QString("WHERE date(activities.started_at) = date('%1') OR (activities.untimed = 1 AND date(activities.day) = date('%1'))").arg(date.toString(Qt::ISODate)));
+  return find(s_findDayQueryTemplate.arg(date.toString(Qt::ISODate)));
 }
 
 QList<Activity> Activity::findPeriod(const QDate &startDate, const QDate &endDate)
@@ -90,7 +106,7 @@ QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)
 QList<QString> Activity::distinctNames()
 {
   QSqlDatabase database = Activity::database();
-  QSqlQuery query = database.exec(distinctNamesQuery);
+  QSqlQuery query = database.exec(s_distinctNamesQuery);
 
   QList<QString> names;
   while (query.next()) {
@@ -109,9 +125,9 @@ QList<QString> Activity::distinctNames()
 void Activity::stopCurrent()
 {
   QSqlDatabase database = Activity::database();
-  database.exec(stopCurrentQuery);
-  //qDebug() << deleteShortQuery;
-  database.exec(deleteShortQuery);
+  database.exec(s_stopCurrentQuery);
+  //qDebug() << s_deleteShortQuery;
+  database.exec(s_deleteShortQuery);
 }
 
 QVariantList Activity::toVariantList(QList<Activity> &activities)
@@ -670,12 +686,12 @@ bool Activity::occursOn(const QDate &date) const
 // Overriden Record functions
 bool Activity::save()
 {
-  return Record::save("activities");
+  return Record::save(s_tableName);
 }
 
 bool Activity::destroy()
 {
-  return Record::destroy("activities");
+  return Record::destroy(s_tableName);
 }
 
 void Activity::beforeValidation()
@@ -706,7 +722,7 @@ void Activity::addTags(const QList<Tag> &tags)
 {
   QSqlDatabase database = Activity::database();
   QSqlQuery query(database);
-  query.prepare(addTagQuery);
+  query.prepare(s_addTagQuery);
 
   for (int i = 0; i < tags.size(); i++) {
     query.bindValue(":activity_id", id());
@@ -719,7 +735,7 @@ void Activity::removeTags(const QList<Tag> &tags)
 {
   QSqlDatabase database = Activity::database();
   QSqlQuery query(database);
-  query.prepare(removeTagQuery);
+  query.prepare(s_removeTagQuery);
 
   QVariantList activityIds, tagIds;
   for (int i = 0; i < tags.size(); i++) {

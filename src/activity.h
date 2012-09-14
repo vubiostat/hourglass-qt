@@ -88,12 +88,16 @@ class Activity : public Record
     bool destroy();
 
   private:
-    static const QString distinctNamesQuery;
-    static const QString stopCurrentQuery;
-    static const QString deleteShortQuery;
-    static const QString addTagQuery;
-    static const QString removeTagQuery;
+    static const QString s_tableName;
+    static const QString s_distinctNamesQuery;
+    static const QString s_stopCurrentQuery;
+    static const QString s_deleteShortQuery;
+    static const QString s_addTagQuery;
+    static const QString s_removeTagQuery;
     static const QString s_findPeriodQueryTemplate;
+    static const QString s_defaultQueryPredicate;
+    static const QString s_findCurrentQuery;
+    static const QString s_findDateQueryTemplate;
     static QDate dateFromMDY(const QString &mdy);
     static QTime timeFromHM(const QString &hm);
 
