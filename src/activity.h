@@ -24,6 +24,7 @@ class Activity : public Record
     static QList<Activity> findCurrent();
     static QList<Activity> findToday();
     static QList<Activity> findDay(QDate date);
+    static QList<Activity> findPeriod(const QDate &startDate, const QDate &endDate);
     static QMap<QString, int> projectTotals(QList<Activity> &activities);
     static QList<QString> distinctNames();
     static void stopCurrent();
@@ -92,6 +93,7 @@ class Activity : public Record
     static const QString deleteShortQuery;
     static const QString addTagQuery;
     static const QString removeTagQuery;
+    static const QString s_findPeriodQueryTemplate;
     static QDate dateFromMDY(const QString &mdy);
     static QTime timeFromHM(const QString &hm);
 

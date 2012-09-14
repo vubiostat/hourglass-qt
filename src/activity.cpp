@@ -33,6 +33,8 @@ const QString Activity::removeTagQuery = QString(
     "DELETE FROM activities_tags WHERE "
     "activity_id = :activity_id AND tag_id = :tag_id");
 
+const QString Activity::s_findPeriodQueryTemplate = QString("WHERE (activities.untimed != 1 AND date(activities.started_at) >= date('%1') AND date(activities.started_at) <= date('%2')) OR (activities.untimed = 1 AND date(activities.day) >= date('%1') AND date(activities.day) <= date('%2'))");
+
 QList<Activity> Activity::find()
 {
   return find(QString(), "ORDER BY untimed, started_at, id");
@@ -66,6 +68,11 @@ QList<Activity> Activity::findToday()
 QList<Activity> Activity::findDay(QDate date)
 {
   return find(QString("WHERE date(activities.started_at) = date('%1') OR (activities.untimed = 1 AND date(activities.day) = date('%1'))").arg(date.toString(Qt::ISODate)));
+}
+
+QList<Activity> Activity::findPeriod(const QDate &startDate, const QDate &endDate)
+{
+  return find(s_findPeriodQueryTemplate.arg(startDate.toString(Qt::ISODate)).arg(endDate.toString(Qt::ISODate)));
 }
 
 QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)

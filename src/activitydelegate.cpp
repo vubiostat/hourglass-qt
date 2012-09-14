@@ -27,6 +27,10 @@ QSize ActivityDelegate::sizeHint(const QStyleOptionViewItem &option, const QMode
 {
   QSize size = QStyledItemDelegate::sizeHint(option, index);
   switch (index.column()) {
+    case 0:
+    case 2:
+      size.setWidth(option.fontMetrics.width("00:00") + 7);
+      break;
     case 1:
       /* FIXME: this seems to have no effect */
       size.setWidth(option.fontMetrics.width("-"));
