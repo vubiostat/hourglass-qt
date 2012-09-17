@@ -40,40 +40,40 @@ int ActivityTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 {
-  const Activity &activity = m_activities.at(index.row());
+  Activity *activity = m_activities.at(index.row());
   switch (role) {
     case Qt::DisplayRole:
       switch (index.column()) {
         case 0:
-          if (activity.isUntimed()) {
+          if (activity->isUntimed()) {
             return QVariant();
           }
-          return activity.startedAtHM();
+          return activity->startedAtHM();
 
         case 1:
-          if (activity.isUntimed()) {
+          if (activity->isUntimed()) {
             return QVariant();
           }
           return s_timeSeparator;
 
         case 2:
-          if (activity.isUntimed()) {
+          if (activity->isUntimed()) {
             return QVariant();
           }
-          return activity.endedAtHM();
+          return activity->endedAtHM();
 
         case 3:
-          return activity.name();
+          return activity->name();
 
         case 4:
-          return activity.projectName();
+          return activity->projectName();
 
         case 5:
           /* Tags */
-          return activity.tagNames();
+          return activity->tagNames();
 
         case 6:
-          return activity.durationInWords();
+          return activity->durationInWords();
       }
       break;
 
@@ -128,13 +128,41 @@ void ActivityTableModel::fetchActivities()
 
   if (num > 0) {
     beginResetModel();
+
+    /* Disconnect existing activities */
+    for (int i = 0; i < m_activities.count(); i++) {
+      Activity *activity = m_activities[i];
+      disconnect(activity, SIGNAL(durationChanged()),
+          this, SLOT(activityDurationChanged()));
+      activity->deleteLater();
+    }
+
     if (m_date.isValid()) {
-      m_activities = Activity::findDay(m_date);
+      m_activities = Activity::findDay(m_date, this);
     }
     else {
-      m_activities = Activity::find();
+      m_activities = Activity::find(this);
     }
     m_lastFetchedAt = QDateTime::currentDateTime();
+
+    /* Connect new activities */
+    for (int i = 0; i < m_activities.count(); i++) {
+      Activity *activity = m_activities[i];
+      connect(activity, SIGNAL(durationChanged()),
+          this, SLOT(activityDurationChanged()));
+    }
+
     endResetModel();
+  }
+}
+
+void ActivityTableModel::activityDurationChanged()
+{
+  Activity *activity = static_cast<Activity *>(QObject::sender());
+
+  int index = m_activities.indexOf(activity);
+  if (index >= 0) {
+    QModelIndex modelIndex = createIndex(index, 6);
+    emit dataChanged(modelIndex, modelIndex);
   }
 }

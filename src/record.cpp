@@ -6,18 +6,18 @@ QSqlDatabase Record::database()
   return QSqlDatabase::database();
 }
 
-int Record::count(QString tableName)
+int Record::count(const QString &tableName)
 {
   return count(tableName, QString());
 }
 
-int Record::count(QString tableName, QString conditions)
+int Record::count(const QString &tableName, const QString &conditions)
 {
   QList<QVariant> emptyBindValues;
   return count(tableName, conditions, emptyBindValues);
 }
 
-int Record::count(QString tableName, QString conditions, const QList<QVariant> &bindValues)
+int Record::count(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues)
 {
   QStringList queryStrings;
   queryStrings << "SELECT COUNT(*) FROM";
@@ -51,7 +51,7 @@ Record::Record(QObject *parent)
   modified = false;
 }
 
-Record::Record(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
+Record::Record(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
   : QObject(parent), attributes(attributes), newRecord(newRecord)
 {
   if (id() == -1) {
@@ -82,7 +82,7 @@ QVariant Record::get(const QString &attributeName) const
   return attributes[attributeName];
 }
 
-void Record::set(const QString &attributeName, QVariant value)
+void Record::set(const QString &attributeName, const QVariant &value)
 {
   attributes[attributeName] = value;
   modified = true;
@@ -128,7 +128,7 @@ bool Record::validate()
   return true;
 }
 
-bool Record::save(QString tableName)
+bool Record::save(const QString &tableName)
 {
   if (attributes.empty() || !isValid()) {
     return false;
@@ -210,7 +210,7 @@ void Record::afterCreate()
 {
 }
 
-bool Record::destroy(QString tableName)
+bool Record::destroy(const QString &tableName)
 {
   if (newRecord) {
     return false;
@@ -230,4 +230,24 @@ bool Record::destroy(QString tableName)
 bool Record::operator==(const Record &other)
 {
   return !isNew() && !other.isNew() && id() == other.id();
+}
+
+bool Record::executeFindQuery(QSqlQuery &query, const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate)
+{
+  QStringList queryStrings;
+  queryStrings << "SELECT * FROM";
+  queryStrings << tableName;
+  if (!conditions.isEmpty()) {
+    queryStrings << conditions;
+  }
+  if (!predicate.isEmpty()) {
+    queryStrings << predicate;
+  }
+  QString queryString = queryStrings.join(" ");
+
+  query.prepare(queryString);
+  for (int i = 0; i < bindValues.size(); i++) {
+    query.addBindValue(bindValues[i]);
+  }
+  return query.exec();
 }

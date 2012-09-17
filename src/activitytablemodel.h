@@ -22,11 +22,14 @@ class ActivityTableModel : public QAbstractTableModel
   public slots:
     void fetchActivities();
 
+  private slots:
+    void activityDurationChanged();
+
   private:
     static const QString s_timeSeparator;
     QDate m_date;
     QDateTime m_lastFetchedAt;
-    QList<Activity> m_activities;
+    QList<Activity *> m_activities;
 };
 
 #endif

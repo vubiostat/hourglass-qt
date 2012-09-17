@@ -13,43 +13,53 @@ const QString Tag::findActivityTagsQuery = QString(
 const QString Tag::distinctNamesQuery = QString(
     "SELECT DISTINCT name FROM tags ORDER BY name");
 
-QList<Tag> Tag::find()
+QList<Tag *> Tag::find(QObject *parent)
 {
-  return Record::find<Tag>("tags");
+  return Record::find<Tag>("tags", parent);
 }
 
-QList<Tag> Tag::find(QString conditions)
+QList<Tag *> Tag::find(const QString &conditions, QObject *parent)
 {
-  return Record::find<Tag>("tags", conditions);
+  return Record::find<Tag>("tags", conditions, parent);
 }
 
-QList<Tag> Tag::find(QString conditions, const QList<QVariant> &bindValues)
+QList<Tag *> Tag::find(const QString &conditions, const QList<QVariant> &bindValues, QObject *parent)
 {
-  return Record::find<Tag>("tags", conditions, bindValues);
+  return Record::find<Tag>("tags", conditions, bindValues, parent);
 }
 
-Tag Tag::findById(int id)
+QList<Tag *> Tag::findById(int id, QObject *parent)
 {
-  return Record::findById<Tag>("tags", id);
+  return Record::findById<Tag>("tags", id, parent);
 }
 
-Tag Tag::findOrCreateByName(const QString &name)
+Tag *Tag::findOrCreateByName(const QString &name, QObject *parent)
 {
+  Tag *tag = NULL;
   QList<QVariant> bindValues;
   bindValues << QVariant(name);
-  QList<Tag> tags = find("WHERE name = ?", bindValues);
-  if (tags.size() > 0) {
-    return tags[0];
+  QList<Tag *> tags = find("WHERE name = ?", bindValues, parent);
+
+  for (int i = 0; i < tags.count(); i++) {
+    if (i == 0) {
+      tag = tags[i];
+    }
+    else {
+      tags[i]->deleteLater();
+    }
   }
-  else {
-    Tag tag;
-    tag.setName(name);
-    tag.save();
-    return tag;
+
+  if (tag == NULL) {
+    tag = new Tag(parent);
+    tag->setName(name);
+
+    /* FIXME: handle potential save failure */
+    tag->save();
   }
+  return tag;
 }
 
-QList<Tag> Tag::findActivityTags(int activityId)
+QList<Tag *> Tag::findActivityTags(int activityId, QObject *parent)
 {
   QSqlDatabase database = Tag::database();
   QSqlQuery query(database);
@@ -57,14 +67,12 @@ QList<Tag> Tag::findActivityTags(int activityId)
   query.bindValue(0, activityId);
   query.exec();
 
-  QList<Tag> result;
+  QList<Tag *> result;
   while (query.next()) {
     QMap<QString, QVariant> attributes;
     attributes["id"] = query.value(0);
     attributes["name"] = query.value(1);
-
-    Tag tag(attributes, false);
-    result << tag;
+    result << new Tag(attributes, false, parent);
   }
   return result;
 }

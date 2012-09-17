@@ -8,14 +8,14 @@ class Project : public Record
   Q_OBJECT
 
   public:
-    static QList<Project> find(QString conditions);
-    static QList<Project> find(QString conditions, const QList<QVariant> &bindValues);
-    static Project findById(int id);
+    static QList<Project *> find(const QString &conditions, QObject *parent = 0);
+    static QList<Project *> find(const QString &conditions, const QList<QVariant> &bindValues, QObject *parent = 0);
+    static QList<Project *> findById(int id, QObject *parent);
     static int findOrCreateByName(const QString &name);
     static QList<QString> distinctNames();
 
     Project(QObject *parent = 0) : Record(parent) {}
-    Project(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0)
+    Project(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0)
       : Record(attributes, newRecord, parent) {}
 
     bool save();

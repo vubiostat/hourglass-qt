@@ -61,51 +61,51 @@ const QString Activity::s_countChangesSinceWithDayConditionsTemplate = QString(
     "(datetime(activities.created_at) > datetime('%2') OR "
     "datetime(activities.updated_at) > datetime('%2'))");
 
-QList<Activity> Activity::find()
+QList<Activity *> Activity::find(QObject *parent)
 {
-  return find(QString(), s_defaultQueryPredicate);
+  return Record::find<Activity>(s_tableName, QString(), s_defaultQueryPredicate, parent);
 }
 
-QList<Activity> Activity::find(QString conditions)
+QList<Activity *> Activity::find(const QString &conditions, QObject *parent)
 {
-  return find(conditions, s_defaultQueryPredicate);
+  return Record::find<Activity>(s_tableName, conditions, s_defaultQueryPredicate, parent);
 }
 
-QList<Activity> Activity::find(QString conditions, QString predicate)
+QList<Activity *> Activity::find(const QString &conditions, const QString &predicate, QObject *parent)
 {
-  return Record::find<Activity>(s_tableName, conditions, predicate);
+  return Record::find<Activity>(s_tableName, conditions, predicate, parent);
 }
 
-Activity Activity::findById(int id)
+QList<Activity *> Activity::findById(int id, QObject *parent)
 {
-  return Record::findById<Activity>(s_tableName, id);
+  return Record::findById<Activity>(s_tableName, id, parent);
 }
 
-QList<Activity> Activity::findCurrent()
+QList<Activity *> Activity::findCurrent(QObject *parent)
 {
-  return find(s_findCurrentConditions);
+  return find(s_findCurrentConditions, parent);
 }
 
-QList<Activity> Activity::findToday()
+QList<Activity *> Activity::findToday(QObject *parent)
 {
-  return findDay(QDate::currentDate());
+  return findDay(QDate::currentDate(), parent);
 }
 
-QList<Activity> Activity::findDay(QDate date)
+QList<Activity *> Activity::findDay(const QDate &date, QObject *parent)
 {
-  return find(s_findDayConditionsTemplate.arg(date.toString(Qt::ISODate)));
+  return find(s_findDayConditionsTemplate.arg(date.toString(Qt::ISODate)), parent);
 }
 
-QList<Activity> Activity::findPeriod(const QDate &startDate, const QDate &endDate)
+QList<Activity *> Activity::findPeriod(const QDate &startDate, const QDate &endDate, QObject *parent)
 {
-  return find(s_findPeriodConditionsTemplate.arg(startDate.toString(Qt::ISODate)).arg(endDate.toString(Qt::ISODate)));
+  return find(s_findPeriodConditionsTemplate.arg(startDate.toString(Qt::ISODate)).arg(endDate.toString(Qt::ISODate)), parent);
 }
 
 int Activity::count() {
   return Record::count(s_tableName);
 }
 
-int Activity::count(QString conditions)
+int Activity::count(const QString &conditions)
 {
   return Record::count(s_tableName, conditions);
 }
@@ -120,14 +120,14 @@ int Activity::countChangesSince(const QDate &day, const QDateTime &dateTime)
   return count(s_countChangesSinceWithDayConditionsTemplate.arg(day.toString(Qt::ISODate)).arg(dateTime.toString(Qt::ISODate)));
 }
 
-QMap<QString, int> Activity::projectTotals(QList<Activity> &activities)
+QMap<QString, int> Activity::projectTotals(const QList<Activity *> &activities)
 {
   QMap<QString, int> totals;
   for (int i = 0; i < activities.size(); i++) {
-    Activity &activity = activities[i];
-    int total = (totals.contains(activity.projectName()) ? totals[activity.projectName()] : 0);
-    total += activity.duration();
-    totals.insert(activity.projectName(), total);
+    const Activity *activity = activities.at(i);
+    int total = (totals.contains(activity->projectName()) ? totals[activity->projectName()] : 0);
+    total += activity->duration();
+    totals.insert(activity->projectName(), total);
   }
   return totals;
 }
@@ -159,32 +159,40 @@ void Activity::stopCurrent()
   database.exec(s_deleteShortQuery);
 }
 
-QVariantList Activity::toVariantList(QList<Activity> &activities)
+QVariantList Activity::toVariantList(const QList<Activity *> &activities)
 {
   QVariantList list;
   for (int i = 0; i < activities.size(); i++) {
-    Activity activity = activities[i];
-    list << activity.toVariantMap();
+    const Activity *activity = activities.at(i);
+    list << activity->toVariantMap();
   }
   return list;
 }
 
-bool Activity::startLike(const Activity &activity)
+bool Activity::startLike(const Activity *activity)
 {
-  QList<Activity> currentActivities = findCurrent();
+  bool result = true;
+  QList<Activity *> currentActivities = findCurrent();
   if (currentActivities.count() > 0) {
-    Activity &current = currentActivities[0];
-    if (activity.id() == current.id() || activity.isSimilarTo(current)) {
-      return false;
+    const Activity *current = currentActivities.at(0);
+    if (activity->id() == current->id() || activity->isSimilarTo(current)) {
+      result = false;
     }
   }
+  while (!currentActivities.isEmpty()) {
+    currentActivities.takeLast()->deleteLater();
+  }
 
-  Activity result;
-  result.setRunning(true);
-  result.setNameWithProject(activity.nameWithProject());
-  result.setStartedAt(QDateTime::currentDateTime());
-  result.setTagNames(activity.tagNames());
-  return result.save();
+  if (result) {
+    Activity newActivity;
+    newActivity.setRunning(true);
+    newActivity.setNameWithProject(activity->nameWithProject());
+    newActivity.setStartedAt(QDateTime::currentDateTime());
+    newActivity.setTagNames(activity->tagNames());
+    result = newActivity.save();
+  }
+
+  return result;
 }
 
 // Determine the last reasonably-sized gap between activities
@@ -202,7 +210,7 @@ QPair<QDateTime, QDateTime> Activity::lastGap()
     // 4 hours ago
     lowerBound = now.addSecs(-14400);
   }
-  QList<Activity> activities = find(
+  QList<Activity *> activities = find(
       QString("WHERE datetime(activities.started_at) >= datetime('%1') AND datetime(activities.started_at) <= datetime('%2')").
         arg(lowerBound.toString("yyyy-MM-dd hh:mm")).
         arg(now.toString("yyyy-MM-dd hh:mm")));
@@ -221,26 +229,36 @@ QPair<QDateTime, QDateTime> Activity::lastGap()
     return gap;
   }
 
+  bool found = false;
   gap.second = QDateTime::currentDateTime();
   for (int i = activities.size() - 1; i >= 0; i--) {
-    if (!activities[i].isRunning()) {
-      gap.first = activities[i].endedAt();
+    const Activity *activity = activities.at(i);
+    if (!activity->isRunning()) {
+      gap.first = activity->endedAt();
       if (gap.first.secsTo(gap.second) >= 900) {
-        return gap;
+        found = true;
+        break;
       }
     }
-    gap.second = activities[i].startedAt();
+    gap.second = activity->startedAt();
   }
 
-  // No gap found, just pick the latest one possible
-  Activity &lastActivity = activities.last();
-  if (lastActivity.isRunning()) {
-    gap.first = now.addSecs(-900);
+  if (!found) {
+    // No gap found, just pick the latest one possible
+    const Activity *lastActivity = activities.last();
+    if (lastActivity->isRunning()) {
+      gap.first = now.addSecs(-900);
+    }
+    else {
+      gap.first = lastActivity->endedAt();
+    }
+    gap.second = now;
   }
-  else {
-    gap.first = lastActivity.endedAt();
+
+  while (!activities.isEmpty()) {
+    activities.takeLast()->deleteLater();
   }
-  gap.second = now;
+
   return gap;
 }
 
@@ -268,17 +286,20 @@ QTime Activity::timeFromHM(const QString &hm)
 
 // Constructors
 Activity::Activity(QObject *parent)
-  : Record(parent)
+  : Record(parent), m_durationTimer(NULL)
 {
   m_running = QVariant(QVariant::Bool);
   m_wasRunning = false;
 }
 
-Activity::Activity(QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
-  : Record(attributes, newRecord, parent)
+Activity::Activity(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
+  : Record(attributes, newRecord, parent), m_durationTimer(NULL)
 {
   m_running = QVariant(QVariant::Bool);
   m_wasRunning = isRunning();
+  if (m_wasRunning) {
+    setupDurationTimer();
+  }
 }
 
 // Attribute getters/setters
@@ -287,7 +308,7 @@ QString Activity::name() const
   return get("name").toString();
 }
 
-void Activity::setName(QString name)
+void Activity::setName(const QString &name)
 {
   set("name", name);
 }
@@ -316,7 +337,7 @@ QDateTime Activity::startedAt() const
   return get("started_at").toDateTime();
 }
 
-void Activity::setStartedAt(QDateTime startedAt)
+void Activity::setStartedAt(const QDateTime &startedAt)
 {
   set("started_at", startedAt);
 }
@@ -326,7 +347,7 @@ QDateTime Activity::endedAt() const
   return get("ended_at").toDateTime();
 }
 
-void Activity::setEndedAt(QDateTime endedAt)
+void Activity::setEndedAt(const QDateTime &endedAt)
 {
   set("ended_at", endedAt);
 }
@@ -385,7 +406,7 @@ QDate Activity::day() const
   }
 }
 
-void Activity::setDay(QDate day)
+void Activity::setDay(const QDate &day)
 {
   set("day", day);
 }
@@ -456,7 +477,7 @@ void Activity::setRunning(bool running)
 
 bool Activity::wasRunning() const
 {
-  return m_wasRunning.toBool();
+  return m_wasRunning;
 }
 
 QString Activity::nameWithProject() const
@@ -471,7 +492,7 @@ QString Activity::nameWithProject() const
   return strings.join("@");
 }
 
-void Activity::setNameWithProject(QString nameWithProject)
+void Activity::setNameWithProject(const QString &nameWithProject)
 {
   // NOTE: this could create orphaned projects if the activity is not saved
   //       after this method is called
@@ -572,57 +593,120 @@ void Activity::setDayMDY(const QString &mdy)
 
 QString Activity::tagNames() const
 {
-  QList<Tag> currentTags = tags();
+  QList<Tag *> currentTags = tags();
   QStringList names;
   for (int i = 0; i < currentTags.size(); i++) {
-    names << currentTags[i].name();
+    names << currentTags[i]->name();
+    currentTags[i]->deleteLater();
   }
   return names.join(", ");
 }
 
 void Activity::setTagNames(const QString &tagNames)
 {
-  QList<Tag> previousTags = tags();
-  QList<Tag> newTags;
+  QList<Tag *> previousTags = tags();
+  QList<Tag *> newTags;
 
   QString trimmedTagNames = tagNames.trimmed();
-  bool tagExists;
   if (!trimmedTagNames.isEmpty()) {
     QStringList names = trimmedTagNames.split(QRegExp(",\\s*"));
     for (int i = 0; i < names.size(); i++) {
-      Tag tag = Tag::findOrCreateByName(names[i]);
-      tagExists = previousTags.removeOne(tag);
-      if (!tagExists && !newTags.contains(tag)) {
-        newTags << tag;
+      Tag *tag = Tag::findOrCreateByName(names[i], this);
+
+      /* Look for this tag in already associated tags */
+      bool foundPrevious = false;
+      for (int j = 0; j < previousTags.count(); ) {
+        if (tag->id() == previousTags.at(j)->id()) {
+          previousTags.takeAt(j)->deleteLater();
+          foundPrevious = true;
+        }
+        else {
+          j++;
+        }
+      }
+
+      if (foundPrevious) {
+        /* Tag already associated with this Activity */
+        tag->deleteLater();
+        continue;
+      }
+
+      /* Add tag to list of new tags if it doesn't already exist */
+      bool foundNew = false;
+      for (int j = 0; j < newTags.count(); j++) {
+        if (tag->id() == newTags[j]->id()) {
+          tag->deleteLater();
+          foundNew = true;
+          break;
+        }
+      }
+
+      if (!foundNew) {
+        newTags.append(tag);
       }
     }
   }
 
   if (isNew()) {
+    while (!m_tagsToAdd.isEmpty()) {
+      m_tagsToAdd.takeLast()->deleteLater();
+    }
+
     m_tagsToAdd = newTags;
   }
   else {
     addTags(newTags);
+    while (!newTags.isEmpty()) {
+      newTags.takeLast()->deleteLater();
+    }
+
     removeTags(previousTags);
+    while (!previousTags.isEmpty()) {
+      previousTags.takeLast()->deleteLater();
+    }
   }
 }
 
 // Helpers
-Project Activity::project() const
+Project *Activity::project(QObject *parent) const
 {
+  Project *project = NULL;
+  if (parent == NULL) {
+    parent = Activity::parent();
+  }
+
   int id = projectId();
-  return id >= 0 ? Project::findById(id) : Project();
+  if (id >= 0) {
+    QList<Project *> projects = Project::findById(id, parent);
+    for (int i = 0; i < projects.count(); i++) {
+      if (i == 0) {
+        project = projects[i];
+      }
+      else {
+        projects[i]->deleteLater();
+      }
+    }
+  }
+  return project;
 }
 
 QString Activity::projectName() const
 {
-  int id = projectId();
-  return id >= 0 ? Project::findById(id).name() : QString();
+  Project *project = Activity::project();
+  QString name;
+  if (project != NULL) {
+    name = project->name();
+    project->deleteLater();
+  }
+  return name;
 }
 
-QList<Tag> Activity::tags() const
+QList<Tag *> Activity::tags(QObject *parent) const
 {
-  return Tag::findActivityTags(id());
+  if (parent == NULL) {
+    parent = Activity::parent();
+  }
+  return Tag::findActivityTags(id(), parent);
 }
 
 QString Activity::startedAtISO8601() const
@@ -701,10 +785,10 @@ QVariantMap Activity::toVariantMap() const
   return map;
 }
 
-bool Activity::isSimilarTo(const Activity &other) const
+bool Activity::isSimilarTo(const Activity *other) const
 {
-  return other.nameWithProject() == nameWithProject() &&
-    other.tagNames() == tagNames();
+  return other != NULL && other->nameWithProject() == nameWithProject() &&
+    other->tagNames() == tagNames();
 }
 
 bool Activity::occursOn(const QDate &date) const
@@ -721,6 +805,15 @@ bool Activity::save()
 bool Activity::destroy()
 {
   return Record::destroy(s_tableName);
+}
+
+void Activity::startDurationTimer()
+{
+  m_durationTimer = new QTimer(this);
+  connect(m_durationTimer, SIGNAL(timeout()), SIGNAL(durationChanged()));
+  m_durationTimer->start(60000);
+  qDebug() << "Activity" << id() << "duration timer started.";
+  emit durationChanged();
 }
 
 void Activity::beforeValidation()
@@ -747,29 +840,36 @@ void Activity::beforeValidation()
   }
 }
 
-void Activity::addTags(const QList<Tag> &tags)
+void Activity::setupDurationTimer()
+{
+  int msecs = startedAt().msecsTo(QDateTime::currentDateTime()) % 60000;
+  qDebug() << "Activity" << id() << "milliseconds until tick:" << msecs;
+  QTimer::singleShot(msecs, this, SLOT(startDurationTimer()));
+}
+
+void Activity::addTags(const QList<Tag *> &tags)
 {
   QSqlDatabase database = Activity::database();
   QSqlQuery query(database);
   query.prepare(s_addTagQuery);
 
-  for (int i = 0; i < tags.size(); i++) {
+  for (int i = 0; i < tags.count(); i++) {
     query.bindValue(":activity_id", id());
-    query.bindValue(":tag_id", tags[i].id());
+    query.bindValue(":tag_id", tags.at(i)->id());
     query.exec();
   }
 }
 
-void Activity::removeTags(const QList<Tag> &tags)
+void Activity::removeTags(const QList<Tag *> &tags)
 {
   QSqlDatabase database = Activity::database();
   QSqlQuery query(database);
   query.prepare(s_removeTagQuery);
 
   QVariantList activityIds, tagIds;
-  for (int i = 0; i < tags.size(); i++) {
+  for (int i = 0; i < tags.count(); i++) {
     activityIds << id();
-    tagIds << tags[i].id();
+    tagIds << tags.at(i)->id();
   }
   query.bindValue(":activity_id", activityIds);
   query.bindValue(":tag_id", tagIds);
@@ -829,5 +929,20 @@ void Activity::beforeSave()
 void Activity::afterCreate()
 {
   addTags(m_tagsToAdd);
-  m_tagsToAdd.clear();
+  while (!m_tagsToAdd.isEmpty()) {
+    m_tagsToAdd.takeLast()->deleteLater();
+  }
+}
+
+void Activity::afterSave()
+{
+  if (isRunning() && !wasRunning() && m_durationTimer == NULL) {
+    setupDurationTimer();
+  }
+  else if (!isRunning() && wasRunning() && m_durationTimer != NULL) {
+    m_durationTimer->stop();
+    m_durationTimer->deleteLater();
+    m_durationTimer = NULL;
+  }
+  m_wasRunning = isRunning();
 }
