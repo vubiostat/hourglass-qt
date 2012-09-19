@@ -1,9 +1,47 @@
 #include "record.h"
 #include <QDateTime>
+#include <QSqlError>
 
 QSqlDatabase Record::database()
 {
   return QSqlDatabase::database();
+}
+
+QList<int> Record::findIds(const QString &tableName)
+{
+  return findIds(tableName, QString());
+}
+
+QList<int> Record::findIds(const QString &tableName, const QString &conditions)
+{
+  QList<QVariant> emptyBindValues;
+  return findIds(tableName, conditions, emptyBindValues);
+}
+
+QList<int> Record::findIds(const QString &tableName, const QString &conditions, const QString &predicate)
+{
+  QList<QVariant> emptyBindValues;
+  return findIds(tableName, conditions, emptyBindValues, predicate);
+}
+
+QList<int> Record::findIds(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues)
+{
+  return findIds(tableName, conditions, bindValues, QString());
+}
+
+QList<int> Record::findIds(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate)
+{
+  QSqlQuery query;
+  if (!executeFindQuery(query, tableName, "id", conditions, bindValues, predicate)) {
+    qDebug() << "Query failed:" << query.lastQuery();
+    return QList<int>();
+  }
+
+  QList<int> result;
+  while (query.next()) {
+    result.append(query.value(0).toInt());
+  }
+  return result;
 }
 
 int Record::count(const QString &tableName)
@@ -47,51 +85,70 @@ int Record::count(const QString &tableName, const QString &conditions, const QLi
 Record::Record(QObject *parent)
   : QObject(parent)
 {
-  newRecord = true;
+  newRecord = wasNewRecord = true;
   modified = false;
 }
 
 Record::Record(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
-  : QObject(parent), attributes(attributes), newRecord(newRecord)
+  : QObject(parent), attributes(attributes), newRecord(newRecord), wasNewRecord(newRecord)
 {
   if (id() == -1) {
     qDebug() << "Record should have an ID, but doesn't!";
   }
-  newRecord = false;
   modified = false;
 }
 
 Record::Record(const Record &other)
   : QObject(other.parent())
 {
-  newRecord = other.isNew();
-  modified = other.isModified();
+  newRecord = other.newRecord;
+  wasNewRecord = other.wasNewRecord;
+  modified = other.modified;
   attributes = other.attributes;
+  dirtyAttributes = other.dirtyAttributes;
 }
 
 Record &Record::operator=(const Record &other)
 {
-  newRecord = other.isNew();
-  modified = other.isModified();
+  newRecord = other.newRecord;
+  wasNewRecord = other.wasNewRecord;
+  modified = other.modified;
   attributes = other.attributes;
+  dirtyAttributes = other.dirtyAttributes;
   return *this;
 }
 
-QVariant Record::get(const QString &attributeName) const
+QVariant Record::get(const QString &attributeName, bool dirty) const
 {
-  return attributes[attributeName];
+  if (dirty && dirtyAttributes.contains(attributeName)) {
+    return dirtyAttributes[attributeName];
+  }
+  else {
+    return attributes[attributeName];
+  }
 }
 
 void Record::set(const QString &attributeName, const QVariant &value)
 {
-  attributes[attributeName] = value;
+  dirtyAttributes[attributeName] = value;
   modified = true;
 }
 
 void Record::unset(const QString &attributeName)
 {
-  attributes.remove(attributeName);
+  if (dirtyAttributes.contains(attributeName)) {
+    dirtyAttributes.remove(attributeName);
+  }
+  else {
+    dirtyAttributes[attributeName] = QVariant();
+  }
   modified = true;
+}
+
+bool Record::containsAttribute(const QString &attributeName) const
+{
+  return dirtyAttributes.contains(attributeName) ||
+    attributes.contains(attributeName);
 }
 
 int Record::id() const
@@ -106,6 +163,11 @@ int Record::id() const
 bool Record::isNew() const
 {
   return newRecord;
+}
+
+bool Record::wasNew() const
+{
+  return wasNewRecord;
 }
 
 bool Record::isModified() const
@@ -130,7 +192,7 @@ bool Record::validate()
 
 bool Record::save(const QString &tableName)
 {
-  if (attributes.empty() || !isValid()) {
+  if (!isValid()) {
     return false;
   }
 
@@ -141,25 +203,24 @@ bool Record::save(const QString &tableName)
 
   QString queryString;
   if (newRecord) {
-    queryString += "INSERT INTO ";
+    queryString.append("INSERT INTO ");
   }
   else {
-    queryString += "UPDATE ";
+    queryString.append("UPDATE ");
   }
-  queryString += tableName + " ";
+  queryString.append(tableName + " ");
 
+  QStringList keys = dirtyAttributes.keys();
   if (newRecord) {
-    QStringList columns(attributes.keys());
-    queryString += "(" + columns.join(", ") + ")";
+    queryString.append("(" + keys.join(", ") + ")");
 
     QStringList placeholders;
-    for (int i = 0; i < columns.size(); i++) {
-      placeholders << QString(":%1").arg(columns[i]);
+    for (int i = 0; i < keys.size(); i++) {
+      placeholders << QString(":%1").arg(keys[i]);
     }
-    queryString += " VALUES(" + placeholders.join(", ") + ")";
+    queryString.append(" VALUES(" + placeholders.join(", ") + ")");
   }
   else {
-    QList<QString> keys = attributes.keys();
     QStringList assignments;
     for (int i = 0; i < keys.count(); i++) {
       if (keys[i] == "id") {
@@ -167,28 +228,40 @@ bool Record::save(const QString &tableName)
       }
       assignments << QString("%1 = :%1").arg(keys[i]);
     }
-    queryString += "SET " + assignments.join(", ") + " ";
-    queryString += "WHERE id = :id";
+    queryString.append("SET " + assignments.join(", ") + " ");
+    queryString.append("WHERE id = :id");
   }
 
   QSqlDatabase database = Record::database();
   QSqlQuery query(database);
   query.prepare(queryString);
 
-  QMapIterator<QString, QVariant> i(attributes);
+  QMapIterator<QString, QVariant> i(dirtyAttributes);
   while (i.hasNext()) {
     i.next();
     query.bindValue(QString(":%1").arg(i.key()), i.value());
   }
+  if (!newRecord) {
+    query.bindValue(":id", id());
+  }
 
   //qDebug() << queryString;
   bool result = query.exec();
-  if (newRecord && result) {
-    newRecord = false;
-    set("id", query.lastInsertId().toInt());
-    afterCreate();
+  if (result) {
+    if (newRecord) {
+      newRecord = false;
+
+      /* Not using set(), which sets stuff in dirtyAttributes */
+      attributes["id"] = query.lastInsertId().toInt();
+
+      afterCreate();
+    }
+    afterSave();
+    wasNewRecord = false;
   }
-  afterSave();
+  else {
+    qDebug() << "Query failed:" << query.lastError();
+  }
   return result;
 }
 
@@ -200,10 +273,18 @@ void Record::beforeCreate()
 void Record::beforeSave()
 {
   set("updated_at", QDateTime::currentDateTime());
+  //qDebug() << "Saving record:" << dirtyAttributes;
 }
 
 void Record::afterSave()
 {
+  QList<QString> dirtyKeys = dirtyAttributes.keys();
+  for (int i = 0; i < dirtyKeys.count(); i++) {
+    attributes[dirtyKeys[i]] = dirtyAttributes[dirtyKeys[i]];
+  }
+  dirtyAttributes.clear();
+  //qDebug() << "New attributes:" << attributes;
+  emit saved();
 }
 
 void Record::afterCreate()
@@ -224,7 +305,16 @@ bool Record::destroy(const QString &tableName)
   query.addBindValue(id());
 
   //qDebug() << queryString;
-  return query.exec();
+  bool result = query.exec();
+  if (result) {
+    emit destroyed();
+  }
+  return result;
+}
+
+void Record::reset()
+{
+  dirtyAttributes.clear();
 }
 
 bool Record::operator==(const Record &other)
@@ -232,10 +322,10 @@ bool Record::operator==(const Record &other)
   return !isNew() && !other.isNew() && id() == other.id();
 }
 
-bool Record::executeFindQuery(QSqlQuery &query, const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate)
+bool Record::executeFindQuery(QSqlQuery &query, const QString &tableName, const QString &select, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate)
 {
   QStringList queryStrings;
-  queryStrings << "SELECT * FROM";
+  queryStrings << "SELECT " << select << " FROM";
   queryStrings << tableName;
   if (!conditions.isEmpty()) {
     queryStrings << conditions;

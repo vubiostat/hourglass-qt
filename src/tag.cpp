@@ -28,7 +28,7 @@ QList<Tag *> Tag::find(const QString &conditions, const QList<QVariant> &bindVal
   return Record::find<Tag>("tags", conditions, bindValues, parent);
 }
 
-QList<Tag *> Tag::findById(int id, QObject *parent)
+Tag *Tag::findById(int id, QObject *parent)
 {
   return Record::findById<Tag>("tags", id, parent);
 }

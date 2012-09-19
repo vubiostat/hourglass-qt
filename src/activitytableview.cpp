@@ -1,7 +1,7 @@
 #include "activitytableview.h"
-#include "activitytablemodel.h"
-#include "activitydelegate.h"
 #include <QHeaderView>
+#include <QIcon>
+#include <QMessageBox>
 
 ActivityTableView::ActivityTableView(QWidget *parent)
   : QTableView(parent)
@@ -14,14 +14,6 @@ ActivityTableView::ActivityTableView(QWidget *parent)
   horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
   horizontalHeader()->hide();
   verticalHeader()->hide();
-
-  setItemDelegate(new ActivityDelegate(this));
-}
-
-void ActivityTableView::setDate(const QDate &date)
-{
-  ActivityTableModel *newModel = new ActivityTableModel(date, this);
-  setModel(newModel);
 }
 
 ActivityTableModel *ActivityTableView::model() const
@@ -32,25 +24,17 @@ ActivityTableModel *ActivityTableView::model() const
 void ActivityTableView::setModel(ActivityTableModel *newModel)
 {
   if (model()) {
-    disconnect(model(), SIGNAL(rowsInserted(const QModelIndex &, int, int)),
-        this, SLOT(rowsInserted(const QModelIndex &, int, int)));
-    disconnect(model(), SIGNAL(columnsInserted(const QModelIndex &, int, int)),
-        this, SLOT(columnsInserted(const QModelIndex &, int, int)));
-    disconnect(model(), SIGNAL(modelReset()),
-        this, SLOT(modelReset()));
+    disconnect(model(), 0, this, 0);
   }
 
   QTableView::setModel((QAbstractItemModel *) newModel);
 
   if (newModel) {
-    connect(newModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
-        this, SLOT(rowsInserted(const QModelIndex &, int, int)));
-    connect(newModel, SIGNAL(columnsInserted(const QModelIndex &, int, int)),
-        this, SLOT(columnsInserted(const QModelIndex &, int, int)));
-    connect(newModel, SIGNAL(modelReset()),
-        this, SLOT(modelReset()));
+    newModel->refreshActivities();
+    connect(newModel, SIGNAL(modelReset()), this, SLOT(modelReset()));
     horizontalHeader()->setResizeMode(5, QHeaderView::Stretch);
 
+    addWidgets();
     resizeHeightIfFixed();
   }
 }
@@ -65,27 +49,66 @@ QSize ActivityTableView::minimumSizeHint() const
     for (int i = 0; i < rowCount; i++) {
       height += rowHeight(i);
     }
-    size.setHeight(height + (rowCount * 5));
+    size.setHeight(height + (rowCount * 4));
   }
 
   return size;
 }
 
-void ActivityTableView::rowsInserted(const QModelIndex &parent, int start, int end)
-{
-  Q_UNUSED(parent); Q_UNUSED(start); Q_UNUSED(end);
-  resizeHeightIfFixed();
-}
-
-void ActivityTableView::columnsInserted(const QModelIndex &parent, int start, int end)
-{
-  Q_UNUSED(parent); Q_UNUSED(start); Q_UNUSED(end);
-  resizeHeightIfFixed();
-}
-
 void ActivityTableView::modelReset()
 {
+  addWidgets();
   resizeHeightIfFixed();
+}
+
+void ActivityTableView::addWidgets()
+{
+  while (!m_editButtons.isEmpty()) {
+    m_editButtons.takeLast()->deleteLater();
+  }
+  while (!m_deleteButtons.isEmpty()) {
+    m_deleteButtons.takeLast()->deleteLater();
+  }
+
+  ActivityTableModel *m = model();
+  for (int i = 0; i < m->rowCount(); i++) {
+    QPushButton *editButton = new QPushButton(this);
+    editButton->setIcon(QIcon::fromTheme("accessories-text-editor"));
+    editButton->setFlat(true);
+    connect(editButton, SIGNAL(clicked()), SLOT(editButtonClicked()));
+    setIndexWidget(m->index(i, 7), editButton);
+    m_editButtons.append(editButton);
+
+    QPushButton *deleteButton = new QPushButton(this);
+    deleteButton->setIcon(QIcon::fromTheme("user-trash"));
+    deleteButton->setFlat(true);
+    connect(deleteButton, SIGNAL(clicked()), SLOT(deleteButtonClicked()));
+    setIndexWidget(m->index(i, 8), deleteButton);
+    m_deleteButtons.append(deleteButton);
+  }
+}
+
+void ActivityTableView::editButtonClicked()
+{
+  int index = m_editButtons.indexOf(static_cast<QPushButton *>(QObject::sender()));
+  if (index >= 0) {
+    QSharedPointer<Activity> activity = model()->activityAt(index);
+    emit editActivity(activity);
+  }
+}
+
+void ActivityTableView::deleteButtonClicked()
+{
+  int index = m_deleteButtons.indexOf(static_cast<QPushButton *>(QObject::sender()));
+  if (index >= 0) {
+    QMessageBox::StandardButton questionResult = QMessageBox::question(this,
+        "Delete activity", "Are you sure you want to delete the activity?",
+        QMessageBox::Yes | QMessageBox::No);
+    if (questionResult == QMessageBox::Yes) {
+      QSharedPointer<Activity> activity = model()->activityAt(index);
+      activity->destroy();
+    }
+  }
 }
 
 void ActivityTableView::resizeHeightIfFixed()

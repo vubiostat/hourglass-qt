@@ -44,11 +44,21 @@ class Record : public QObject
     }
 
     template <class T>
-    static QList<T*> findById(const QString &tableName, int id, QObject *parent = 0)
+    static T* findById(const QString &tableName, int id, QObject *parent = 0)
     {
       QList<QVariant> bindValues;
       bindValues << QVariant(id);
-      return find<T>(tableName, "WHERE id = ?", bindValues, parent);
+      QList<T*> records = find<T>(tableName, "WHERE id = ?", bindValues, parent);
+      T *result = NULL;
+      for (int i = 0; i < records.count(); i++) {
+        if (i == 0) {
+          result = records[i];
+        }
+        else {
+          records[i]->deleteLater();
+        }
+      }
+      return result;
     }
 
     template <class T>
@@ -61,7 +71,7 @@ class Record : public QObject
     static QList<T*> find(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate, QObject *parent = 0)
     {
       QSqlQuery query;
-      if (!executeFindQuery(query, tableName, conditions, bindValues, predicate)) {
+      if (!executeFindQuery(query, tableName, "*", conditions, bindValues, predicate)) {
         qDebug() << "Query failed:" << query.lastQuery();
         return QList<T*>();
       }
@@ -79,6 +89,12 @@ class Record : public QObject
       return result;
     }
 
+    static QList<int> findIds(const QString &tableName);
+    static QList<int> findIds(const QString &tableName, const QString &conditions);
+    static QList<int> findIds(const QString &tableName, const QString &conditions, const QString &predicate);
+    static QList<int> findIds(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues);
+    static QList<int> findIds(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate);
+
     static int count(const QString &tableName);
     static int count(const QString &tableName, const QString &conditions);
     static int count(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues);
@@ -87,18 +103,25 @@ class Record : public QObject
     Record(const Record &other);
     Record &operator=(const Record &other);
 
-    QVariant get(const QString &attributeName) const;
+    QVariant get(const QString &attributeName, bool dirty = true) const;
     void set(const QString &attributeName, const QVariant &value);
     void unset(const QString &attributeName);
+    bool containsAttribute(const QString &attributeName) const;
 
     int id() const;
     bool isNew() const;
+    bool wasNew() const;
     bool isModified() const;
     bool isValid();
     bool save(const QString &tableName);
     bool destroy(const QString &tableName);
+    void reset();
 
     bool operator==(const Record &other);
+
+  signals:
+    void saved();
+    void destroyed();
 
   protected:
     Record(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
@@ -112,10 +135,11 @@ class Record : public QObject
     virtual void afterCreate();
 
   private:
-    static bool executeFindQuery(QSqlQuery &query, const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate);
+    static bool executeFindQuery(QSqlQuery &query, const QString &tableName, const QString &select, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate);
 
     QMap<QString, QVariant> attributes;
-    bool newRecord, modified;
+    QMap<QString, QVariant> dirtyAttributes;
+    bool newRecord, modified, wasNewRecord;
 };
 
 #endif

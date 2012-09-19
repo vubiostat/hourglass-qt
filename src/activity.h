@@ -21,16 +21,25 @@ class Activity : public Record
     static QList<Activity *> find(QObject *parent = 0);
     static QList<Activity *> find(const QString &conditions, QObject *parent = 0);
     static QList<Activity *> find(const QString &conditions, const QString &predicate, QObject *parent = 0);
-    static QList<Activity *> findById(int id, QObject *parent = 0);
+    static Activity *findById(int id, QObject *parent = 0);
     static QList<Activity *> findCurrent(QObject *parent = 0);
     static QList<Activity *> findToday(QObject *parent = 0);
     static QList<Activity *> findDay(const QDate &date, QObject *parent = 0);
     static QList<Activity *> findPeriod(const QDate &startDate, const QDate &endDate, QObject *parent = 0);
 
+    static QList<int> findIds();
+    static QList<int> findIds(const QString &conditions);
+    static QList<int> findIds(const QString &conditions, const QString &predicate);
+    static QList<int> findCurrentIds();
+    static QList<int> findTodayIds();
+    static QList<int> findDayIds(const QDate &date);
+    static QList<int> findPeriodIds(const QDate &startDate, const QDate &endDate);
+
     static int count();
     static int count(const QString &conditions);
     static int countChangesSince(const QDateTime &dateTime);
     static int countChangesSince(const QDate &day, const QDateTime &dateTime);
+    static int countRunningChangesSince(const QDateTime &dateTime, QStringList activityIds);
 
     static QMap<QString, int> projectTotals(const QList<Activity *> &activities);
     static QList<QString> distinctNames();
@@ -41,6 +50,7 @@ class Activity : public Record
 
     Activity(QObject *parent = 0);
     Activity(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
+    ~Activity();
 
     // Attribute getters
     QString name() const;
@@ -48,6 +58,7 @@ class Activity : public Record
     QDateTime startedAt() const;
     QDateTime endedAt() const;
     bool isUntimed() const;
+    bool wasUntimed() const;
     int duration() const;
     QDate day() const;
 
@@ -94,8 +105,12 @@ class Activity : public Record
     bool save();
     bool destroy();
 
+  public slots:
+    void stop();
+
   signals:
     void durationChanged();
+    void started();
 
   private slots:
     void startDurationTimer();
@@ -112,19 +127,19 @@ class Activity : public Record
     static const QString s_findCurrentConditions;
     static const QString s_findDayConditionsTemplate;
     static const QString s_countChangesSinceConditionsTemplate;
+    static const QString s_countRunningChangesSinceConditionsTemplate;
     static const QString s_countChangesSinceWithDayConditionsTemplate;
 
     static QDate dateFromMDY(const QString &mdy);
     static QTime timeFromHM(const QString &hm);
 
-    QVariant m_running;
-    bool m_wasRunning;
     QDate m_startedAtMDY;
     QTime m_startedAtHM;
     QDate m_endedAtMDY;
     QTime m_endedAtHM;
     QList<Tag *> m_tagsToAdd;
     QTimer *m_durationTimer;
+    QVariant m_running;
 
     void setupDurationTimer();
     void addTags(const QList<Tag *> &tags);

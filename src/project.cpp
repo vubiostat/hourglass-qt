@@ -24,7 +24,7 @@ QList<Project *> Project::find(const QString &conditions, const QList<QVariant> 
   return Record::find<Project>("projects", conditions, bindValues, parent);
 }
 
-QList<Project *> Project::findById(int id, QObject *parent)
+Project *Project::findById(int id, QObject *parent)
 {
   return Record::findById<Project>("projects", id, parent);
 }

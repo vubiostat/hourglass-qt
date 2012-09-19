@@ -52,8 +52,13 @@ const QString Activity::s_findDayConditionsTemplate = QString(
     "(activities.untimed = 1 AND date(activities.day) = date('%1'))");
 
 const QString Activity::s_countChangesSinceConditionsTemplate = QString(
-    "WHERE datetime(activities.created_at) > datetime('%1') OR "
-    "datetime(activities.updated_at) > datetime('%1')");
+    "WHERE (datetime(activities.created_at) > datetime('%1') OR "
+    "datetime(activities.updated_at) > datetime('%1'))");
+
+const QString Activity::s_countRunningChangesSinceConditionsTemplate = QString(
+    "WHERE activities.id IN (%1) OR (activities.ended_at IS NULL AND "
+    "activities.untimed != 1 AND (datetime(activities.created_at) > "
+    "datetime('%2') OR datetime(activities.updated_at) > datetime('%2')))");
 
 const QString Activity::s_countChangesSinceWithDayConditionsTemplate = QString(
     "WHERE (date(activities.started_at) = date('%1') OR "
@@ -76,7 +81,7 @@ QList<Activity *> Activity::find(const QString &conditions, const QString &predi
   return Record::find<Activity>(s_tableName, conditions, predicate, parent);
 }
 
-QList<Activity *> Activity::findById(int id, QObject *parent)
+Activity *Activity::findById(int id, QObject *parent)
 {
   return Record::findById<Activity>(s_tableName, id, parent);
 }
@@ -101,6 +106,41 @@ QList<Activity *> Activity::findPeriod(const QDate &startDate, const QDate &endD
   return find(s_findPeriodConditionsTemplate.arg(startDate.toString(Qt::ISODate)).arg(endDate.toString(Qt::ISODate)), parent);
 }
 
+QList<int> Activity::findIds()
+{
+  return Record::findIds(s_tableName, QString(), s_defaultQueryPredicate);
+}
+
+QList<int> Activity::findIds(const QString &conditions)
+{
+  return Record::findIds(s_tableName, conditions, s_defaultQueryPredicate);
+}
+
+QList<int> Activity::findIds(const QString &conditions, const QString &predicate)
+{
+  return Record::findIds(s_tableName, conditions, predicate);
+}
+
+QList<int> Activity::findCurrentIds()
+{
+  return findIds(s_findCurrentConditions);
+}
+
+QList<int> Activity::findTodayIds()
+{
+  return findDayIds(QDate::currentDate());
+}
+
+QList<int> Activity::findDayIds(const QDate &date)
+{
+  return findIds(s_findDayConditionsTemplate.arg(date.toString(Qt::ISODate)));
+}
+
+QList<int> Activity::findPeriodIds(const QDate &startDate, const QDate &endDate)
+{
+  return findIds(s_findPeriodConditionsTemplate.arg(startDate.toString(Qt::ISODate)).arg(endDate.toString(Qt::ISODate)));
+}
+
 int Activity::count() {
   return Record::count(s_tableName);
 }
@@ -118,6 +158,13 @@ int Activity::countChangesSince(const QDateTime &dateTime)
 int Activity::countChangesSince(const QDate &day, const QDateTime &dateTime)
 {
   return count(s_countChangesSinceWithDayConditionsTemplate.arg(day.toString(Qt::ISODate)).arg(dateTime.toString(Qt::ISODate)));
+}
+
+int Activity::countRunningChangesSince(const QDateTime &dateTime, QStringList activityIds)
+{
+  return count(s_countRunningChangesSinceConditionsTemplate
+      .arg(activityIds.join(","))
+      .arg(dateTime.toString(Qt::ISODate)));
 }
 
 QMap<QString, int> Activity::projectTotals(const QList<Activity *> &activities)
@@ -288,18 +335,19 @@ QTime Activity::timeFromHM(const QString &hm)
 Activity::Activity(QObject *parent)
   : Record(parent), m_durationTimer(NULL)
 {
-  m_running = QVariant(QVariant::Bool);
-  m_wasRunning = false;
 }
 
 Activity::Activity(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent)
   : Record(attributes, newRecord, parent), m_durationTimer(NULL)
 {
-  m_running = QVariant(QVariant::Bool);
-  m_wasRunning = isRunning();
-  if (m_wasRunning) {
+  if (isRunning()) {
     setupDurationTimer();
   }
+}
+
+Activity::~Activity()
+{
+  qDebug() << "Activity" << id() << "was deconstructed.";
 }
 
 // Attribute getters/setters
@@ -355,6 +403,12 @@ void Activity::setEndedAt(const QDateTime &endedAt)
 bool Activity::isUntimed() const
 {
   int untimed = get("untimed").toInt();
+  return untimed == 1;
+}
+
+bool Activity::wasUntimed() const
+{
+  int untimed = get("untimed", false).toInt();
   return untimed == 1;
 }
 
@@ -462,8 +516,13 @@ bool Activity::isRunning() const
   if (isUntimed()) {
     return false;
   }
-  else if (isNew() || !m_running.isNull()) {
-    return m_running.toBool();
+  else if (isNew() || m_running.isValid()) {
+    if (m_running.isValid()) {
+      return m_running.toBool();
+    }
+    else {
+      return false;
+    }
   }
   else {
     return !endedAt().isValid();
@@ -472,12 +531,20 @@ bool Activity::isRunning() const
 
 void Activity::setRunning(bool running)
 {
-  this->m_running = QVariant(running);
+  m_running = running;
 }
 
 bool Activity::wasRunning() const
 {
-  return m_wasRunning;
+  if (wasUntimed()) {
+    return false;
+  }
+  else if (wasNew()) {
+    return false;
+  }
+  else {
+    return !get("ended_at", false).toDateTime().isValid();
+  }
 }
 
 QString Activity::nameWithProject() const
@@ -670,24 +737,15 @@ void Activity::setTagNames(const QString &tagNames)
 // Helpers
 Project *Activity::project(QObject *parent) const
 {
-  Project *project = NULL;
   if (parent == NULL) {
     parent = Activity::parent();
   }
 
   int id = projectId();
   if (id >= 0) {
-    QList<Project *> projects = Project::findById(id, parent);
-    for (int i = 0; i < projects.count(); i++) {
-      if (i == 0) {
-        project = projects[i];
-      }
-      else {
-        projects[i]->deleteLater();
-      }
-    }
+    return Project::findById(id, parent);
   }
-  return project;
+  return NULL;
 }
 
 QString Activity::projectName() const
@@ -807,12 +865,20 @@ bool Activity::destroy()
   return Record::destroy(s_tableName);
 }
 
+void Activity::stop()
+{
+  if (isRunning()) {
+    setEndedAt(QDateTime::currentDateTime());
+    save();
+  }
+}
+
 void Activity::startDurationTimer()
 {
   m_durationTimer = new QTimer(this);
   connect(m_durationTimer, SIGNAL(timeout()), SIGNAL(durationChanged()));
   m_durationTimer->start(60000);
-  qDebug() << "Activity" << id() << "duration timer started.";
+  //qDebug() << "Activity" << id() << "duration timer started.";
   emit durationChanged();
 }
 
@@ -827,10 +893,7 @@ void Activity::beforeValidation()
     m_startedAtHM = QTime();
   }
 
-  if (isRunning()) {
-    setEndedAt(QDateTime());
-  }
-  else if (m_endedAtMDY.isValid() && m_endedAtHM.isValid()) {
+  if (m_endedAtMDY.isValid() && m_endedAtHM.isValid()) {
     QDateTime date;
     date.setDate(m_endedAtMDY);
     date.setTime(m_endedAtHM);
@@ -843,7 +906,7 @@ void Activity::beforeValidation()
 void Activity::setupDurationTimer()
 {
   int msecs = startedAt().msecsTo(QDateTime::currentDateTime()) % 60000;
-  qDebug() << "Activity" << id() << "milliseconds until tick:" << msecs;
+  //qDebug() << "Activity" << id() << "milliseconds until tick:" << msecs;
   QTimer::singleShot(msecs, this, SLOT(startDurationTimer()));
 }
 
@@ -913,9 +976,7 @@ bool Activity::validate()
 
 void Activity::beforeSave()
 {
-  if (isRunning() && !wasRunning()) {
-    stopCurrent();
-  }
+  Record::beforeSave();
   if (isUntimed()) {
     unset("started_at");
     unset("ended_at");
@@ -928,6 +989,7 @@ void Activity::beforeSave()
 
 void Activity::afterCreate()
 {
+  Record::afterCreate();
   addTags(m_tagsToAdd);
   while (!m_tagsToAdd.isEmpty()) {
     m_tagsToAdd.takeLast()->deleteLater();
@@ -936,13 +998,29 @@ void Activity::afterCreate()
 
 void Activity::afterSave()
 {
+  bool tooShort = false;
+  bool justStarted = false;
   if (isRunning() && !wasRunning() && m_durationTimer == NULL) {
     setupDurationTimer();
+    justStarted = true;
   }
-  else if (!isRunning() && wasRunning() && m_durationTimer != NULL) {
-    m_durationTimer->stop();
-    m_durationTimer->deleteLater();
-    m_durationTimer = NULL;
+  else if (!isRunning() && wasRunning()) {
+    if (m_durationTimer != NULL) {
+      m_durationTimer->stop();
+      m_durationTimer->deleteLater();
+      m_durationTimer = NULL;
+    }
+    tooShort = duration() < 60;
   }
-  m_wasRunning = isRunning();
+
+  if (tooShort) {
+    destroy();
+  }
+  else {
+    m_running = QVariant();
+    Record::afterSave();
+  }
+  if (justStarted) {
+    emit started();
+  }
 }

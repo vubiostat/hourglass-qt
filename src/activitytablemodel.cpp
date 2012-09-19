@@ -1,19 +1,16 @@
 #include "activitytablemodel.h"
-#include <QIcon>
 #include <QtDebug>
 
 const QString ActivityTableModel::s_timeSeparator = QString("-");
 
-ActivityTableModel::ActivityTableModel(QObject *parent)
-  : QAbstractTableModel(parent)
+ActivityTableModel::ActivityTableModel(RecordManager<Activity> *recordManager, QObject *parent)
+  : QAbstractTableModel(parent), m_recordManager(recordManager)
 {
-  fetchActivities();
 }
 
-ActivityTableModel::ActivityTableModel(QDate date, QObject *parent)
-  : QAbstractTableModel(parent), m_date(date)
+ActivityTableModel::ActivityTableModel(QDate date, RecordManager<Activity> *recordManager, QObject *parent)
+  : QAbstractTableModel(parent), m_recordManager(recordManager), m_date(date)
 {
-  fetchActivities();
 }
 
 Qt::ItemFlags ActivityTableModel::flags(const QModelIndex &index) const
@@ -29,7 +26,7 @@ Qt::ItemFlags ActivityTableModel::flags(const QModelIndex &index) const
 int ActivityTableModel::rowCount(const QModelIndex &parent) const
 {
   Q_UNUSED(parent);
-  return m_activities.count();
+  return m_activityIds.count();
 }
 
 int ActivityTableModel::columnCount(const QModelIndex &parent) const
@@ -40,7 +37,7 @@ int ActivityTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 {
-  Activity *activity = m_activities.at(index.row());
+  QSharedPointer<Activity> activity = activityAt(index.row());
   switch (role) {
     case Qt::DisplayRole:
       switch (index.column()) {
@@ -74,17 +71,11 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 
         case 6:
           return activity->durationInWords();
-      }
-      break;
 
-    case Qt::DecorationRole:
-      switch (index.column()) {
         case 7:
-          return QIcon::fromTheme("accessories-text-editor");
         case 8:
-          return QIcon::fromTheme("user-trash");
+          return activity->id();
       }
-
       break;
 
     case Qt::TextAlignmentRole:
@@ -105,62 +96,126 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
       break;
 
     default:
-      return QVariant();
+      break;
   }
   return QVariant();
 }
 
-void ActivityTableModel::fetchActivities()
+QSharedPointer<Activity> ActivityTableModel::activityAt(int index) const
 {
-  int num;
+  return m_activities[m_activityIds[index]];
+}
 
-  if (m_lastFetchedAt.isValid()) {
+void ActivityTableModel::refreshActivities()
+{
+  beginResetModel();
+
+  QList<int> previousActivityIds = m_activityIds;
+  m_activityIds = fetchActivityIds();
+  for (int i = 0; i < m_activityIds.count(); i++) {
+    int activityId = m_activityIds[i];
+    if (!previousActivityIds.removeOne(activityId)) {
+      QSharedPointer<Activity> ptr = m_recordManager->getRecordById(activityId);
+
+      /* Connect new activity */
+      connect(ptr.data(), SIGNAL(durationChanged()),
+          this, SLOT(activityDurationChanged()));
+      connect(ptr.data(), SIGNAL(destroyed()),
+          this, SLOT(activityDestroyed()));
+      connect(ptr.data(), SIGNAL(saved()),
+          this, SLOT(activitySaved()));
+      connect(ptr.data(), SIGNAL(started()),
+          this, SIGNAL(activityStarted()));
+
+      m_activities[activityId] = ptr;
+      qDebug() << "Activity" << activityId << "added.";
+    }
+  }
+
+  /* Remove old activities */
+  for (int i = 0; i < previousActivityIds.count(); i++) {
+    int activityId = previousActivityIds[i];
+    QSharedPointer<Activity> ptr = m_activities.take(activityId);
+    disconnect(ptr.data(), 0, this, 0);
+  }
+
+  m_lastFetchedAt = QDateTime::currentDateTime();
+  endResetModel();
+}
+
+void ActivityTableModel::activityCreated(QSharedPointer<Activity> activity)
+{
+  if (containsActivity(activity)) {
+    refreshActivities();
+  }
+}
+
+void ActivityTableModel::activityDestroyed()
+{
+  qDebug() << "An activity was destroyed!";
+  refreshActivities();
+}
+
+void ActivityTableModel::activitySaved()
+{
+  qDebug() << "An activity was saved!";
+  refreshActivities();
+}
+
+/*
+bool ActivityTableModel::activityChangesSince(const QDateTime &dateTime) const
+{
+  int count = 0;
+
+  if (dateTime.isValid()) {
     if (m_date.isValid()) {
-      num = Activity::countChangesSince(m_date, m_lastFetchedAt);
+      qDebug() << "Checking for changes for activities for day of week" << m_date.dayOfWeek();
+      count = Activity::countChangesSince(m_date, dateTime);
     }
     else {
-      num = Activity::countChangesSince(m_lastFetchedAt);
+      count = Activity::countChangesSince(dateTime);
     }
+    return count > 0;
   }
   else {
-    num = 1;
+    return true;
   }
+}
+*/
 
-  if (num > 0) {
-    beginResetModel();
+QList<int> ActivityTableModel::fetchActivityIds() const
+{
+  if (m_date.isValid()) {
+    return Activity::findDayIds(m_date);
+  }
+  else {
+    return Activity::findIds();
+  }
+}
 
-    /* Disconnect existing activities */
-    for (int i = 0; i < m_activities.count(); i++) {
-      Activity *activity = m_activities[i];
-      disconnect(activity, SIGNAL(durationChanged()),
-          this, SLOT(activityDurationChanged()));
-      activity->deleteLater();
-    }
+bool ActivityTableModel::containsActivity(QSharedPointer<Activity> activity) const
+{
+  bool result = true;
+  if (m_date.isValid()) {
+    result = (activity->isUntimed() && activity->day() == m_date) ||
+        (!activity->isUntimed() && activity->startedAt().date() == m_date);
 
-    if (m_date.isValid()) {
-      m_activities = Activity::findDay(m_date, this);
+    if (result) {
+      qDebug() << "Activity" << activity->id() << "belongs to model for day of week" << m_date.dayOfWeek();
     }
     else {
-      m_activities = Activity::find(this);
+      qDebug() << "Activity" << activity->id() << "doesn't belong to model for day of week" << m_date.dayOfWeek();
     }
-    m_lastFetchedAt = QDateTime::currentDateTime();
-
-    /* Connect new activities */
-    for (int i = 0; i < m_activities.count(); i++) {
-      Activity *activity = m_activities[i];
-      connect(activity, SIGNAL(durationChanged()),
-          this, SLOT(activityDurationChanged()));
-    }
-
-    endResetModel();
   }
+
+  return result;
 }
 
 void ActivityTableModel::activityDurationChanged()
 {
   Activity *activity = static_cast<Activity *>(QObject::sender());
 
-  int index = m_activities.indexOf(activity);
+  int index = m_activityIds.indexOf(activity->id());
   if (index >= 0) {
     QModelIndex modelIndex = createIndex(index, 6);
     emit dataChanged(modelIndex, modelIndex);

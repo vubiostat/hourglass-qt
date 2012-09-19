@@ -3,6 +3,8 @@
 
 #include <QTableView>
 #include <QDate>
+#include <QList>
+#include <QPushButton>
 #include "activitytablemodel.h"
 
 class ActivityTableView : public QTableView
@@ -12,19 +14,28 @@ class ActivityTableView : public QTableView
   public:
     ActivityTableView(QWidget *parent = 0);
 
-    void setDate(const QDate &date);
     ActivityTableModel *model() const;
     void setModel(ActivityTableModel *model);
 
     QSize minimumSizeHint() const;
 
+  signals:
+    void editActivity(QSharedPointer<Activity> activity);
+
   protected slots:
-    void rowsInserted(const QModelIndex &parent, int start, int end);
-    void columnsInserted(const QModelIndex &parent, int start, int end);
     void modelReset();
+
+  protected:
+    virtual void addWidgets();
+
+  private slots:
+    void editButtonClicked();
+    void deleteButtonClicked();
 
   private:
     void resizeHeightIfFixed();
+    QList<QPushButton *> m_editButtons;
+    QList<QPushButton *> m_deleteButtons;
 };
 
 #endif

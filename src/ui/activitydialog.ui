@@ -43,7 +43,7 @@
          <item>
           <widget class="QTimeEdit" name="teStartedAt">
            <property name="currentSection">
-            <enum>QDateTimeEdit::MinuteSection</enum>
+            <enum>QDateTimeEdit::HourSection</enum>
            </property>
            <property name="displayFormat">
             <string>HH:mm</string>
@@ -60,7 +60,7 @@
          <item>
           <widget class="QTimeEdit" name="teEndedAt">
            <property name="currentSection">
-            <enum>QDateTimeEdit::MinuteSection</enum>
+            <enum>QDateTimeEdit::HourSection</enum>
            </property>
            <property name="displayFormat">
             <string>HH:mm</string>
@@ -154,7 +154,11 @@
        <item row="0" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QDateEdit" name="deUntimedDate"/>
+          <widget class="QDateEdit" name="deUntimedDate">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="horizontalSpacer">
@@ -292,6 +296,70 @@
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>leActivity</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>leUntimedActivity</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>399</x>
+     <y>102</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>404</x>
+     <y>140</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>leUntimedActivity</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>leActivity</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>404</x>
+     <y>140</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>leTags</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>leUntimedTags</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>399</x>
+     <y>137</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>401</x>
+     <y>175</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>leUntimedTags</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>leTags</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>401</x>
+     <y>175</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>137</y>
     </hint>
    </hints>
   </connection>

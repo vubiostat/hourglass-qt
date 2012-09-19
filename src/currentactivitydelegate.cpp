@@ -1,24 +1,21 @@
-#include "activitydelegate.h"
+#include "currentactivitydelegate.h"
+#include <QPushButton>
 #include <QtDebug>
 
-ActivityDelegate::ActivityDelegate(QObject *parent)
+CurrentActivityDelegate::CurrentActivityDelegate(QObject *parent)
   : QStyledItemDelegate(parent)
 {
 }
 
-void ActivityDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void CurrentActivityDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
   QStyleOptionViewItem newOption(option);
   switch (index.column()) {
-    case 3:
-    case 4:
+    case 1:
       newOption.rect.adjust(15, 0, 15, 0);
       break;
-
-    case 7:
-    case 8:
-      return;
   }
+
   /* Remove focus border */
   if (newOption.state & QStyle::State_HasFocus) {
     newOption.state ^= QStyle::State_HasFocus;
@@ -27,7 +24,8 @@ void ActivityDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
   QStyledItemDelegate::paint(painter, newOption, index);
 }
 
-QSize ActivityDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+/*
+QSize CurrentActivityDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
   QSize size = QStyledItemDelegate::sizeHint(option, index);
   switch (index.column()) {
@@ -45,3 +43,4 @@ QSize ActivityDelegate::sizeHint(const QStyleOptionViewItem &option, const QMode
   }
   return size;
 }
+*/

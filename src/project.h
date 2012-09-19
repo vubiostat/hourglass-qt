@@ -10,7 +10,7 @@ class Project : public Record
   public:
     static QList<Project *> find(const QString &conditions, QObject *parent = 0);
     static QList<Project *> find(const QString &conditions, const QList<QVariant> &bindValues, QObject *parent = 0);
-    static QList<Project *> findById(int id, QObject *parent);
+    static Project *findById(int id, QObject *parent);
     static int findOrCreateByName(const QString &name);
     static QList<QString> distinctNames();
 
