@@ -1,8 +1,8 @@
 include(../hourglass.pri)
 include(ui/ui.pri)
+include(icons/icons.pri)
 #include(public/public.pri)
 #include(views/views.pri)
-#include(icons/icons.pri)
 
 TARGET = hourglass
 

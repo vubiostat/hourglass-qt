@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
   : QMainWindow(parent, flags)
 {
   m_ui.setupUi(this);
+  setWindowIcon(QIcon(":/icons/hourglass.png"));
 
   m_recordManager = new RecordManager<Activity>;
 
