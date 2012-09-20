@@ -4,6 +4,7 @@
 CurrentActivityTableView::CurrentActivityTableView(QWidget *parent)
   : ActivityTableView(parent)
 {
+  verticalHeader()->setDefaultSectionSize(35);
 }
 
 CurrentActivityTableModel *CurrentActivityTableView::model() const
@@ -11,18 +12,29 @@ CurrentActivityTableModel *CurrentActivityTableView::model() const
   return static_cast<CurrentActivityTableModel *>(ActivityTableView::model());
 }
 
-void CurrentActivityTableView::addWidgets()
+const QSize &CurrentActivityTableView::stopButtonSize() const
 {
-  while (!m_stopButtons.isEmpty()) {
-    m_stopButtons.takeLast()->deleteLater();
-  }
+  return m_stopButtonSize;
+}
 
-  ActivityTableModel *m = model();
-  for (int i = 0; i < m->rowCount(); i++) {
-    QSharedPointer<Activity> activity = m->activityAt(i);
-    QPushButton *stopButton = new QPushButton("Stop activity", this);
-    connect(stopButton, SIGNAL(clicked()), activity.data(), SLOT(stop()));
-    setIndexWidget(m->index(i, 4), stopButton);
-    m_stopButtons.append(stopButton);
+void CurrentActivityTableView::setStopButtonSize(const QSize &size)
+{
+  m_stopButtonSize = size;
+  horizontalHeader()->resizeSection(4, size.width());
+}
+
+void CurrentActivityTableView::setHeaderStretch()
+{
+  horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+  horizontalHeader()->setResizeMode(4, QHeaderView::Fixed);
+}
+
+void CurrentActivityTableView::clicked(const QModelIndex &index)
+{
+  switch (index.column()) {
+    case 4:
+      /* Stop button */
+      model()->activityAt(index.row())->stop();
+      break;
   }
 }

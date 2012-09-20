@@ -12,12 +12,10 @@ void ActivityDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
   switch (index.column()) {
     case 3:
     case 4:
+    case 5:
+      /* Add left padding to name, project name, and tag names */
       newOption.rect.adjust(15, 0, 15, 0);
       break;
-
-    case 7:
-    case 8:
-      return;
   }
   /* Remove focus border */
   if (newOption.state & QStyle::State_HasFocus) {
@@ -40,6 +38,7 @@ QSize ActivityDelegate::sizeHint(const QStyleOptionViewItem &option, const QMode
       break;
     case 3:
     case 4:
+    case 5:
       size.setWidth(size.width() + 15);
       break;
   }

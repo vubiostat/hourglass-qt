@@ -17,7 +17,7 @@ class ActivityTableModel : public QAbstractTableModel
     ActivityTableModel(QDate date, RecordManager<Activity> *recordManager, QObject *parent = 0);
 
     Qt::ItemFlags flags(const QModelIndex &index) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
@@ -37,6 +37,8 @@ class ActivityTableModel : public QAbstractTableModel
     //virtual bool activityChangesSince(const QDateTime &dateTime) const;
     virtual QList<int> fetchActivityIds() const;
     virtual bool containsActivity(QSharedPointer<Activity> ptr) const;
+    virtual void afterRefresh();
+    int activityCount() const;
 
   private slots:
     void activityDurationChanged();

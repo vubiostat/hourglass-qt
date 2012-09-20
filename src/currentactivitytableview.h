@@ -3,6 +3,7 @@
 
 #include "activitytableview.h"
 #include "currentactivitytablemodel.h"
+#include <QSize>
 
 class CurrentActivityTableView : public ActivityTableView
 {
@@ -12,12 +13,17 @@ class CurrentActivityTableView : public ActivityTableView
     CurrentActivityTableView(QWidget *parent = 0);
 
     CurrentActivityTableModel *model() const;
+    const QSize &stopButtonSize() const;
+    void setStopButtonSize(const QSize &size);
 
   protected:
-    void addWidgets();
+    void setHeaderStretch();
+
+  protected slots:
+    void clicked(const QModelIndex &index);
 
   private:
-    QList<QPushButton *> m_stopButtons;
+    QSize m_stopButtonSize;
 };
 
 #endif

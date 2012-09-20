@@ -1,6 +1,4 @@
 #include "activitytableview.h"
-#include <QHeaderView>
-#include <QIcon>
 #include <QMessageBox>
 
 ActivityTableView::ActivityTableView(QWidget *parent)
@@ -14,6 +12,9 @@ ActivityTableView::ActivityTableView(QWidget *parent)
   horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
   horizontalHeader()->hide();
   verticalHeader()->hide();
+
+  connect(this, SIGNAL(clicked(const QModelIndex &)),
+      this, SLOT(clicked(const QModelIndex &)));
 }
 
 ActivityTableModel *ActivityTableView::model() const
@@ -32,9 +33,8 @@ void ActivityTableView::setModel(ActivityTableModel *newModel)
   if (newModel) {
     newModel->refreshActivities();
     connect(newModel, SIGNAL(modelReset()), this, SLOT(modelReset()));
-    horizontalHeader()->setResizeMode(5, QHeaderView::Stretch);
 
-    addWidgets();
+    setHeaderStretch();
     resizeHeightIfFixed();
   }
 }
@@ -57,58 +57,33 @@ QSize ActivityTableView::minimumSizeHint() const
 
 void ActivityTableView::modelReset()
 {
-  addWidgets();
   resizeHeightIfFixed();
 }
 
-void ActivityTableView::addWidgets()
+void ActivityTableView::clicked(const QModelIndex &index)
 {
-  while (!m_editButtons.isEmpty()) {
-    m_editButtons.takeLast()->deleteLater();
-  }
-  while (!m_deleteButtons.isEmpty()) {
-    m_deleteButtons.takeLast()->deleteLater();
-  }
+  switch (index.column()) {
+    case 7:
+      /* Edit icon */
+      emit editActivity(model()->activityAt(index.row()));
+      break;
 
-  ActivityTableModel *m = model();
-  for (int i = 0; i < m->rowCount(); i++) {
-    QPushButton *editButton = new QPushButton(this);
-    editButton->setIcon(QIcon::fromTheme("accessories-text-editor"));
-    editButton->setFlat(true);
-    connect(editButton, SIGNAL(clicked()), SLOT(editButtonClicked()));
-    setIndexWidget(m->index(i, 7), editButton);
-    m_editButtons.append(editButton);
-
-    QPushButton *deleteButton = new QPushButton(this);
-    deleteButton->setIcon(QIcon::fromTheme("user-trash"));
-    deleteButton->setFlat(true);
-    connect(deleteButton, SIGNAL(clicked()), SLOT(deleteButtonClicked()));
-    setIndexWidget(m->index(i, 8), deleteButton);
-    m_deleteButtons.append(deleteButton);
+    case 8:
+      /* Delete icon */
+      QMessageBox::StandardButton questionResult = QMessageBox::question(this,
+          "Delete activity", "Are you sure you want to delete the activity?",
+          QMessageBox::Yes | QMessageBox::No);
+      if (questionResult == QMessageBox::Yes) {
+        QSharedPointer<Activity> activity = model()->activityAt(index.row());
+        activity->destroy();
+      }
+      break;
   }
 }
 
-void ActivityTableView::editButtonClicked()
+void ActivityTableView::setHeaderStretch()
 {
-  int index = m_editButtons.indexOf(static_cast<QPushButton *>(QObject::sender()));
-  if (index >= 0) {
-    QSharedPointer<Activity> activity = model()->activityAt(index);
-    emit editActivity(activity);
-  }
-}
-
-void ActivityTableView::deleteButtonClicked()
-{
-  int index = m_deleteButtons.indexOf(static_cast<QPushButton *>(QObject::sender()));
-  if (index >= 0) {
-    QMessageBox::StandardButton questionResult = QMessageBox::question(this,
-        "Delete activity", "Are you sure you want to delete the activity?",
-        QMessageBox::Yes | QMessageBox::No);
-    if (questionResult == QMessageBox::Yes) {
-      QSharedPointer<Activity> activity = model()->activityAt(index);
-      activity->destroy();
-    }
-  }
+  horizontalHeader()->setResizeMode(5, QHeaderView::Stretch);
 }
 
 void ActivityTableView::resizeHeightIfFixed()

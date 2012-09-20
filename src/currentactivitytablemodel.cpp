@@ -2,8 +2,18 @@
 #include <QFont>
 
 CurrentActivityTableModel::CurrentActivityTableModel(RecordManager<Activity> *recordManager, QObject *parent)
-  : ActivityTableModel(recordManager, parent)
+  : ActivityTableModel(recordManager, parent), m_empty(true)
 {
+}
+
+int CurrentActivityTableModel::rowCount(const QModelIndex &parent) const
+{
+  if (m_empty) {
+    return 1;
+  }
+  else {
+    return ActivityTableModel::rowCount(parent);
+  }
 }
 
 int CurrentActivityTableModel::columnCount(const QModelIndex &parent) const
@@ -14,9 +24,18 @@ int CurrentActivityTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant CurrentActivityTableModel::data(const QModelIndex &index, int role) const
 {
-  QSharedPointer<Activity> activity = activityAt(index.row());
-  switch (role) {
-    case Qt::DisplayRole:
+  if (role == Qt::DisplayRole) {
+    if (m_empty) {
+      switch (index.column()) {
+        case 0:
+          return "No activity";
+
+        case 4:
+          return -1;
+      }
+    }
+    else {
+      QSharedPointer<Activity> activity = activityAt(index.row());
       switch (index.column()) {
         case 0:
           return activity->name();
@@ -33,28 +52,36 @@ QVariant CurrentActivityTableModel::data(const QModelIndex &index, int role) con
         case 4:
           return activity->id();
       }
-      break;
+    }
+  }
+  else {
+    switch (role) {
+      case Qt::FontRole:
+        if (index.column() == 0) {
+          QFont font;
+          font.setPointSize(font.pointSize() + 6);
+          font.setBold(true);
+          return font;
+        }
+        break;
 
-    case Qt::FontRole:
-      if (index.column() == 0) {
-        QFont font;
-        font.setPointSize(font.pointSize() + 6);
-        font.setBold(true);
-        return font;
-      }
-      break;
+      case Qt::ForegroundRole:
+        if (index.column() == 1) {
+          return Qt::darkGray;
+        }
+        break;
 
-    case Qt::ForegroundRole:
-      if (index.column() == 1) {
-        return Qt::darkGray;
-      }
-      break;
-
-    default:
-      break;
+      default:
+        break;
+    }
   }
 
   return QVariant();
+}
+
+bool CurrentActivityTableModel::isEmpty() const
+{
+  return m_empty;
 }
 
 /*
@@ -91,3 +118,9 @@ bool CurrentActivityTableModel::containsActivity(QSharedPointer<Activity> activi
     return false;
   }
 }
+
+void CurrentActivityTableModel::afterRefresh()
+{
+  m_empty = activityCount() == 0;
+}
+

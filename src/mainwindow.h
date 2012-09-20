@@ -17,6 +17,9 @@ class MainWindow : public QMainWindow
   signals:
     void activityCreated(QSharedPointer<Activity> activity);
 
+  protected:
+    void paintEvent(QPaintEvent *event);
+
   private slots:
     void on_btnStartActivity_clicked();
     void on_leActivity_returnPressed();
@@ -27,6 +30,7 @@ class MainWindow : public QMainWindow
   private:
     Ui::MainWindow m_ui;
     RecordManager<Activity> *m_recordManager;
+    QSize m_startButtonSize;
 
     void startActivity();
     void setupActivityTableView(ActivityTableView *view, const QDate &date);

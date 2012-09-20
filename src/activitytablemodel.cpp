@@ -1,4 +1,5 @@
 #include "activitytablemodel.h"
+#include <QIcon>
 #include <QtDebug>
 
 const QString ActivityTableModel::s_timeSeparator = QString("-");
@@ -26,7 +27,7 @@ Qt::ItemFlags ActivityTableModel::flags(const QModelIndex &index) const
 int ActivityTableModel::rowCount(const QModelIndex &parent) const
 {
   Q_UNUSED(parent);
-  return m_activityIds.count();
+  return activityCount();
 }
 
 int ActivityTableModel::columnCount(const QModelIndex &parent) const
@@ -71,10 +72,16 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 
         case 6:
           return activity->durationInWords();
+      }
+      break;
 
+    case Qt::DecorationRole:
+      switch (index.column()) {
         case 7:
+          return QIcon::fromTheme("accessories-text-editor");
+
         case 8:
-          return activity->id();
+          return QIcon::fromTheme("user-trash");
       }
       break;
 
@@ -140,6 +147,7 @@ void ActivityTableModel::refreshActivities()
   }
 
   m_lastFetchedAt = QDateTime::currentDateTime();
+  afterRefresh();
   endResetModel();
 }
 
@@ -209,6 +217,15 @@ bool ActivityTableModel::containsActivity(QSharedPointer<Activity> activity) con
   }
 
   return result;
+}
+
+void ActivityTableModel::afterRefresh()
+{
+}
+
+int ActivityTableModel::activityCount() const
+{
+  return m_activityIds.count();
 }
 
 void ActivityTableModel::activityDurationChanged()

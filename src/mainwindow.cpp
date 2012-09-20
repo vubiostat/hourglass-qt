@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 
   /* Set up activity tables */
   m_ui.tblCurrent->setModel(new CurrentActivityTableModel(m_recordManager, this));
-  m_ui.tblCurrent->setItemDelegate(new CurrentActivityDelegate(this));
+  m_ui.tblCurrent->setItemDelegate(new CurrentActivityDelegate(m_ui.tblCurrent));
   connect(this, SIGNAL(activityCreated(QSharedPointer<Activity>)),
       m_ui.tblCurrent->model(), SLOT(activityCreated(QSharedPointer<Activity>)));
 
@@ -106,6 +106,17 @@ MainWindow::~MainWindow()
   delete m_recordManager;
 }
 
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+  QMainWindow::paintEvent(event);
+
+  QSize size = m_ui.btnStartActivity->size();
+  if (m_startButtonSize != size) {
+    m_startButtonSize = size;
+    m_ui.tblCurrent->setStopButtonSize(size);
+  }
+}
+
 void MainWindow::on_btnStartActivity_clicked()
 {
   startActivity();
@@ -173,7 +184,7 @@ void MainWindow::setupActivityTableView(ActivityTableView *view, const QDate &da
 void MainWindow::setupActivityTableView(ActivityTableView *view, ActivityTableModel *model)
 {
   view->setModel(model);
-  view->setItemDelegate(new ActivityDelegate(this));
+  view->setItemDelegate(new ActivityDelegate(view));
   connect(view, SIGNAL(editActivity(QSharedPointer<Activity>)),
       SLOT(editActivity(QSharedPointer<Activity>)));
 }

@@ -5,6 +5,7 @@
 #include <QDate>
 #include <QList>
 #include <QPushButton>
+#include <QHeaderView>
 #include "activitytablemodel.h"
 
 class ActivityTableView : public QTableView
@@ -24,18 +25,13 @@ class ActivityTableView : public QTableView
 
   protected slots:
     void modelReset();
+    virtual void clicked(const QModelIndex &index);
 
   protected:
-    virtual void addWidgets();
-
-  private slots:
-    void editButtonClicked();
-    void deleteButtonClicked();
+    virtual void setHeaderStretch();
 
   private:
     void resizeHeightIfFixed();
-    QList<QPushButton *> m_editButtons;
-    QList<QPushButton *> m_deleteButtons;
 };
 
 #endif
