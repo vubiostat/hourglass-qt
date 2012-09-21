@@ -1,1 +1,1 @@
-FORMS += $$PWD/mainwindow.ui $$PWD/activitydialog.ui
+FORMS += $$PWD/mainwindow.ui $$PWD/activitydialog.ui $$PWD/preferencesdialog.ui

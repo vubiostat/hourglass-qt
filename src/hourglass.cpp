@@ -4,11 +4,14 @@
 #include <QDir>
 #include <QSqlQuery>
 #include <QSqlError>
+#include "activity.h"
 #include <QtDebug>
 
 Hourglass::Hourglass(int &argc, char **argv)
   : QApplication(argc, argv)
 {
+  connect(this, SIGNAL(aboutToQuit()), SLOT(stopActivities()));
+
   QCoreApplication::setOrganizationName("vubiostat");
   QCoreApplication::setOrganizationDomain("biostat.mc.vanderbilt.edu");
   QCoreApplication::setApplicationName("hourglass");
@@ -19,6 +22,14 @@ Hourglass::Hourglass(int &argc, char **argv)
   }
   else {
     quit();
+  }
+}
+
+void Hourglass::stopActivities()
+{
+  QSettings settings;
+  if (settings.value("stopActivitiesOnExit", true).toBool()) {
+    Activity::stopCurrent();
   }
 }
 

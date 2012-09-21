@@ -26,6 +26,7 @@ class MainWindow : public QMainWindow
   private slots:
     void on_action_About_triggered();
     void on_actionAbout_Qt_triggered();
+    void on_action_Preferences_triggered();
     void on_btnStartActivity_clicked();
     void on_leActivity_returnPressed();
     void on_leTags_returnPressed();

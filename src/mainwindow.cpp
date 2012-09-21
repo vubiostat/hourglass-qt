@@ -7,6 +7,7 @@
 #include "currentactivitydelegate.h"
 #include "namesdelegate.h"
 #include "aboutdialog.h"
+#include "preferencesdialog.h"
 #include <QPalette>
 #include <QDate>
 #include <QtDebug>
@@ -155,6 +156,13 @@ void MainWindow::on_action_About_triggered()
 void MainWindow::on_actionAbout_Qt_triggered()
 {
   QApplication::aboutQt();
+}
+
+void MainWindow::on_action_Preferences_triggered()
+{
+  PreferencesDialog dialog(this);
+  dialog.setModal(true);
+  dialog.exec();
 }
 
 void MainWindow::on_btnStartActivity_clicked()

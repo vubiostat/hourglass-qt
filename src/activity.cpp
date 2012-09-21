@@ -247,7 +247,7 @@ QPair<QDateTime, QDateTime> Activity::lastGap()
 {
   QSettings settings;
   QDateTime now = QDateTime::currentDateTime();
-  QDateTime dayStart(now.date(), settings.value("day_start", QTime(8, 0)).toTime());
+  QDateTime dayStart(now.date(), settings.value("dayStart", QTime(8, 0)).toTime());
   QDateTime lowerBound;
   int diff = dayStart.secsTo(now);
   if (diff >= 0 && diff < 14400) {
@@ -984,6 +984,13 @@ void Activity::beforeSave()
   else {
     unset("duration");
     unset("day");
+
+    if (isRunning()) {
+      QSettings settings;
+      if (settings.value("noConcurrentActivities", true).toBool()) {
+        stopCurrent();
+      }
+    }
   }
 }
 

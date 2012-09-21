@@ -2,6 +2,7 @@
 #define __HOURGLASS_H
 
 #include <QApplication>
+#include <QSettings>
 #include <QSqlDatabase>
 #include "mainwindow.h"
 
@@ -13,6 +14,9 @@ class Hourglass : public QApplication
 
   public:
     Hourglass(int &argc, char **argv);
+
+  private slots:
+    void stopActivities();
 
   private:
     MainWindow *m_mainwindow;
