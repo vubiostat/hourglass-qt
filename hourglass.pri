@@ -1,1 +1,1 @@
-isEmpty(PREFIX):PREFIX = /usr/local
+isEmpty(PREFIX):PREFIX = /usr

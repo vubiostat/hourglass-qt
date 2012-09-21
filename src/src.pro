@@ -10,8 +10,8 @@ TEMPLATE = app
 DESTDIR = ../bin
 
 QT += sql
-CONFIG += debug
-QMAKE_CXXFLAGS_DEBUG += -g3 -O0
+CONFIG += release
+DEFINES += QT_NO_DEBUG_OUTPUT
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc

@@ -1,0 +1,34 @@
+Description: Set build type to release
+Author: Jeremy Stephens <jeremy.f.stephens@gmail.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- hourglass-0.1.0.orig/hourglass.pri
++++ hourglass-0.1.0/hourglass.pri
+@@ -1 +1 @@
+-isEmpty(PREFIX):PREFIX = /usr/local
++isEmpty(PREFIX):PREFIX = /usr
+--- hourglass-0.1.0.orig/src/src.pro
++++ hourglass-0.1.0/src/src.pro
+@@ -10,8 +10,8 @@ TEMPLATE = app
+ DESTDIR = ../bin
+ 
+ QT += sql
+-CONFIG += debug
+-QMAKE_CXXFLAGS_DEBUG += -g3 -O0
++CONFIG += release
++DEFINES += QT_NO_DEBUG_OUTPUT
+ 
+ OBJECTS_DIR = .obj
+ MOC_DIR = .moc
