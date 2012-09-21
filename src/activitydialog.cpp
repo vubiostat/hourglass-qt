@@ -126,3 +126,31 @@ void ActivityDialog::on_cbInProgress_clicked()
   m_ui.deEndedAt->setDisabled(checked);
   m_ui.teEndedAt->setDisabled(checked);
 }
+
+void ActivityDialog::on_deStartedAt_dateChanged(const QDate &date)
+{
+  if (date > m_ui.deEndedAt->date()) {
+    m_ui.deEndedAt->setDate(date);
+  }
+}
+
+void ActivityDialog::on_teStartedAt_timeChanged(const QTime &time)
+{
+  if (time > m_ui.teEndedAt->time()) {
+    m_ui.teEndedAt->setTime(time);
+  }
+}
+
+void ActivityDialog::on_deEndedAt_dateChanged(const QDate &date)
+{
+  if (date < m_ui.deStartedAt->date()) {
+    m_ui.deStartedAt->setDate(date);
+  }
+}
+
+void ActivityDialog::on_teEndedAt_timeChanged(const QTime &time)
+{
+  if (time < m_ui.teStartedAt->time()) {
+    m_ui.teStartedAt->setTime(time);
+  }
+}

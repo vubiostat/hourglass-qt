@@ -23,6 +23,10 @@ class ActivityDialog : public QDialog
 
   private slots:
     void on_cbInProgress_clicked();
+    void on_deStartedAt_dateChanged(const QDate &date);
+    void on_teStartedAt_timeChanged(const QTime &time);
+    void on_deEndedAt_dateChanged(const QDate &date);
+    void on_teEndedAt_timeChanged(const QTime &time);
 
   private:
     Ui::ActivityDialog m_ui;
