@@ -1,3 +1,9 @@
+hourglass (0.1.0-0ubuntu1) precise; urgency=low
+
+  * Version bump
+
+ -- Jeremy Stephens <jeremy.f.stephens@gmail.com>  Fri, 21 Sep 2012 16:47:46 -0500
+
 hourglass (0.0.5-0ubuntu1) precise; urgency=low
 
   * Version bump
