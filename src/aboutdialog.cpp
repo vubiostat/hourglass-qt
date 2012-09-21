@@ -2,7 +2,7 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QPushButton>
-#include "about.h"
+#include "aboutdialog.h"
 #include "version.h"
 
 AboutDialog::AboutDialog(QWidget *parent)

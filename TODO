@@ -1,1 +1,6 @@
+- add screensaver detection
+- add settings
+  - run multiple activities at once?
+  - stop activities at close?
+  - stop activity on screensaver?
 - use additions/deletions/changes instead of model resets

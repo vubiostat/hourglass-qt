@@ -6,6 +6,7 @@
 #include "activitydelegate.h"
 #include "currentactivitydelegate.h"
 #include "namesdelegate.h"
+#include "aboutdialog.h"
 #include <QPalette>
 #include <QDate>
 #include <QtDebug>
@@ -143,6 +144,17 @@ void MainWindow::paintEvent(QPaintEvent *event)
     m_startButtonSize = size;
     m_ui.tblCurrent->setStopButtonSize(size);
   }
+}
+
+void MainWindow::on_action_About_triggered()
+{
+  AboutDialog dialog(this);
+  dialog.exec();
+}
+
+void MainWindow::on_actionAbout_Qt_triggered()
+{
+  QApplication::aboutQt();
 }
 
 void MainWindow::on_btnStartActivity_clicked()
