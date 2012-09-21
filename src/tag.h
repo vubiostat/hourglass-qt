@@ -14,7 +14,7 @@ class Tag : public Record
     static Tag *findById(int id, QObject *parent = 0);
     static Tag *findOrCreateByName(const QString &name, QObject *parent = 0);
     static QList<Tag *> findActivityTags(int activityId, QObject *parent = 0);
-    static QList<QString> distinctNames();
+    static QStringList distinctNames();
 
     Tag(QObject *parent = 0) : Record(parent) {}
     Tag(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0)

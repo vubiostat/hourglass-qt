@@ -26,12 +26,16 @@ class ActivityTableModel : public QAbstractTableModel
 
   public slots:
     void refreshActivities();
-    void activityCreated(QSharedPointer<Activity> activity);
-    void activityDestroyed();
-    void activitySaved();
 
   signals:
     void activityStarted();
+    void activitySaved();
+    void activityDestroyed();
+
+  protected slots:
+    void activityCreated(QSharedPointer<Activity> activity);
+    void internalActivityDestroyed();
+    void internalActivitySaved();
 
   protected:
     //virtual bool activityChangesSince(const QDateTime &dateTime) const;

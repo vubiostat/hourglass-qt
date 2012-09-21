@@ -63,6 +63,18 @@ QSharedPointer<Activity> ActivityDialog::activity() const
   return m_activity;
 }
 
+void ActivityDialog::setActivityCompleter(QCompleter *completer)
+{
+  m_ui.leActivity->setCompleter(completer);
+  m_ui.leUntimedActivity->setCompleter(completer);
+}
+
+void ActivityDialog::setTagCompleter(QCompleter *completer)
+{
+  m_ui.leTags->setCompleter(completer);
+  m_ui.leUntimedTags->setCompleter(completer);
+}
+
 void ActivityDialog::accept()
 {
   if (m_activity.isNull()) {

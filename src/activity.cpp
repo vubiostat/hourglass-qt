@@ -179,12 +179,12 @@ QMap<QString, int> Activity::projectTotals(const QList<Activity *> &activities)
   return totals;
 }
 
-QList<QString> Activity::distinctNames()
+QStringList Activity::distinctNames()
 {
   QSqlDatabase database = Activity::database();
   QSqlQuery query = database.exec(s_distinctNamesQuery);
 
-  QList<QString> names;
+  QStringList names;
   while (query.next()) {
     QString name = query.value(0).toString();
     QVariant projectName = query.value(1);

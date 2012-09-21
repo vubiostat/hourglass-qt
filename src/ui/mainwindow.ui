@@ -44,7 +44,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="leTags">
+       <widget class="TagsLineEdit" name="leTags">
         <property name="placeholderText">
          <string>Tags</string>
         </property>
@@ -363,6 +363,11 @@
    <extends>QTableView</extends>
    <header>currentactivitytableview.h</header>
   </customwidget>
+  <customwidget>
+   <class>TagsLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>tagslineedit.h</header>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>leActivity</tabstop>
@@ -370,15 +375,16 @@
   <tabstop>btnStartActivity</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>tblToday</tabstop>
-  <tabstop>saWeek</tabstop>
-  <tabstop>tblSunday</tabstop>
+  <tabstop>btnAddEarlierActivity</tabstop>
+  <tabstop>tblCurrent</tabstop>
   <tabstop>tblMonday</tabstop>
   <tabstop>tblTuesday</tabstop>
   <tabstop>tblWednesday</tabstop>
   <tabstop>tblThursday</tabstop>
   <tabstop>tblFriday</tabstop>
   <tabstop>tblSaturday</tabstop>
-  <tabstop>btnAddEarlierActivity</tabstop>
+  <tabstop>saWeek</tabstop>
+  <tabstop>tblSunday</tabstop>
  </tabstops>
  <resources/>
  <connections>

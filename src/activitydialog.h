@@ -15,6 +15,8 @@ class ActivityDialog : public QDialog
     ActivityDialog(QSharedPointer<Activity> activity, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
     QSharedPointer<Activity> activity() const;
+    void setActivityCompleter(QCompleter *completer);
+    void setTagCompleter(QCompleter *completer);
 
   public slots:
     void accept();

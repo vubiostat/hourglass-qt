@@ -42,7 +42,7 @@ class Activity : public Record
     static int countRunningChangesSince(const QDateTime &dateTime, QStringList activityIds);
 
     static QMap<QString, int> projectTotals(const QList<Activity *> &activities);
-    static QList<QString> distinctNames();
+    static QStringList distinctNames();
     static void stopCurrent();
     static QVariantList toVariantList(const QList<Activity *> &activities);
     static bool startLike(const Activity *activity);

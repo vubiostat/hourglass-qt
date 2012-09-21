@@ -5,6 +5,7 @@
 #include "activitytablemodel.h"
 #include "activitydelegate.h"
 #include "currentactivitydelegate.h"
+#include "namesdelegate.h"
 #include <QPalette>
 #include <QDate>
 #include <QtDebug>
@@ -14,8 +15,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 {
   m_ui.setupUi(this);
   setWindowIcon(QIcon(":/icons/hourglass.png"));
-
-  m_recordManager = new RecordManager<Activity>;
 
   /* Set background of week tab to white */
   QPalette weekPal(m_ui.saContentsWeek->palette());
@@ -27,7 +26,35 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
   currentPal.setColor(QPalette::Base, Qt::transparent);
   m_ui.tblCurrent->setPalette(currentPal);
 
+  /* Setup activity completer */
+  m_activityCompleter = new QCompleter(this);
+  m_activityCompleterModel = new ActivityNamesListModel(this);
+  m_activityCompleter->setModel(m_activityCompleterModel);
+  m_activityCompleter->setCompletionMode(QCompleter::PopupCompletion);
+  m_activityCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+
+  QAbstractItemView *activityPopup = m_activityCompleter->popup();
+  activityPopup->setItemDelegate(new NamesDelegate(activityPopup));
+  activityPopup->setFrameShadow(QFrame::Plain);
+
+  m_ui.leActivity->setCompleter(m_activityCompleter);
+
+  /* Setup tag completer */
+  m_tagCompleter = new QCompleter(this);
+  m_tagCompleterModel = new TagNamesListModel(this);
+  m_tagCompleter->setModel(m_tagCompleterModel);
+  m_tagCompleter->setCompletionMode(QCompleter::PopupCompletion);
+  m_tagCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+
+  QAbstractItemView *tagPopup = m_tagCompleter->popup();
+  tagPopup->setItemDelegate(new NamesDelegate(tagPopup));
+  tagPopup->setFrameShadow(QFrame::Plain);
+
+  m_ui.leTags->setCompleter(m_tagCompleter);
+
   /* Set up activity tables */
+  m_recordManager = new RecordManager<Activity>;
+
   m_ui.tblCurrent->setModel(new CurrentActivityTableModel(m_recordManager, this));
   m_ui.tblCurrent->setItemDelegate(new CurrentActivityDelegate(m_ui.tblCurrent));
   connect(this, SIGNAL(activityCreated(QSharedPointer<Activity>)),
@@ -39,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
     sunday = today;
   }
   else {
-    sunday = today.addDays(- today.dayOfWeek());
+    sunday = today.addDays(-today.dayOfWeek());
   }
 
   /* Today */
@@ -136,10 +163,14 @@ void MainWindow::on_leTags_returnPressed()
 void MainWindow::on_btnAddEarlierActivity_clicked()
 {
   ActivityDialog *dialog = new ActivityDialog(this);
+  dialog->setActivityCompleter(m_activityCompleter);
+  dialog->setTagCompleter(m_tagCompleter);
   dialog->setModal(true);
   if (dialog->exec() == QDialog::Accepted) {
     m_recordManager->addRecordPointer(dialog->activity());
     emit activityCreated(dialog->activity());
+    m_activityCompleterModel->refreshNames();
+    m_tagCompleterModel->refreshNames();
   }
   dialog->deleteLater();
 }
@@ -147,6 +178,8 @@ void MainWindow::on_btnAddEarlierActivity_clicked()
 void MainWindow::editActivity(QSharedPointer<Activity> activity)
 {
   ActivityDialog *dialog = new ActivityDialog(activity, this);
+  dialog->setActivityCompleter(m_activityCompleter);
+  dialog->setTagCompleter(m_tagCompleter);
   dialog->setModal(true);
   dialog->exec();
   dialog->deleteLater();
@@ -166,6 +199,8 @@ void MainWindow::startActivity()
     activity->save();
     QSharedPointer<Activity> ptr = m_recordManager->addRecord(activity);
     emit activityCreated(ptr);
+    m_activityCompleterModel->refreshNames();
+    m_tagCompleterModel->refreshNames();
   }
   else {
     activity->deleteLater();
@@ -179,6 +214,14 @@ void MainWindow::setupActivityTableView(ActivityTableView *view, const QDate &da
       model, SLOT(activityCreated(QSharedPointer<Activity>)));
   connect(model, SIGNAL(activityStarted()),
       m_ui.tblCurrent->model(), SLOT(refreshActivities()));
+  connect(model, SIGNAL(activitySaved()),
+      m_activityCompleterModel, SLOT(refreshNames()));
+  connect(model, SIGNAL(activityDestroyed()),
+      m_activityCompleterModel, SLOT(refreshNames()));
+  connect(model, SIGNAL(activitySaved()),
+      m_tagCompleterModel, SLOT(refreshNames()));
+  connect(model, SIGNAL(activityDestroyed()),
+      m_tagCompleterModel, SLOT(refreshNames()));
   setupActivityTableView(view, model);
 }
 

@@ -34,7 +34,9 @@ void CurrentActivityTableView::clicked(const QModelIndex &index)
   switch (index.column()) {
     case 4:
       /* Stop button */
-      model()->activityAt(index.row())->stop();
+      if (index.data().toInt() >= 0) {
+        model()->activityAt(index.row())->stop();
+      }
       break;
   }
 }

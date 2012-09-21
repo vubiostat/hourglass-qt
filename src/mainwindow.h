@@ -2,9 +2,12 @@
 #define __MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QCompleter>
 #include "ui_mainwindow.h"
 #include "recordmanager.h"
 #include "activity.h"
+#include "activitynameslistmodel.h"
+#include "tagnameslistmodel.h"
 
 class MainWindow : public QMainWindow
 {
@@ -31,6 +34,10 @@ class MainWindow : public QMainWindow
     Ui::MainWindow m_ui;
     RecordManager<Activity> *m_recordManager;
     QSize m_startButtonSize;
+    QCompleter *m_activityCompleter;
+    QCompleter *m_tagCompleter;
+    ActivityNamesListModel *m_activityCompleterModel;
+    TagNamesListModel *m_tagCompleterModel;
 
     void startActivity();
     void setupActivityTableView(ActivityTableView *view, const QDate &date);

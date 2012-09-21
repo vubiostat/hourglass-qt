@@ -84,7 +84,7 @@
         </layout>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="leTags"/>
+        <widget class="TagsLineEdit" name="leTags"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="lblTags">
@@ -234,7 +234,7 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="leUntimedTags"/>
+        <widget class="TagsLineEdit" name="leUntimedTags"/>
        </item>
       </layout>
       <zorder>lblUntimedDuration</zorder>
@@ -264,7 +264,28 @@
    <extends>QLineEdit</extends>
    <header>activitylineedit.h</header>
   </customwidget>
+  <customwidget>
+   <class>TagsLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>tagslineedit.h</header>
+  </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>deStartedAt</tabstop>
+  <tabstop>teStartedAt</tabstop>
+  <tabstop>teEndedAt</tabstop>
+  <tabstop>deEndedAt</tabstop>
+  <tabstop>cbInProgress</tabstop>
+  <tabstop>leActivity</tabstop>
+  <tabstop>leTags</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>buttonBox</tabstop>
+  <tabstop>deUntimedDate</tabstop>
+  <tabstop>sbUntimedHours</tabstop>
+  <tabstop>sbUntimedMinutes</tabstop>
+  <tabstop>leUntimedActivity</tabstop>
+  <tabstop>leUntimedTags</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

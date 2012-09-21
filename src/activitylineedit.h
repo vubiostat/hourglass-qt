@@ -1,9 +1,9 @@
 #ifndef __ACTIVITYLINEEDIT_H
 #define __ACTIVITYLINEEDIT_H
 
-#include <QLineEdit>
+#include "abstractlineedit.h"
 
-class ActivityLineEdit : public QLineEdit
+class ActivityLineEdit : public AbstractLineEdit
 {
   Q_OBJECT
 
@@ -13,6 +13,12 @@ class ActivityLineEdit : public QLineEdit
 
     QString activityName() const;
     QString projectName() const;
+
+  protected slots:
+    void insertCompletion(const QString &completion);
+
+  protected:
+    QString currentPrefix() const;
 };
 
 #endif

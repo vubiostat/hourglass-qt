@@ -128,9 +128,9 @@ void ActivityTableModel::refreshActivities()
       connect(ptr.data(), SIGNAL(durationChanged()),
           this, SLOT(activityDurationChanged()));
       connect(ptr.data(), SIGNAL(destroyed()),
-          this, SLOT(activityDestroyed()));
+          this, SLOT(internalActivityDestroyed()));
       connect(ptr.data(), SIGNAL(saved()),
-          this, SLOT(activitySaved()));
+          this, SLOT(internalActivitySaved()));
       connect(ptr.data(), SIGNAL(started()),
           this, SIGNAL(activityStarted()));
 
@@ -158,16 +158,18 @@ void ActivityTableModel::activityCreated(QSharedPointer<Activity> activity)
   }
 }
 
-void ActivityTableModel::activityDestroyed()
+void ActivityTableModel::internalActivityDestroyed()
 {
   qDebug() << "An activity was destroyed!";
   refreshActivities();
+  emit activityDestroyed();
 }
 
-void ActivityTableModel::activitySaved()
+void ActivityTableModel::internalActivitySaved()
 {
   qDebug() << "An activity was saved!";
   refreshActivities();
+  emit activitySaved();
 }
 
 /*

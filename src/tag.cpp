@@ -77,7 +77,7 @@ QList<Tag *> Tag::findActivityTags(int activityId, QObject *parent)
   return result;
 }
 
-QList<QString> Tag::distinctNames()
+QStringList Tag::distinctNames()
 {
   QSqlDatabase database = Tag::database();
   QSqlQuery query = database.exec(distinctNamesQuery);
