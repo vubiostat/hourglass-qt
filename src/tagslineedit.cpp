@@ -1,4 +1,6 @@
 #include "tagslineedit.h"
+#include <QAbstractItemView>
+#include <QtDebug>
 
 TagsLineEdit::TagsLineEdit(QWidget *parent)
   : AbstractLineEdit(parent)
@@ -10,20 +12,24 @@ TagsLineEdit::TagsLineEdit(const QString &contents, QWidget *parent)
 {
 }
 
-void TagsLineEdit::insertCompletion(const QString &completion)
+QRect TagsLineEdit::currentWordBoundaries() const
 {
-  if (completer()->widget() != this)
-    return;
-
-  setSelection(startIndexOfCurrentWord(), cursorPosition());
-  backspace();
-  insert(completion);
-}
-
-QString TagsLineEdit::currentPrefix() const
-{
-  QString str = text();
+  QRect rect;
   int position = cursorPosition();
-  int startIndex = startIndexOfCurrentWord();
-  return str.mid(startIndex, position - startIndex);
+  QRegExp re(",\\s*");
+  if (text().lastIndexOf(re, position) >= 0) {
+    rect.setLeft(re.pos() + re.matchedLength());
+  }
+  else {
+    rect.setLeft(0);
+  }
+
+  int right = text().indexOf(",", position);
+  if (right >= 0) {
+    rect.setRight(right - 1);
+  }
+  else {
+    rect.setWidth(text().size());
+  }
+  return rect;
 }

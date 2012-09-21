@@ -32,6 +32,18 @@ QCompleter *AbstractLineEdit::completer() const
   return m_completer;
 }
 
+void AbstractLineEdit::insertCompletion(const QString &completion)
+{
+  if (completer()->widget() != this)
+    return;
+
+  QRect r = currentWordBoundaries();
+  setSelection(r.left(), cursorPosition());
+  backspace();
+  insert(completion);
+}
+
+
 void AbstractLineEdit::focusInEvent(QFocusEvent *e)
 {
   if (m_completer) {
@@ -64,27 +76,23 @@ void AbstractLineEdit::keyPressEvent(QKeyEvent *e)
   }
 
   bool isShortcut = e->key() == Qt::Key_Down;
-  if (!isShortcut && (e->text().isEmpty() ||
-        (e->modifiers() != Qt::NoModifier &&
-        e->modifiers() != Qt::ShiftModifier))) {
+  QString completionPrefix = currentPrefix();
+  if (!isShortcut && (completionPrefix.isEmpty() || e->text().isEmpty() ||
+        (e->modifiers() != Qt::NoModifier && e->modifiers() != Qt::ShiftModifier))) {
     m_completer->popup()->hide();
     return;
   }
 
-  QString completionPrefix = currentPrefix();
   if (completionPrefix != m_completer->completionPrefix()) {
     m_completer->setCompletionPrefix(completionPrefix);
     m_completer->popup()->setCurrentIndex(m_completer->completionModel()->index(0, 0));
   }
 
-  if (isShortcut || !completionPrefix.isEmpty()) {
-    m_completer->complete(); // popup it up!
-  }
+  m_completer->complete(); // popup it up!
 }
 
-int AbstractLineEdit::startIndexOfCurrentWord() const
+QString AbstractLineEdit::currentPrefix() const
 {
-  QString str = text();
-  int position = cursorPosition();
-  return str.lastIndexOf(QRegExp("\\W"), position) + 1;
+  QRect r = currentWordBoundaries();
+  return text().mid(r.left(), cursorPosition());
 }

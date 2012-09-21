@@ -14,11 +14,8 @@ class ActivityLineEdit : public AbstractLineEdit
     QString activityName() const;
     QString projectName() const;
 
-  protected slots:
-    void insertCompletion(const QString &completion);
-
   protected:
-    QString currentPrefix() const;
+    QRect currentWordBoundaries() const;
 };
 
 #endif

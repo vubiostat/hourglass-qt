@@ -11,11 +11,8 @@ class TagsLineEdit : public AbstractLineEdit
     TagsLineEdit(QWidget *parent = 0);
     TagsLineEdit(const QString &contents, QWidget *parent = 0);
 
-  protected slots:
-    void insertCompletion(const QString &completion);
-
   protected:
-    QString currentPrefix() const;
+    virtual QRect currentWordBoundaries() const;
 };
 
 #endif

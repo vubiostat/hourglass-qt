@@ -5,6 +5,7 @@
 #include <QCompleter>
 #include <QKeyEvent>
 #include <QFocusEvent>
+#include <QRect>
 
 class AbstractLineEdit : public QLineEdit
 {
@@ -18,14 +19,14 @@ class AbstractLineEdit : public QLineEdit
     QCompleter *completer() const;
 
   protected slots:
-    virtual void insertCompletion(const QString &completion) = 0;
+    virtual void insertCompletion(const QString &completion);
 
   protected:
     void focusInEvent(QFocusEvent *e);
     void keyPressEvent(QKeyEvent *e);
 
-    int startIndexOfCurrentWord() const;
-    virtual QString currentPrefix() const = 0;
+    virtual QRect currentWordBoundaries() const = 0;
+    QString currentPrefix() const;
 
   private:
     QCompleter *m_completer;

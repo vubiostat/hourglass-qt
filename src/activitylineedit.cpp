@@ -20,17 +20,7 @@ QString ActivityLineEdit::projectName() const
   return text().section('@', 1, 1);
 }
 
-void ActivityLineEdit::insertCompletion(const QString &completion)
+QRect ActivityLineEdit::currentWordBoundaries() const
 {
-  if (completer()->widget() != this)
-    return;
-
-  setSelection(0, cursorPosition());
-  backspace();
-  insert(completion);
-}
-
-QString ActivityLineEdit::currentPrefix() const
-{
-  return text();
+  return QRect(0, 0, text().size(), 0);
 }
