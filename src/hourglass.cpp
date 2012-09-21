@@ -4,7 +4,6 @@
 #include <QDir>
 #include <QSqlQuery>
 #include <QSqlError>
-#include <QSystemTrayIcon>
 #include "activity.h"
 #include <QtDebug>
 
@@ -19,15 +18,9 @@ Hourglass::Hourglass(int &argc, char **argv)
   setAttribute(Qt::AA_DontShowIconsInMenus, false);
 
   if (setupDatabase()) {
-    bool showTrayIcon = false;
-    if (QSystemTrayIcon::isSystemTrayAvailable()) {
-      setQuitOnLastWindowClosed(false);
-      showTrayIcon = true;
-    }
-    else {
-      qDebug() << "Couldn't display tray icon";
-    }
-    m_mainwindow = new MainWindow(showTrayIcon);
+    m_mainwindow = new MainWindow();
+    connect(m_mainwindow, SIGNAL(trayIconHidden()), SLOT(trayIconHidden()));
+    connect(m_mainwindow, SIGNAL(trayIconShown()), SLOT(trayIconShown()));
     m_mainwindow->show();
   }
   else {
@@ -41,6 +34,16 @@ void Hourglass::stopActivities()
   if (settings.value("stopActivitiesOnExit", true).toBool()) {
     Activity::stopCurrent();
   }
+}
+
+void Hourglass::trayIconHidden()
+{
+  setQuitOnLastWindowClosed(true);
+}
+
+void Hourglass::trayIconShown()
+{
+  setQuitOnLastWindowClosed(false);
 }
 
 bool Hourglass::setupDatabase()

@@ -17,6 +17,8 @@ class Hourglass : public QApplication
 
   private slots:
     void stopActivities();
+    void trayIconHidden();
+    void trayIconShown();
 
   private:
     MainWindow *m_mainwindow;

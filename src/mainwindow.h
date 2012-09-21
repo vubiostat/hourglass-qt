@@ -15,11 +15,13 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
   public:
-    MainWindow(bool showTrayIcon, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    MainWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~MainWindow();
 
   signals:
     void activityCreated(QSharedPointer<Activity> activity);
+    void trayIconHidden();
+    void trayIconShown();
 
   protected:
     void paintEvent(QPaintEvent *event);
@@ -47,9 +49,10 @@ class MainWindow : public QMainWindow
     ActivityNamesListModel *m_activityCompleterModel;
     TagNamesListModel *m_tagCompleterModel;
 
+    bool m_trayIconAvailable;
+    bool m_showTrayIcon;
     QMenu *m_trayIconMenu;
     QSystemTrayIcon *m_trayIcon;
-    QAction *m_restoreAction;
 
     void startActivity();
     void setupActivityTableView(ActivityTableView *view, const QDate &date);

@@ -12,15 +12,26 @@
 #include <QDate>
 #include <QtDebug>
 
-MainWindow::MainWindow(bool showTrayIcon, QWidget *parent, Qt::WindowFlags flags)
-  : QMainWindow(parent, flags)
+MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
+  : QMainWindow(parent, flags), m_activityCompleter(NULL),
+    m_tagCompleter(NULL), m_activityCompleterModel(NULL),
+    m_tagCompleterModel(NULL), m_trayIconAvailable(false),
+    m_showTrayIcon(false), m_trayIconMenu(NULL), m_trayIcon(NULL)
 {
   m_ui.setupUi(this);
   setWindowIcon(QIcon(":/icons/hourglass.png"));
   m_ui.actionAbout_Qt->setIcon(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"));
 
-  if (showTrayIcon) {
-    createTrayIcon();
+  m_trayIconAvailable = QSystemTrayIcon::isSystemTrayAvailable();
+  if (m_trayIconAvailable) {
+    QSettings settings;
+    m_showTrayIcon = settings.value("showTrayIcon", true).toBool();
+    if (m_showTrayIcon) {
+      createTrayIcon();
+    }
+  }
+  else {
+    qDebug() << "Couldn't display tray icon";
   }
 
   /* Set background of week tab to white */
@@ -172,7 +183,23 @@ void MainWindow::on_action_Preferences_triggered()
 {
   PreferencesDialog dialog(this);
   dialog.setModal(true);
-  dialog.exec();
+  if (dialog.exec() == QDialog::Accepted) {
+    if (m_trayIconAvailable && dialog.showTrayIcon() != m_showTrayIcon) {
+      if (m_showTrayIcon) {
+        m_trayIcon->hide();
+        emit trayIconHidden();
+      }
+      else {
+        if (m_trayIcon == NULL) {
+          createTrayIcon();
+        }
+        else {
+          emit trayIconShown();
+        }
+      }
+      m_showTrayIcon = !m_showTrayIcon;
+    }
+  }
 }
 
 void MainWindow::on_btnStartActivity_clicked()
@@ -218,7 +245,12 @@ void MainWindow::editActivity(QSharedPointer<Activity> activity)
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
   if (reason == QSystemTrayIcon::Trigger) {
-    showNormal();
+    if (isVisible()) {
+      hide();
+    }
+    else {
+      showNormal();
+    }
   }
 }
 
@@ -289,4 +321,5 @@ void MainWindow::createTrayIcon()
 
   m_trayIcon->setContextMenu(m_trayIconMenu);
   m_trayIcon->show();
+  emit trayIconShown();
 }

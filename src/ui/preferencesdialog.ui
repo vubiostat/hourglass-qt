@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>370</width>
-    <height>105</height>
+    <height>135</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,12 +35,22 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="cbShowTrayIcon">
+     <property name="text">
+      <string>Show tray icon</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
      </property>
     </widget>
    </item>

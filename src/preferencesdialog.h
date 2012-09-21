@@ -12,6 +12,8 @@ class PreferencesDialog : public QDialog
   public:
     PreferencesDialog(QWidget *parent = 0, Qt::WindowFlags f = 0);
 
+    bool showTrayIcon() const;
+
   public slots:
     void accept();
 
