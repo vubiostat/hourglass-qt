@@ -12,11 +12,16 @@
 #include <QDate>
 #include <QtDebug>
 
-MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
+MainWindow::MainWindow(bool showTrayIcon, QWidget *parent, Qt::WindowFlags flags)
   : QMainWindow(parent, flags)
 {
   m_ui.setupUi(this);
   setWindowIcon(QIcon(":/icons/hourglass.png"));
+  m_ui.actionAbout_Qt->setIcon(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"));
+
+  if (showTrayIcon) {
+    createTrayIcon();
+  }
 
   /* Set background of week tab to white */
   QPalette weekPal(m_ui.saContentsWeek->palette());
@@ -147,6 +152,11 @@ void MainWindow::paintEvent(QPaintEvent *event)
   }
 }
 
+void MainWindow::on_action_Quit_triggered()
+{
+  QApplication::quit();
+}
+
 void MainWindow::on_action_About_triggered()
 {
   AboutDialog dialog(this);
@@ -205,6 +215,13 @@ void MainWindow::editActivity(QSharedPointer<Activity> activity)
   dialog->deleteLater();
 }
 
+void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+  if (reason == QSystemTrayIcon::Trigger) {
+    showNormal();
+  }
+}
+
 void MainWindow::startActivity()
 {
   Activity *activity = new Activity();
@@ -251,4 +268,25 @@ void MainWindow::setupActivityTableView(ActivityTableView *view, ActivityTableMo
   view->setItemDelegate(new ActivityDelegate(view));
   connect(view, SIGNAL(editActivity(QSharedPointer<Activity>)),
       SLOT(editActivity(QSharedPointer<Activity>)));
+}
+
+void MainWindow::createTrayIcon()
+{
+  m_trayIconMenu = new QMenu(this);
+  m_trayIconMenu->setTitle("Hourglass");
+
+  m_trayIconMenu->addAction(m_ui.action_Quit);
+
+  m_trayIcon = new QSystemTrayIcon(QIcon(":/icons/hourglass.png"), this);
+  connect(m_trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+      this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+
+  /* Not sure what this is, but it's in the Qt example :) */
+  QByteArray category = qgetenv("SNI_CATEGORY");
+  if (!category.isEmpty()) {
+    m_trayIcon->setProperty("_qt_sni_category", QString::fromLocal8Bit(category));
+  }
+
+  m_trayIcon->setContextMenu(m_trayIconMenu);
+  m_trayIcon->show();
 }

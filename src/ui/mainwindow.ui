@@ -357,11 +357,17 @@
    <addaction name="menu_Help"/>
   </widget>
   <action name="action_Quit">
+   <property name="icon">
+    <iconset theme="application-exit"/>
+   </property>
    <property name="text">
     <string>&amp;Quit</string>
    </property>
   </action>
   <action name="action_About">
+   <property name="icon">
+    <iconset theme="help-about"/>
+   </property>
    <property name="text">
     <string>&amp;About</string>
    </property>
@@ -372,6 +378,9 @@
    </property>
   </action>
   <action name="action_Preferences">
+   <property name="icon">
+    <iconset theme="preferences-other"/>
+   </property>
    <property name="text">
     <string>&amp;Preferences</string>
    </property>
@@ -417,22 +426,5 @@
   <tabstop>tblSunday</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>action_Quit</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

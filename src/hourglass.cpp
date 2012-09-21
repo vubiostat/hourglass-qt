@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSystemTrayIcon>
 #include "activity.h"
 #include <QtDebug>
 
@@ -12,12 +13,21 @@ Hourglass::Hourglass(int &argc, char **argv)
 {
   connect(this, SIGNAL(aboutToQuit()), SLOT(stopActivities()));
 
-  QCoreApplication::setOrganizationName("vubiostat");
-  QCoreApplication::setOrganizationDomain("biostat.mc.vanderbilt.edu");
-  QCoreApplication::setApplicationName("hourglass");
+  setOrganizationName("vubiostat");
+  setOrganizationDomain("biostat.mc.vanderbilt.edu");
+  setApplicationName("hourglass");
+  setAttribute(Qt::AA_DontShowIconsInMenus, false);
 
   if (setupDatabase()) {
-    m_mainwindow = new MainWindow();
+    bool showTrayIcon = false;
+    if (QSystemTrayIcon::isSystemTrayAvailable()) {
+      setQuitOnLastWindowClosed(false);
+      showTrayIcon = true;
+    }
+    else {
+      qDebug() << "Couldn't display tray icon";
+    }
+    m_mainwindow = new MainWindow(showTrayIcon);
     m_mainwindow->show();
   }
   else {
