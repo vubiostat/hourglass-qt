@@ -47,6 +47,9 @@ class MainWindow : public QMainWindow
 
     QSize m_startButtonSize;
 
+    AbstractActivityModel *m_todayTableModel;
+    AbstractActivityModel *m_todayListModel;
+
     QCompleter *m_activityCompleter;
     QCompleter *m_tagCompleter;
     ActivityNamesListModel *m_activityCompleterModel;
@@ -61,8 +64,8 @@ class MainWindow : public QMainWindow
 
     void startActivity();
     void stopCurrentActivities();
-    void setupActivityTableView(ActivityTableView *view, const QDate &date);
-    void setupActivityTableView(ActivityTableView *view, AbstractActivityModel *model);
+    void setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, const QDate &date);
+    void setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, AbstractActivityModel *tableModel, AbstractActivityModel *listModel);
 
     void createTrayIcon();
 

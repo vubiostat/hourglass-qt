@@ -13,13 +13,7 @@ AbstractActivityModel::AbstractActivityModel(const QDate &date, RecordManager<Ac
 QModelIndex AbstractActivityModel::index(int row, int column, const QModelIndex &parent) const
 {
   Q_UNUSED(parent);
-
-  void *internalPointer = NULL;
-  if (row < activityCount()) {
-    QSharedPointer<Activity> ptr = activityAt(row);
-    internalPointer = ptr.data();
-  }
-  return createIndex(row, column, internalPointer);
+  return createIndex(row, column);
 }
 
 QModelIndex AbstractActivityModel::parent(const QModelIndex &index) const

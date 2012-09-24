@@ -171,7 +171,7 @@ QMap<QString, int> Activity::projectTotals(const QList<Activity *> &activities)
 {
   QMap<QString, int> totals;
   for (int i = 0; i < activities.size(); i++) {
-    const Activity *activity = activities.at(i);
+    Activity *activity = activities[i];
     int total = (totals.contains(activity->projectName()) ? totals[activity->projectName()] : 0);
     total += activity->duration();
     totals.insert(activity->projectName(), total);
@@ -210,13 +210,13 @@ QVariantList Activity::toVariantList(const QList<Activity *> &activities)
 {
   QVariantList list;
   for (int i = 0; i < activities.size(); i++) {
-    const Activity *activity = activities.at(i);
+    Activity *activity = activities.at(i);
     list << activity->toVariantMap();
   }
   return list;
 }
 
-Activity *Activity::startLike(const Activity *activity)
+Activity *Activity::startLike(Activity *activity)
 {
   Activity *result = NULL;
 
@@ -552,10 +552,10 @@ bool Activity::wasRunning() const
   }
 }
 
-QString Activity::nameWithProject() const
+QString Activity::nameWithProject()
 {
   QStringList strings;
-  QString pname = projectName();
+  const QString &pname = projectName();
 
   strings << name();
   if (!pname.isEmpty()) {
@@ -753,15 +753,17 @@ Project *Activity::project(QObject *parent) const
   return NULL;
 }
 
-QString Activity::projectName() const
+const QString &Activity::projectName()
 {
-  Project *project = Activity::project();
-  QString name;
-  if (project != NULL) {
-    name = project->name();
-    project->deleteLater();
+  if (m_projectName.isNull()) {
+    Project *project = Activity::project();
+    QString name;
+    if (project != NULL) {
+      m_projectName = project->name();
+      project->deleteLater();
+    }
   }
-  return name;
+  return m_projectName;
 }
 
 QList<Tag *> Activity::tags(QObject *parent) const
@@ -828,7 +830,7 @@ QString Activity::durationInWords() const
   }
 }
 
-QVariantMap Activity::toVariantMap() const
+QVariantMap Activity::toVariantMap()
 {
   QVariantMap map;
 
@@ -848,7 +850,7 @@ QVariantMap Activity::toVariantMap() const
   return map;
 }
 
-bool Activity::isSimilarTo(const Activity *other) const
+bool Activity::isSimilarTo(Activity *other)
 {
   return other != NULL && other->nameWithProject() == nameWithProject() &&
     other->tagNames() == tagNames();
@@ -1024,8 +1026,10 @@ void Activity::afterSave()
   else {
     m_running = QVariant();
     Record::afterSave();
-  }
-  if (justStarted) {
-    emit started();
+
+    if (justStarted) {
+      emit started();
+    }
+    m_projectName = QString();
   }
 }

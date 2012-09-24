@@ -45,7 +45,7 @@ class Activity : public Record
     static QStringList distinctNames();
     static void stopCurrent();
     static QVariantList toVariantList(const QList<Activity *> &activities);
-    static Activity *startLike(const Activity *activity);
+    static Activity *startLike(Activity *activity);
     static QPair<QDateTime, QDateTime> lastGap();
 
     Activity(QObject *parent = 0);
@@ -76,7 +76,7 @@ class Activity : public Record
     bool isRunning() const;
     void setRunning(bool running);
     bool wasRunning() const;
-    QString nameWithProject() const;
+    QString nameWithProject();
     void setNameWithProject(const QString &nameWithProject);
     QString startedAtMDY() const;
     void setStartedAtMDY(const QString &mdy);
@@ -93,13 +93,13 @@ class Activity : public Record
 
     // Helpers
     Project *project(QObject *parent = 0) const;
-    QString projectName() const;
+    const QString &projectName();
     QList<Tag *> tags(QObject *parent = 0) const;
     QString startedAtISO8601() const;
     QString endedAtISO8601() const;
     QString durationInWords() const;
-    QVariantMap toVariantMap() const;
-    bool isSimilarTo(const Activity *other) const;
+    QVariantMap toVariantMap();
+    bool isSimilarTo(Activity *other);
     bool occursOn(const QDate &date) const;
 
     bool save();
@@ -140,6 +140,7 @@ class Activity : public Record
     QList<Tag *> m_tagsToAdd;
     QTimer *m_durationTimer;
     QVariant m_running;
+    QString m_projectName;
 
     void setupDurationTimer();
     void addTags(const QList<Tag *> &tags);

@@ -3,9 +3,11 @@
 #include "activity.h"
 #include "activitytablemodel.h"
 #include "currentactivitytablemodel.h"
+#include "projecttotalslistmodel.h"
 #include "activitydelegate.h"
 #include "currentactivitydelegate.h"
 #include "namesdelegate.h"
+#include "projecttotaldelegate.h"
 #include "aboutdialog.h"
 #include "preferencesdialog.h"
 #include <QPalette>
@@ -13,7 +15,8 @@
 #include <QtDebug>
 
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
-  : QMainWindow(parent, flags), m_activityCompleter(NULL),
+  : QMainWindow(parent, flags), m_todayTableModel(NULL),
+    m_todayListModel(NULL), m_activityCompleter(NULL),
     m_tagCompleter(NULL), m_activityCompleterModel(NULL),
     m_tagCompleterModel(NULL), m_trayIconAvailable(false),
     m_showTrayIcon(false), m_trayIconMenu(NULL), m_trayIcon(NULL)
@@ -87,62 +90,64 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
   }
 
   /* Today */
-  setupActivityTableView(m_ui.tblToday, today);
+  setupDay(m_ui.tblToday, m_ui.lvTodayTotals, today);
+  m_todayTableModel = m_ui.tblToday->model();
+  m_todayListModel = m_ui.lvTodayTotals->model();
 
   /* Sunday */
   if (today.dayOfWeek() == Qt::Sunday) {
-    setupActivityTableView(m_ui.tblSunday, m_ui.tblToday->model());
+    setupDay(m_ui.tblSunday, m_ui.lvSundayTotals, m_todayTableModel, m_todayListModel);
   }
   else {
-    setupActivityTableView(m_ui.tblSunday, sunday);
+    setupDay(m_ui.tblSunday, m_ui.lvSundayTotals, sunday);
   }
 
   /* Monday */
   if (today.dayOfWeek() == Qt::Monday) {
-    setupActivityTableView(m_ui.tblMonday, m_ui.tblToday->model());
+    setupDay(m_ui.tblMonday, m_ui.lvMondayTotals, m_todayTableModel, m_todayListModel);
   }
   else {
-    setupActivityTableView(m_ui.tblMonday, sunday.addDays(1));
+    setupDay(m_ui.tblMonday, m_ui.lvMondayTotals, sunday.addDays(1));
   }
 
   /* Tuesday */
   if (today.dayOfWeek() == Qt::Tuesday) {
-    setupActivityTableView(m_ui.tblTuesday, m_ui.tblToday->model());
+    setupDay(m_ui.tblTuesday, m_ui.lvTuesdayTotals, m_todayTableModel, m_todayListModel);
   }
   else {
-    setupActivityTableView(m_ui.tblTuesday, sunday.addDays(2));
+    setupDay(m_ui.tblTuesday, m_ui.lvTuesdayTotals, sunday.addDays(2));
   }
 
   /* Wednesday */
   if (today.dayOfWeek() == Qt::Wednesday) {
-    setupActivityTableView(m_ui.tblWednesday, m_ui.tblToday->model());
+    setupDay(m_ui.tblWednesday, m_ui.lvWednesdayTotals, m_todayTableModel, m_todayListModel);
   }
   else {
-    setupActivityTableView(m_ui.tblWednesday, sunday.addDays(3));
+    setupDay(m_ui.tblWednesday, m_ui.lvWednesdayTotals, sunday.addDays(3));
   }
 
   /* Thursday */
   if (today.dayOfWeek() == Qt::Thursday) {
-    setupActivityTableView(m_ui.tblThursday, m_ui.tblToday->model());
+    setupDay(m_ui.tblThursday, m_ui.lvThursdayTotals, m_todayTableModel, m_todayListModel);
   }
   else {
-    setupActivityTableView(m_ui.tblThursday, sunday.addDays(4));
+    setupDay(m_ui.tblThursday, m_ui.lvThursdayTotals, sunday.addDays(4));
   }
 
   /* Friday */
   if (today.dayOfWeek() == Qt::Friday) {
-    setupActivityTableView(m_ui.tblFriday, m_ui.tblToday->model());
+    setupDay(m_ui.tblFriday, m_ui.lvFridayTotals, m_todayTableModel, m_todayListModel);
   }
   else {
-    setupActivityTableView(m_ui.tblFriday, sunday.addDays(5));
+    setupDay(m_ui.tblFriday, m_ui.lvFridayTotals, sunday.addDays(5));
   }
 
   /* Saturday */
   if (today.dayOfWeek() == Qt::Saturday) {
-    setupActivityTableView(m_ui.tblSaturday, m_ui.tblToday->model());
+    setupDay(m_ui.tblSaturday, m_ui.lvSaturdayTotals, m_todayTableModel, m_todayListModel);
   }
   else {
-    setupActivityTableView(m_ui.tblSaturday, sunday.addDays(6));
+    setupDay(m_ui.tblSaturday, m_ui.lvSaturdayTotals, sunday.addDays(6));
   }
 }
 
@@ -312,32 +317,42 @@ void MainWindow::stopCurrentActivities()
   }
 }
 
-void MainWindow::setupActivityTableView(ActivityTableView *view, const QDate &date)
+void MainWindow::setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, const QDate &date)
 {
-  ActivityTableModel *model = new ActivityTableModel(date, m_recordManager, this);
+  /* Setup table model */
+  ActivityTableModel *tableModel = new ActivityTableModel(date, m_recordManager, this);
   connect(this, SIGNAL(activityCreated(QSharedPointer<Activity>)),
-      model, SLOT(created(QSharedPointer<Activity>)));
-  connect(model, SIGNAL(activityStarted()),
+      tableModel, SLOT(created(QSharedPointer<Activity>)));
+  connect(tableModel, SIGNAL(activityStarted()),
       m_ui.tblCurrent->model(), SLOT(refreshActivities()));
-  connect(model, SIGNAL(activitySaved()),
+  connect(tableModel, SIGNAL(activitySaved()),
       m_activityCompleterModel, SLOT(refreshNames()));
-  connect(model, SIGNAL(activityDestroyed()),
+  connect(tableModel, SIGNAL(activityDestroyed()),
       m_activityCompleterModel, SLOT(refreshNames()));
-  connect(model, SIGNAL(activitySaved()),
+  connect(tableModel, SIGNAL(activitySaved()),
       m_tagCompleterModel, SLOT(refreshNames()));
-  connect(model, SIGNAL(activityDestroyed()),
+  connect(tableModel, SIGNAL(activityDestroyed()),
       m_tagCompleterModel, SLOT(refreshNames()));
-  setupActivityTableView(view, model);
+
+  /* Setup list model */
+  ProjectTotalsListModel *listModel = new ProjectTotalsListModel(date, m_recordManager, this);
+  connect(this, SIGNAL(activityCreated(QSharedPointer<Activity>)),
+      listModel, SLOT(created(QSharedPointer<Activity>)));
+
+  setupDay(tableView, listView, tableModel, listModel);
 }
 
-void MainWindow::setupActivityTableView(ActivityTableView *view, AbstractActivityModel *model)
+void MainWindow::setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, AbstractActivityModel *tableModel, AbstractActivityModel *listModel)
 {
-  view->setModel(model);
-  view->setItemDelegate(new ActivityDelegate(view));
-  connect(view, SIGNAL(editActivity(QSharedPointer<Activity>)),
+  tableView->setModel(tableModel);
+  tableView->setItemDelegate(new ActivityDelegate(tableView));
+  connect(tableView, SIGNAL(editActivity(QSharedPointer<Activity>)),
       SLOT(editActivity(QSharedPointer<Activity>)));
-  connect(view, SIGNAL(startActivityLike(QSharedPointer<Activity>)),
+  connect(tableView, SIGNAL(startActivityLike(QSharedPointer<Activity>)),
       SLOT(startActivityLike(QSharedPointer<Activity>)));
+
+  listView->setModel(listModel);
+  listView->setItemDelegate(new ProjectTotalDelegate(listView));
 }
 
 void MainWindow::createTrayIcon()

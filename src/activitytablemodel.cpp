@@ -31,7 +31,7 @@ int ActivityTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
 {
-  Activity *activity = static_cast<Activity *>(index.internalPointer());
+  QSharedPointer<Activity> activity = activityAt(index.row());
   switch (role) {
     case Qt::DisplayRole:
       switch (index.column()) {

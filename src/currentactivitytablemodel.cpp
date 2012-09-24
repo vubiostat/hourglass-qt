@@ -35,7 +35,7 @@ QVariant CurrentActivityTableModel::data(const QModelIndex &index, int role) con
       }
     }
     else {
-      Activity *activity = static_cast<Activity *>(index.internalPointer());
+      QSharedPointer<Activity> activity = activityAt(index.row());
       switch (index.column()) {
         case 0:
           return activity->name();
