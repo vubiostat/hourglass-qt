@@ -6,6 +6,7 @@
 #include <QSystemTrayIcon>
 #include <QSettings>
 #include "ui_mainwindow.h"
+
 #include "recordmanager.h"
 #include "activity.h"
 #include "activitynameslistmodel.h"
@@ -61,7 +62,7 @@ class MainWindow : public QMainWindow
     void startActivity();
     void stopCurrentActivities();
     void setupActivityTableView(ActivityTableView *view, const QDate &date);
-    void setupActivityTableView(ActivityTableView *view, ActivityTableModel *model);
+    void setupActivityTableView(ActivityTableView *view, AbstractActivityModel *model);
 
     void createTrayIcon();
 

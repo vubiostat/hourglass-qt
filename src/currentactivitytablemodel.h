@@ -1,9 +1,9 @@
 #ifndef __CURRENTACTIVITYTABLEMODEL_H
 #define __CURRENTACTIVITYTABLEMODEL_H
 
-#include "activitytablemodel.h"
+#include "abstractactivitymodel.h"
 
-class CurrentActivityTableModel : public ActivityTableModel
+class CurrentActivityTableModel : public AbstractActivityModel
 {
   Q_OBJECT
 
@@ -15,7 +15,6 @@ class CurrentActivityTableModel : public ActivityTableModel
     bool isEmpty() const;
 
   protected:
-    //bool activityChangesSince(const QDateTime &dateTime) const;
     QList<int> fetchActivityIds() const;
     bool containsActivity(QSharedPointer<Activity> ptr) const;
     void afterRefresh();

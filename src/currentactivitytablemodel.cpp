@@ -2,7 +2,7 @@
 #include <QFont>
 
 CurrentActivityTableModel::CurrentActivityTableModel(RecordManager<Activity> *recordManager, QObject *parent)
-  : ActivityTableModel(recordManager, parent), m_empty(true)
+  : AbstractActivityModel(recordManager, parent), m_empty(true)
 {
 }
 
@@ -12,7 +12,7 @@ int CurrentActivityTableModel::rowCount(const QModelIndex &parent) const
     return 1;
   }
   else {
-    return ActivityTableModel::rowCount(parent);
+    return AbstractActivityModel::rowCount(parent);
   }
 }
 
@@ -35,7 +35,7 @@ QVariant CurrentActivityTableModel::data(const QModelIndex &index, int role) con
       }
     }
     else {
-      QSharedPointer<Activity> activity = activityAt(index.row());
+      Activity *activity = static_cast<Activity *>(index.internalPointer());
       switch (index.column()) {
         case 0:
           return activity->name();
@@ -84,24 +84,6 @@ bool CurrentActivityTableModel::isEmpty() const
   return m_empty;
 }
 
-/*
-bool CurrentActivityTableModel::activityChangesSince(const QDateTime &dateTime) const
-{
-  if (dateTime.isValid()) {
-    qDebug() << "Checking for changes for current activities";
-
-    QStringList activityIds;
-    for (int i = 0; i < rowCount(); i++) {
-      activityIds.append(QString::number(activityAt(i)->id()));
-    }
-    return Activity::countRunningChangesSince(dateTime, activityIds) > 0;
-  }
-  else {
-    return true;
-  }
-}
-*/
-
 QList<int> CurrentActivityTableModel::fetchActivityIds() const
 {
   return Activity::findCurrentIds();
@@ -109,18 +91,10 @@ QList<int> CurrentActivityTableModel::fetchActivityIds() const
 
 bool CurrentActivityTableModel::containsActivity(QSharedPointer<Activity> activity) const
 {
-  if (activity->isRunning()) {
-    qDebug() << "Activity" << activity->id() << "belongs to model for current activities";
-    return true;
-  }
-  else {
-    qDebug() << "Activity" << activity->id() << "doesn't belong to model for current activities";
-    return false;
-  }
+  return activity->isRunning();
 }
 
 void CurrentActivityTableModel::afterRefresh()
 {
   m_empty = activityCount() == 0;
 }
-

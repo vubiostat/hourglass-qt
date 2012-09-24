@@ -6,7 +6,7 @@
 #include <QList>
 #include <QPushButton>
 #include <QHeaderView>
-#include "activitytablemodel.h"
+#include "abstractactivitymodel.h"
 
 class ActivityTableView : public QTableView
 {
@@ -15,8 +15,8 @@ class ActivityTableView : public QTableView
   public:
     ActivityTableView(QWidget *parent = 0);
 
-    ActivityTableModel *model() const;
-    void setModel(ActivityTableModel *model);
+    AbstractActivityModel *model() const;
+    void setModel(AbstractActivityModel *model);
 
     QSize minimumSizeHint() const;
 

@@ -7,11 +7,6 @@ CurrentActivityTableView::CurrentActivityTableView(QWidget *parent)
   verticalHeader()->setDefaultSectionSize(35);
 }
 
-CurrentActivityTableModel *CurrentActivityTableView::model() const
-{
-  return static_cast<CurrentActivityTableModel *>(ActivityTableView::model());
-}
-
 const QSize &CurrentActivityTableView::stopButtonSize() const
 {
   return m_stopButtonSize;
@@ -44,4 +39,5 @@ void CurrentActivityTableView::clicked(const QModelIndex &index)
 void CurrentActivityTableView::doubleClicked(const QModelIndex &index)
 {
   /* Do nothing */
+  Q_UNUSED(index);
 }

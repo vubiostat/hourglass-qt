@@ -2,7 +2,6 @@
 #define __CURRENTACTIVITYTABLEVIEW_H
 
 #include "activitytableview.h"
-#include "currentactivitytablemodel.h"
 #include <QSize>
 
 class CurrentActivityTableView : public ActivityTableView
@@ -12,7 +11,6 @@ class CurrentActivityTableView : public ActivityTableView
   public:
     CurrentActivityTableView(QWidget *parent = 0);
 
-    CurrentActivityTableModel *model() const;
     const QSize &stopButtonSize() const;
     void setStopButtonSize(const QSize &size);
 

@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "activitydialog.h"
 #include "activity.h"
-#include "currentactivitytablemodel.h"
 #include "activitytablemodel.h"
+#include "currentactivitytablemodel.h"
 #include "activitydelegate.h"
 #include "currentactivitydelegate.h"
 #include "namesdelegate.h"
@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
   m_ui.tblCurrent->setModel(new CurrentActivityTableModel(m_recordManager, this));
   m_ui.tblCurrent->setItemDelegate(new CurrentActivityDelegate(m_ui.tblCurrent));
   connect(this, SIGNAL(activityCreated(QSharedPointer<Activity>)),
-      m_ui.tblCurrent->model(), SLOT(activityCreated(QSharedPointer<Activity>)));
+      m_ui.tblCurrent->model(), SLOT(created(QSharedPointer<Activity>)));
 
   QDate today = QDate::currentDate();
   QDate sunday;
@@ -316,7 +316,7 @@ void MainWindow::setupActivityTableView(ActivityTableView *view, const QDate &da
 {
   ActivityTableModel *model = new ActivityTableModel(date, m_recordManager, this);
   connect(this, SIGNAL(activityCreated(QSharedPointer<Activity>)),
-      model, SLOT(activityCreated(QSharedPointer<Activity>)));
+      model, SLOT(created(QSharedPointer<Activity>)));
   connect(model, SIGNAL(activityStarted()),
       m_ui.tblCurrent->model(), SLOT(refreshActivities()));
   connect(model, SIGNAL(activitySaved()),
@@ -330,7 +330,7 @@ void MainWindow::setupActivityTableView(ActivityTableView *view, const QDate &da
   setupActivityTableView(view, model);
 }
 
-void MainWindow::setupActivityTableView(ActivityTableView *view, ActivityTableModel *model)
+void MainWindow::setupActivityTableView(ActivityTableView *view, AbstractActivityModel *model)
 {
   view->setModel(model);
   view->setItemDelegate(new ActivityDelegate(view));

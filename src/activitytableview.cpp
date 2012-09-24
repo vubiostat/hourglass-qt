@@ -19,12 +19,12 @@ ActivityTableView::ActivityTableView(QWidget *parent)
       this, SLOT(doubleClicked(const QModelIndex &)));
 }
 
-ActivityTableModel *ActivityTableView::model() const
+AbstractActivityModel *ActivityTableView::model() const
 {
-  return static_cast<ActivityTableModel *>(QTableView::model());
+  return static_cast<AbstractActivityModel *>(QTableView::model());
 }
 
-void ActivityTableView::setModel(ActivityTableModel *newModel)
+void ActivityTableView::setModel(AbstractActivityModel *newModel)
 {
   if (model()) {
     disconnect(model(), 0, this, 0);
