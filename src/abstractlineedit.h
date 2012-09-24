@@ -22,8 +22,10 @@ class AbstractLineEdit : public QLineEdit
     virtual void insertCompletion(const QString &completion);
 
   protected:
-    void focusInEvent(QFocusEvent *e);
+    virtual void focusInEvent(QFocusEvent *e);
     void keyPressEvent(QKeyEvent *e);
+    void complete();
+    void complete(const QString &prefix);
 
     virtual QRect currentWordBoundaries() const = 0;
     QString currentPrefix() const;

@@ -83,8 +83,19 @@ void AbstractLineEdit::keyPressEvent(QKeyEvent *e)
     return;
   }
 
-  if (completionPrefix != m_completer->completionPrefix()) {
-    m_completer->setCompletionPrefix(completionPrefix);
+  complete(completionPrefix);
+}
+
+void AbstractLineEdit::complete()
+{
+  QString prefix = currentPrefix();
+  complete(prefix);
+}
+
+void AbstractLineEdit::complete(const QString &prefix)
+{
+  if (prefix != m_completer->completionPrefix()) {
+    m_completer->setCompletionPrefix(prefix);
     m_completer->popup()->setCurrentIndex(m_completer->completionModel()->index(0, 0));
   }
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>615</height>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -512,14 +512,14 @@
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>tblCurrent</tabstop>
   <tabstop>leActivity</tabstop>
   <tabstop>leTags</tabstop>
   <tabstop>btnStartActivity</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>tblToday</tabstop>
   <tabstop>btnAddEarlierActivity</tabstop>
-  <tabstop>tblCurrent</tabstop>
-  <tabstop>tblMonday</tabstop>
+  <tabstop>lvTodayTotals</tabstop>
   <tabstop>tblTuesday</tabstop>
   <tabstop>tblWednesday</tabstop>
   <tabstop>tblThursday</tabstop>
@@ -527,6 +527,14 @@
   <tabstop>tblSaturday</tabstop>
   <tabstop>saWeek</tabstop>
   <tabstop>tblSunday</tabstop>
+  <tabstop>lvSundayTotals</tabstop>
+  <tabstop>lvMondayTotals</tabstop>
+  <tabstop>lvTuesdayTotals</tabstop>
+  <tabstop>lvWednesdayTotals</tabstop>
+  <tabstop>lvThursdayTotals</tabstop>
+  <tabstop>lvFridayTotals</tabstop>
+  <tabstop>lvSaturdayTotals</tabstop>
+  <tabstop>tblMonday</tabstop>
  </tabstops>
  <resources/>
  <connections/>
