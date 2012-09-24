@@ -19,6 +19,7 @@ Hourglass::Hourglass(int &argc, char **argv)
 
   if (setupDatabase()) {
     m_mainwindow = new MainWindow();
+    setQuitOnLastWindowClosed(!m_mainwindow->isTrayIconShown());
     connect(m_mainwindow, SIGNAL(trayIconHidden()), SLOT(trayIconHidden()));
     connect(m_mainwindow, SIGNAL(trayIconShown()), SLOT(trayIconShown()));
     m_mainwindow->show();

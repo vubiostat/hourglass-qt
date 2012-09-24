@@ -156,6 +156,11 @@ MainWindow::~MainWindow()
   delete m_recordManager;
 }
 
+bool MainWindow::isTrayIconShown() const
+{
+  return m_showTrayIcon;
+}
+
 void MainWindow::paintEvent(QPaintEvent *event)
 {
   QMainWindow::paintEvent(event);
@@ -198,6 +203,7 @@ void MainWindow::on_action_Preferences_triggered()
           createTrayIcon();
         }
         else {
+          m_trayIcon->show();
           emit trayIconShown();
         }
       }

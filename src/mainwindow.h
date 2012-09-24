@@ -20,6 +20,8 @@ class MainWindow : public QMainWindow
     MainWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~MainWindow();
 
+    bool isTrayIconShown() const;
+
   signals:
     void activityCreated(QSharedPointer<Activity> activity);
     void trayIconHidden();

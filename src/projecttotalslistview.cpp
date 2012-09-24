@@ -10,6 +10,7 @@ ProjectTotalsListView::ProjectTotalsListView(QWidget *parent)
 
   setFlow(QListView::LeftToRight);
   setFrameStyle(QFrame::NoFrame | QFrame::Plain);
+  setSelectionMode(QAbstractItemView::NoSelection);
 }
 
 AbstractActivityModel *ProjectTotalsListView::model() const
