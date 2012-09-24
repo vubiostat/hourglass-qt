@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QCompleter>
 #include <QSystemTrayIcon>
+#include <QSettings>
 #include "ui_mainwindow.h"
 #include "recordmanager.h"
 #include "activity.h"
@@ -36,6 +37,7 @@ class MainWindow : public QMainWindow
     void on_leTags_returnPressed();
     void on_btnAddEarlierActivity_clicked();
     void editActivity(QSharedPointer<Activity> activity);
+    void startActivityLike(QSharedPointer<Activity> activity);
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
 
   private:
@@ -49,16 +51,21 @@ class MainWindow : public QMainWindow
     ActivityNamesListModel *m_activityCompleterModel;
     TagNamesListModel *m_tagCompleterModel;
 
+    QSettings m_settings;
+
     bool m_trayIconAvailable;
     bool m_showTrayIcon;
     QMenu *m_trayIconMenu;
     QSystemTrayIcon *m_trayIcon;
 
     void startActivity();
+    void stopCurrentActivities();
     void setupActivityTableView(ActivityTableView *view, const QDate &date);
     void setupActivityTableView(ActivityTableView *view, ActivityTableModel *model);
 
     void createTrayIcon();
+
+    void refreshCompleterModels();
 };
 
 #endif

@@ -24,8 +24,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 
   m_trayIconAvailable = QSystemTrayIcon::isSystemTrayAvailable();
   if (m_trayIconAvailable) {
-    QSettings settings;
-    m_showTrayIcon = settings.value("showTrayIcon", true).toBool();
+    m_showTrayIcon = m_settings.value("showTrayIcon", true).toBool();
     if (m_showTrayIcon) {
       createTrayIcon();
     }
@@ -224,22 +223,47 @@ void MainWindow::on_btnAddEarlierActivity_clicked()
   dialog->setTagCompleter(m_tagCompleter);
   dialog->setModal(true);
   if (dialog->exec() == QDialog::Accepted) {
-    m_recordManager->addRecordPointer(dialog->activity());
-    emit activityCreated(dialog->activity());
-    m_activityCompleterModel->refreshNames();
-    m_tagCompleterModel->refreshNames();
+    QSharedPointer<Activity> activity = dialog->activity();
+    if (activity->isRunning()) {
+      stopCurrentActivities();
+    }
+    activity->save();
+
+    m_recordManager->addRecordPointer(activity);
+    emit activityCreated(activity);
+    refreshCompleterModels();
   }
   dialog->deleteLater();
 }
 
 void MainWindow::editActivity(QSharedPointer<Activity> activity)
 {
+  bool wasRunning = activity->isRunning();
+
   ActivityDialog *dialog = new ActivityDialog(activity, this);
   dialog->setActivityCompleter(m_activityCompleter);
   dialog->setTagCompleter(m_tagCompleter);
   dialog->setModal(true);
-  dialog->exec();
+  if (dialog->exec() == QDialog::Accepted) {
+    if (!wasRunning && activity->isRunning()) {
+      stopCurrentActivities();
+    }
+    activity->save();
+  }
   dialog->deleteLater();
+}
+
+void MainWindow::startActivityLike(QSharedPointer<Activity> activity)
+{
+  Activity *newActivity = Activity::startLike(activity.data());
+  if (newActivity != NULL) {
+    stopCurrentActivities();
+    newActivity->save();
+
+    QSharedPointer<Activity> ptr = m_recordManager->addRecord(newActivity);
+    emit activityCreated(ptr);
+    refreshCompleterModels();
+  }
 }
 
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -265,14 +289,26 @@ void MainWindow::startActivity()
   if (activity->isValid()) {
     m_ui.leActivity->clear();
     m_ui.leTags->clear();
+    stopCurrentActivities();
     activity->save();
+
     QSharedPointer<Activity> ptr = m_recordManager->addRecord(activity);
     emit activityCreated(ptr);
-    m_activityCompleterModel->refreshNames();
-    m_tagCompleterModel->refreshNames();
+    refreshCompleterModels();
   }
   else {
     activity->deleteLater();
+  }
+}
+
+void MainWindow::stopCurrentActivities()
+{
+  if (m_settings.value("noConcurrentActivities", true).toBool()) {
+    QList<int> activityIds = Activity::findCurrentIds();
+    for (int i = 0; i < activityIds.count(); i++) {
+      QSharedPointer<Activity> activity = m_recordManager->getRecordById(activityIds[i]);
+      activity->stop();
+    }
   }
 }
 
@@ -300,6 +336,8 @@ void MainWindow::setupActivityTableView(ActivityTableView *view, ActivityTableMo
   view->setItemDelegate(new ActivityDelegate(view));
   connect(view, SIGNAL(editActivity(QSharedPointer<Activity>)),
       SLOT(editActivity(QSharedPointer<Activity>)));
+  connect(view, SIGNAL(startActivityLike(QSharedPointer<Activity>)),
+      SLOT(startActivityLike(QSharedPointer<Activity>)));
 }
 
 void MainWindow::createTrayIcon()
@@ -322,4 +360,10 @@ void MainWindow::createTrayIcon()
   m_trayIcon->setContextMenu(m_trayIconMenu);
   m_trayIcon->show();
   emit trayIconShown();
+}
+
+void MainWindow::refreshCompleterModels()
+{
+  m_activityCompleterModel->refreshNames();
+  m_tagCompleterModel->refreshNames();
 }

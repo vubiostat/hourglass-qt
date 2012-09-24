@@ -216,27 +216,32 @@ QVariantList Activity::toVariantList(const QList<Activity *> &activities)
   return list;
 }
 
-bool Activity::startLike(const Activity *activity)
+Activity *Activity::startLike(const Activity *activity)
 {
-  bool result = true;
+  Activity *result = NULL;
+
+  bool ok = true;
   QList<Activity *> currentActivities = findCurrent();
-  if (currentActivities.count() > 0) {
-    const Activity *current = currentActivities.at(0);
+  for (int i = 0; i < currentActivities.count(); i++) {
+    Activity *current = currentActivities[i];
     if (activity->id() == current->id() || activity->isSimilarTo(current)) {
-      result = false;
+      ok = false;
     }
-  }
-  while (!currentActivities.isEmpty()) {
-    currentActivities.takeLast()->deleteLater();
+    current->deleteLater();
   }
 
-  if (result) {
-    Activity newActivity;
-    newActivity.setRunning(true);
-    newActivity.setNameWithProject(activity->nameWithProject());
-    newActivity.setStartedAt(QDateTime::currentDateTime());
-    newActivity.setTagNames(activity->tagNames());
-    result = newActivity.save();
+  if (ok) {
+    Activity *newActivity = new Activity();
+    newActivity->setRunning(true);
+    newActivity->setNameWithProject(activity->nameWithProject());
+    newActivity->setStartedAt(QDateTime::currentDateTime());
+    newActivity->setTagNames(activity->tagNames());
+    if (newActivity->isValid()) {
+      result = newActivity;
+    }
+    else {
+      newActivity->deleteLater();
+    }
   }
 
   return result;
@@ -984,13 +989,6 @@ void Activity::beforeSave()
   else {
     unset("duration");
     unset("day");
-
-    if (isRunning()) {
-      QSettings settings;
-      if (settings.value("noConcurrentActivities", true).toBool()) {
-        stopCurrent();
-      }
-    }
   }
 }
 

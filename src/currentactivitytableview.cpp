@@ -40,3 +40,8 @@ void CurrentActivityTableView::clicked(const QModelIndex &index)
       break;
   }
 }
+
+void CurrentActivityTableView::doubleClicked(const QModelIndex &index)
+{
+  /* Do nothing */
+}

@@ -45,7 +45,7 @@ class Activity : public Record
     static QStringList distinctNames();
     static void stopCurrent();
     static QVariantList toVariantList(const QList<Activity *> &activities);
-    static bool startLike(const Activity *activity);
+    static Activity *startLike(const Activity *activity);
     static QPair<QDateTime, QDateTime> lastGap();
 
     Activity(QObject *parent = 0);

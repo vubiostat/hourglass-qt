@@ -22,10 +22,12 @@ class ActivityTableView : public QTableView
 
   signals:
     void editActivity(QSharedPointer<Activity> activity);
+    void startActivityLike(QSharedPointer<Activity> activity);
 
   protected slots:
     void modelReset();
     virtual void clicked(const QModelIndex &index);
+    virtual void doubleClicked(const QModelIndex &index);
 
   protected:
     virtual void setHeaderStretch();

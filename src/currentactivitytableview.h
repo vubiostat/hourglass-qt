@@ -21,6 +21,7 @@ class CurrentActivityTableView : public ActivityTableView
 
   protected slots:
     void clicked(const QModelIndex &index);
+    void doubleClicked(const QModelIndex &index);
 
   private:
     QSize m_stopButtonSize;
