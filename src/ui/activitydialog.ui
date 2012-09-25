@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>ActivityDialog</class>
  <widget class="QDialog" name="ActivityDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>775</width>
+    <height>252</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Add earlier activity</string>
   </property>
@@ -283,8 +291,8 @@
   <tabstop>cbInProgress</tabstop>
   <tabstop>leActivity</tabstop>
   <tabstop>leTags</tabstop>
-  <tabstop>tabWidget</tabstop>
   <tabstop>buttonBox</tabstop>
+  <tabstop>tabWidget</tabstop>
   <tabstop>deUntimedDate</tabstop>
   <tabstop>sbUntimedHours</tabstop>
   <tabstop>sbUntimedMinutes</tabstop>
