@@ -2,6 +2,7 @@
 #define __ACTIVITYTABLEMODEL_H
 
 #include "abstractactivitymodel.h"
+#include <QIcon>
 
 class ActivityTableModel : public AbstractActivityModel
 {
@@ -20,6 +21,9 @@ class ActivityTableModel : public AbstractActivityModel
 
   private:
     static const QString s_timeSeparator;
+
+    static const QIcon &editIcon();
+    static const QIcon &trashIcon();
 
   private slots:
     void durationChanged();

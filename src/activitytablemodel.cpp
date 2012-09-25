@@ -1,7 +1,33 @@
 #include "activitytablemodel.h"
-#include <QIcon>
 
 const QString ActivityTableModel::s_timeSeparator = QString("-");
+
+const QIcon &ActivityTableModel::editIcon()
+{
+  static QIcon s_editIcon = QIcon();
+
+  if (s_editIcon.isNull()) {
+    s_editIcon.addFile(":/icons/accessories-text-editor-16x16.png", QSize(16, 16));
+    s_editIcon.addFile(":/icons/accessories-text-editor-22x22.png", QSize(22, 22));
+    s_editIcon.addFile(":/icons/accessories-text-editor-24x24.png", QSize(24, 24));
+    s_editIcon.addFile(":/icons/accessories-text-editor-32x32.png", QSize(32, 32));
+    s_editIcon.addFile(":/icons/accessories-text-editor-48x48.png", QSize(48, 48));
+  }
+  return s_editIcon;
+}
+
+const QIcon &ActivityTableModel::trashIcon()
+{
+  static QIcon s_trashIcon = QIcon();
+
+  if (s_trashIcon.isNull()) {
+    s_trashIcon.addFile(":/icons/user-trash-22x22.png", QSize(22, 22));
+    s_trashIcon.addFile(":/icons/user-trash-24x24.png", QSize(24, 24));
+    s_trashIcon.addFile(":/icons/user-trash-32x32.png", QSize(32, 32));
+    s_trashIcon.addFile(":/icons/user-trash-48x48.png", QSize(48, 48));
+  }
+  return s_trashIcon;
+}
 
 ActivityTableModel::ActivityTableModel(RecordManager<Activity> *recordManager, QObject *parent)
   : AbstractActivityModel(recordManager, parent)
@@ -71,10 +97,10 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
     case Qt::DecorationRole:
       switch (index.column()) {
         case 7:
-          return QIcon::fromTheme("accessories-text-editor");
+          return editIcon();
 
         case 8:
-          return QIcon::fromTheme("user-trash");
+          return trashIcon();
       }
       break;
 
