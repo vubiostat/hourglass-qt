@@ -21,6 +21,7 @@ class AbstractActivityModel : public QAbstractItemModel
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
     QSharedPointer<Activity> activityAt(int index) const;
+    const QDate &date() const;
 
   public slots:
     void refreshActivities();
@@ -37,7 +38,6 @@ class AbstractActivityModel : public QAbstractItemModel
     virtual void afterRefresh();
     int activityCount() const;
     int indexOfActivityId(int activityId) const;
-    const QDate &date() const;
 
   protected slots:
     void created(QSharedPointer<Activity> activity);

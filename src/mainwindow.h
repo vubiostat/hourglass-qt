@@ -5,6 +5,7 @@
 #include <QCompleter>
 #include <QSystemTrayIcon>
 #include <QSettings>
+#include <QTimer>
 #include "ui_mainwindow.h"
 
 #include "recordmanager.h"
@@ -31,6 +32,7 @@ class MainWindow : public QMainWindow
     void paintEvent(QPaintEvent *event);
 
   private slots:
+    void setupViews();
     void on_action_Quit_triggered();
     void on_action_About_triggered();
     void on_actionAbout_Qt_triggered();
@@ -49,9 +51,6 @@ class MainWindow : public QMainWindow
 
     QSize m_startButtonSize;
 
-    AbstractActivityModel *m_todayTableModel;
-    AbstractActivityModel *m_todayListModel;
-
     QCompleter *m_activityCompleter;
     QCompleter *m_tagCompleter;
     ActivityNamesListModel *m_activityCompleterModel;
@@ -64,13 +63,13 @@ class MainWindow : public QMainWindow
     QMenu *m_trayIconMenu;
     QSystemTrayIcon *m_trayIcon;
 
+    QTimer *m_dayTimer;
+
     void startActivity();
     void stopCurrentActivities();
     void setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, const QDate &date);
-    void setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, AbstractActivityModel *tableModel, AbstractActivityModel *listModel);
-
+    void setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, AbstractActivityModel *tableModel, AbstractActivityModel *listModel, bool cleanup = true);
     void createTrayIcon();
-
     void refreshCompleterModels();
 };
 
