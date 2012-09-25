@@ -7,11 +7,6 @@ CurrentActivityTableView::CurrentActivityTableView(QWidget *parent)
   verticalHeader()->setDefaultSectionSize(35);
 }
 
-CurrentActivityTableModel *CurrentActivityTableView::model() const
-{
-  return static_cast<CurrentActivityTableModel *>(ActivityTableView::model());
-}
-
 const QSize &CurrentActivityTableView::stopButtonSize() const
 {
   return m_stopButtonSize;
@@ -25,7 +20,7 @@ void CurrentActivityTableView::setStopButtonSize(const QSize &size)
 
 void CurrentActivityTableView::setHeaderStretch()
 {
-  horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+  horizontalHeader()->setResizeMode(3, QHeaderView::Stretch);
   horizontalHeader()->setResizeMode(4, QHeaderView::Fixed);
 }
 
@@ -39,4 +34,10 @@ void CurrentActivityTableView::clicked(const QModelIndex &index)
       }
       break;
   }
+}
+
+void CurrentActivityTableView::doubleClicked(const QModelIndex &index)
+{
+  /* Do nothing */
+  Q_UNUSED(index);
 }

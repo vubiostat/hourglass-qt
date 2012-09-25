@@ -1,6 +1,7 @@
-Makefile
+Makefile*
 bin
 .ui
 .moc
 .obj
 .rcc
+object_script.*

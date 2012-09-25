@@ -15,14 +15,16 @@ ActivityTableView::ActivityTableView(QWidget *parent)
 
   connect(this, SIGNAL(clicked(const QModelIndex &)),
       this, SLOT(clicked(const QModelIndex &)));
+  connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
+      this, SLOT(doubleClicked(const QModelIndex &)));
 }
 
-ActivityTableModel *ActivityTableView::model() const
+AbstractActivityModel *ActivityTableView::model() const
 {
-  return static_cast<ActivityTableModel *>(QTableView::model());
+  return static_cast<AbstractActivityModel *>(QTableView::model());
 }
 
-void ActivityTableView::setModel(ActivityTableModel *newModel)
+void ActivityTableView::setModel(AbstractActivityModel *newModel)
 {
   if (model()) {
     disconnect(model(), 0, this, 0);
@@ -78,6 +80,13 @@ void ActivityTableView::clicked(const QModelIndex &index)
         activity->destroy();
       }
       break;
+  }
+}
+
+void ActivityTableView::doubleClicked(const QModelIndex &index)
+{
+  if (index.column() < 7) {
+    emit startActivityLike(model()->activityAt(index.row()));
   }
 }
 

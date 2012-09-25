@@ -45,7 +45,7 @@ class Activity : public Record
     static QStringList distinctNames();
     static void stopCurrent();
     static QVariantList toVariantList(const QList<Activity *> &activities);
-    static bool startLike(const Activity *activity);
+    static Activity *startLike(const Activity *activity);
     static QPair<QDateTime, QDateTime> lastGap();
 
     Activity(QObject *parent = 0);
@@ -94,6 +94,7 @@ class Activity : public Record
     // Helpers
     Project *project(QObject *parent = 0) const;
     QString projectName() const;
+    const QString &projectDisplayName();
     QList<Tag *> tags(QObject *parent = 0) const;
     QString startedAtISO8601() const;
     QString endedAtISO8601() const;
@@ -112,9 +113,6 @@ class Activity : public Record
     void durationChanged();
     void started();
 
-  private slots:
-    void startDurationTimer();
-
   private:
     static const QString s_tableName;
     static const QString s_distinctNamesQuery;
@@ -129,6 +127,7 @@ class Activity : public Record
     static const QString s_countChangesSinceConditionsTemplate;
     static const QString s_countRunningChangesSinceConditionsTemplate;
     static const QString s_countChangesSinceWithDayConditionsTemplate;
+    static const QString s_nullProjectName;
 
     static QDate dateFromMDY(const QString &mdy);
     static QTime timeFromHM(const QString &hm);
@@ -140,8 +139,9 @@ class Activity : public Record
     QList<Tag *> m_tagsToAdd;
     QTimer *m_durationTimer;
     QVariant m_running;
+    QString m_projectDisplayName;
 
-    void setupDurationTimer();
+    void startDurationTimer();
     void addTags(const QList<Tag *> &tags);
     void removeTags(const QList<Tag *> &tags);
 

@@ -6,7 +6,7 @@
 #include <QList>
 #include <QPushButton>
 #include <QHeaderView>
-#include "activitytablemodel.h"
+#include "abstractactivitymodel.h"
 
 class ActivityTableView : public QTableView
 {
@@ -15,17 +15,19 @@ class ActivityTableView : public QTableView
   public:
     ActivityTableView(QWidget *parent = 0);
 
-    ActivityTableModel *model() const;
-    void setModel(ActivityTableModel *model);
+    AbstractActivityModel *model() const;
+    void setModel(AbstractActivityModel *model);
 
     QSize minimumSizeHint() const;
 
   signals:
     void editActivity(QSharedPointer<Activity> activity);
+    void startActivityLike(QSharedPointer<Activity> activity);
 
   protected slots:
     void modelReset();
     virtual void clicked(const QModelIndex &index);
+    virtual void doubleClicked(const QModelIndex &index);
 
   protected:
     virtual void setHeaderStretch();

@@ -111,7 +111,7 @@ void ActivityDialog::accept()
   }
 
   if (m_activity->isValid()) {
-    m_activity->save();
+    /* Let the parent widget save the activity */
     QDialog::accept();
   }
   else {

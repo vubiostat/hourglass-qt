@@ -4,7 +4,10 @@
 #include <QMainWindow>
 #include <QCompleter>
 #include <QSystemTrayIcon>
+#include <QSettings>
+#include <QTimer>
 #include "ui_mainwindow.h"
+
 #include "recordmanager.h"
 #include "activity.h"
 #include "activitynameslistmodel.h"
@@ -18,6 +21,8 @@ class MainWindow : public QMainWindow
     MainWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~MainWindow();
 
+    bool isTrayIconShown() const;
+
   signals:
     void activityCreated(QSharedPointer<Activity> activity);
     void trayIconHidden();
@@ -27,6 +32,7 @@ class MainWindow : public QMainWindow
     void paintEvent(QPaintEvent *event);
 
   private slots:
+    void setupViews();
     void on_action_Quit_triggered();
     void on_action_About_triggered();
     void on_actionAbout_Qt_triggered();
@@ -36,6 +42,7 @@ class MainWindow : public QMainWindow
     void on_leTags_returnPressed();
     void on_btnAddEarlierActivity_clicked();
     void editActivity(QSharedPointer<Activity> activity);
+    void startActivityLike(QSharedPointer<Activity> activity);
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
 
   private:
@@ -49,16 +56,21 @@ class MainWindow : public QMainWindow
     ActivityNamesListModel *m_activityCompleterModel;
     TagNamesListModel *m_tagCompleterModel;
 
+    QSettings m_settings;
+
     bool m_trayIconAvailable;
     bool m_showTrayIcon;
     QMenu *m_trayIconMenu;
     QSystemTrayIcon *m_trayIcon;
 
-    void startActivity();
-    void setupActivityTableView(ActivityTableView *view, const QDate &date);
-    void setupActivityTableView(ActivityTableView *view, ActivityTableModel *model);
+    QTimer *m_dayTimer;
 
+    void startActivity();
+    void stopCurrentActivities();
+    void setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, const QDate &date);
+    void setupDay(ActivityTableView *tableView, ProjectTotalsListView *listView, AbstractActivityModel *tableModel, AbstractActivityModel *listModel, bool cleanup = true);
     void createTrayIcon();
+    void refreshCompleterModels();
 };
 
 #endif

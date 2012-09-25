@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>600</height>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -93,35 +93,7 @@
              <height>873</height>
             </rect>
            </property>
-           <layout class="QVBoxLayout" name="_2">
-            <item>
-             <widget class="QGroupBox" name="gbSunday">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="title">
-               <string>Sunday</string>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
-               <item>
-                <widget class="ActivityTableView" name="tblSunday">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
              <widget class="QGroupBox" name="gbMonday">
               <property name="sizePolicy">
@@ -144,6 +116,16 @@
                  </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="ProjectTotalsListView" name="lvMondayTotals">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
                 </widget>
                </item>
@@ -175,6 +157,16 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="ProjectTotalsListView" name="lvTuesdayTotals">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -200,6 +192,16 @@
                  </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="ProjectTotalsListView" name="lvWednesdayTotals">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
                 </widget>
                </item>
@@ -231,6 +233,16 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="ProjectTotalsListView" name="lvThursdayTotals">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -256,6 +268,16 @@
                  </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="ProjectTotalsListView" name="lvFridayTotals">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
                 </widget>
                </item>
@@ -287,6 +309,54 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="ProjectTotalsListView" name="lvSaturdayTotals">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="gbSunday">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="title">
+               <string>Sunday</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <widget class="ActivityTableView" name="tblSunday">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="ProjectTotalsListView" name="lvSundayTotals">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -300,6 +370,28 @@
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="ProjectTotalsListView" name="lvTodayTotals">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+       </widget>
+      </item>
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
@@ -358,7 +450,9 @@
   </widget>
   <action name="action_Quit">
    <property name="icon">
-    <iconset theme="application-exit"/>
+    <iconset theme="application-exit">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;Quit</string>
@@ -366,7 +460,9 @@
   </action>
   <action name="action_About">
    <property name="icon">
-    <iconset theme="help-about"/>
+    <iconset theme="help-about">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -379,7 +475,9 @@
   </action>
   <action name="action_Preferences">
    <property name="icon">
-    <iconset theme="preferences-other"/>
+    <iconset theme="preferences-other">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;Preferences</string>
@@ -407,16 +505,21 @@
    <extends>QLineEdit</extends>
    <header>tagslineedit.h</header>
   </customwidget>
+  <customwidget>
+   <class>ProjectTotalsListView</class>
+   <extends>QListView</extends>
+   <header>projecttotalslistview.h</header>
+  </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>tblCurrent</tabstop>
   <tabstop>leActivity</tabstop>
   <tabstop>leTags</tabstop>
   <tabstop>btnStartActivity</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>tblToday</tabstop>
   <tabstop>btnAddEarlierActivity</tabstop>
-  <tabstop>tblCurrent</tabstop>
-  <tabstop>tblMonday</tabstop>
+  <tabstop>lvTodayTotals</tabstop>
   <tabstop>tblTuesday</tabstop>
   <tabstop>tblWednesday</tabstop>
   <tabstop>tblThursday</tabstop>
@@ -424,6 +527,14 @@
   <tabstop>tblSaturday</tabstop>
   <tabstop>saWeek</tabstop>
   <tabstop>tblSunday</tabstop>
+  <tabstop>lvSundayTotals</tabstop>
+  <tabstop>lvMondayTotals</tabstop>
+  <tabstop>lvTuesdayTotals</tabstop>
+  <tabstop>lvWednesdayTotals</tabstop>
+  <tabstop>lvThursdayTotals</tabstop>
+  <tabstop>lvFridayTotals</tabstop>
+  <tabstop>lvSaturdayTotals</tabstop>
+  <tabstop>tblMonday</tabstop>
  </tabstops>
  <resources/>
  <connections/>
