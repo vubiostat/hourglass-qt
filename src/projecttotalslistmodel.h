@@ -15,11 +15,15 @@ class ProjectTotalsListModel : public AbstractActivityModel
     QVariant data(const QModelIndex &index, int role) const;
 
   protected:
+    void connectActivity(Activity *activity);
     void afterRefresh();
 
   private:
     QHash<QString, int> m_projectTotals;
     QStringList m_projectNames;
+
+  private slots:
+    void durationChanged();
 };
 
 #endif

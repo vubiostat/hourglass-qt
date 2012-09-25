@@ -65,6 +65,12 @@ QVariant CurrentActivityTableModel::data(const QModelIndex &index, int role) con
         }
         break;
 
+      case Qt::TextAlignmentRole:
+        if (index.column() == 3) {
+          return (int) (Qt::AlignVCenter | Qt::AlignRight);
+        }
+        break;
+
       case Qt::ForegroundRole:
         if (index.column() == 1) {
           return Qt::darkGray;

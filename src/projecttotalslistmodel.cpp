@@ -36,13 +36,20 @@ QVariant ProjectTotalsListModel::data(const QModelIndex &index, int role) const
   return QVariant();
 }
 
+void ProjectTotalsListModel::connectActivity(Activity *activity)
+{
+  AbstractActivityModel::connectActivity(activity);
+  connect(activity, SIGNAL(durationChanged()),
+      this, SLOT(durationChanged()));
+}
+
 void ProjectTotalsListModel::afterRefresh()
 {
   m_projectNames.clear();
   m_projectTotals.clear();
   for (int i = 0; i < activityCount(); i++) {
     QSharedPointer<Activity> activity = activityAt(i);
-    const QString &projectName = activity->projectName();
+    const QString &projectName = activity->projectDisplayName();
     if (m_projectTotals.contains(projectName)) {
       m_projectTotals[projectName] += activity->duration();
     }
@@ -50,5 +57,27 @@ void ProjectTotalsListModel::afterRefresh()
       m_projectNames.append(projectName);
       m_projectTotals[projectName] = activity->duration();
     }
+  }
+}
+
+void ProjectTotalsListModel::durationChanged()
+{
+  Activity *activity = static_cast<Activity *>(QObject::sender());
+  const QString &projectName = activity->projectDisplayName();
+
+  int row = m_projectNames.indexOf(projectName);
+  if (row >= 0) {
+    /* Update duration for this project */
+    int newTotal = 0;
+    for (int i = 0; i < activityCount(); i++) {
+      QSharedPointer<Activity> activity = activityAt(i);
+      if (projectName == activity->projectDisplayName()) {
+        newTotal += activity->duration();
+      }
+    }
+    m_projectTotals[projectName] = newTotal;
+
+    QModelIndex modelIndex = index(row, 0);
+    emit dataChanged(modelIndex, modelIndex);
   }
 }

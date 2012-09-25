@@ -20,7 +20,7 @@ void CurrentActivityTableView::setStopButtonSize(const QSize &size)
 
 void CurrentActivityTableView::setHeaderStretch()
 {
-  horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+  horizontalHeader()->setResizeMode(3, QHeaderView::Stretch);
   horizontalHeader()->setResizeMode(4, QHeaderView::Fixed);
 }
 

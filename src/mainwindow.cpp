@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
   connect(m_dayTimer, SIGNAL(timeout()), this, SLOT(setupViews()));
 
   QTime nowTime = QTime::currentTime();
-  int msecsToHour = 3600000 - (nowTime.minute() * 60000) - 
+  int msecsToHour = 3600000 - (nowTime.minute() * 60000) -
     (nowTime.second() * 1000) - nowTime.msec();
   QTimer::singleShot(msecsToHour, this, SLOT(setupViews()));
   QTimer::singleShot(msecsToHour, m_dayTimer, SLOT(start()));

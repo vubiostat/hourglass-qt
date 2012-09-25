@@ -1,5 +1,4 @@
 - add way to choose activity without the keyboard
-- handle midnight switchover
 - add screensaver detection
 - use additions/deletions/changes instead of model resets
 - hook the model classes into RecordManager to avoid extra instantiations

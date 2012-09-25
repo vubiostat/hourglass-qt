@@ -45,7 +45,7 @@ class Activity : public Record
     static QStringList distinctNames();
     static void stopCurrent();
     static QVariantList toVariantList(const QList<Activity *> &activities);
-    static Activity *startLike(Activity *activity);
+    static Activity *startLike(const Activity *activity);
     static QPair<QDateTime, QDateTime> lastGap();
 
     Activity(QObject *parent = 0);
@@ -76,7 +76,7 @@ class Activity : public Record
     bool isRunning() const;
     void setRunning(bool running);
     bool wasRunning() const;
-    QString nameWithProject();
+    QString nameWithProject() const;
     void setNameWithProject(const QString &nameWithProject);
     QString startedAtMDY() const;
     void setStartedAtMDY(const QString &mdy);
@@ -93,13 +93,14 @@ class Activity : public Record
 
     // Helpers
     Project *project(QObject *parent = 0) const;
-    const QString &projectName();
+    QString projectName() const;
+    const QString &projectDisplayName();
     QList<Tag *> tags(QObject *parent = 0) const;
     QString startedAtISO8601() const;
     QString endedAtISO8601() const;
     QString durationInWords() const;
-    QVariantMap toVariantMap();
-    bool isSimilarTo(Activity *other);
+    QVariantMap toVariantMap() const;
+    bool isSimilarTo(const Activity *other) const;
     bool occursOn(const QDate &date) const;
 
     bool save();
@@ -111,9 +112,6 @@ class Activity : public Record
   signals:
     void durationChanged();
     void started();
-
-  private slots:
-    void startDurationTimer();
 
   private:
     static const QString s_tableName;
@@ -129,6 +127,7 @@ class Activity : public Record
     static const QString s_countChangesSinceConditionsTemplate;
     static const QString s_countRunningChangesSinceConditionsTemplate;
     static const QString s_countChangesSinceWithDayConditionsTemplate;
+    static const QString s_nullProjectName;
 
     static QDate dateFromMDY(const QString &mdy);
     static QTime timeFromHM(const QString &hm);
@@ -140,9 +139,9 @@ class Activity : public Record
     QList<Tag *> m_tagsToAdd;
     QTimer *m_durationTimer;
     QVariant m_running;
-    QString m_projectName;
+    QString m_projectDisplayName;
 
-    void setupDurationTimer();
+    void startDurationTimer();
     void addTags(const QList<Tag *> &tags);
     void removeTags(const QList<Tag *> &tags);
 

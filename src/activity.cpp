@@ -66,6 +66,8 @@ const QString Activity::s_countChangesSinceWithDayConditionsTemplate = QString(
     "(datetime(activities.created_at) > datetime('%2') OR "
     "datetime(activities.updated_at) > datetime('%2'))");
 
+const QString Activity::s_nullProjectName = QString("Unsorted");
+
 QList<Activity *> Activity::find(QObject *parent)
 {
   return Record::find<Activity>(s_tableName, QString(), s_defaultQueryPredicate, parent);
@@ -171,7 +173,7 @@ QMap<QString, int> Activity::projectTotals(const QList<Activity *> &activities)
 {
   QMap<QString, int> totals;
   for (int i = 0; i < activities.size(); i++) {
-    Activity *activity = activities[i];
+    const Activity *activity = activities[i];
     int total = (totals.contains(activity->projectName()) ? totals[activity->projectName()] : 0);
     total += activity->duration();
     totals.insert(activity->projectName(), total);
@@ -210,13 +212,13 @@ QVariantList Activity::toVariantList(const QList<Activity *> &activities)
 {
   QVariantList list;
   for (int i = 0; i < activities.size(); i++) {
-    Activity *activity = activities.at(i);
+    const Activity *activity = activities.at(i);
     list << activity->toVariantMap();
   }
   return list;
 }
 
-Activity *Activity::startLike(Activity *activity)
+Activity *Activity::startLike(const Activity *activity)
 {
   Activity *result = NULL;
 
@@ -346,7 +348,7 @@ Activity::Activity(const QMap<QString, QVariant> &attributes, bool newRecord, QO
   : Record(attributes, newRecord, parent), m_durationTimer(NULL)
 {
   if (isRunning()) {
-    setupDurationTimer();
+    startDurationTimer();
   }
 }
 
@@ -552,10 +554,10 @@ bool Activity::wasRunning() const
   }
 }
 
-QString Activity::nameWithProject()
+QString Activity::nameWithProject() const
 {
   QStringList strings;
-  const QString &pname = projectName();
+  QString pname = projectName();
 
   strings << name();
   if (!pname.isEmpty()) {
@@ -753,17 +755,30 @@ Project *Activity::project(QObject *parent) const
   return NULL;
 }
 
-const QString &Activity::projectName()
+QString Activity::projectName() const
 {
-  if (m_projectName.isNull()) {
+  Project *project = Activity::project();
+  QString name;
+  if (project != NULL) {
+    name = project->name();
+    project->deleteLater();
+  }
+  return name;
+}
+
+const QString &Activity::projectDisplayName()
+{
+  if (m_projectDisplayName.isNull()) {
     Project *project = Activity::project();
-    QString name;
-    if (project != NULL) {
-      m_projectName = project->name();
+    if (project == NULL) {
+      m_projectDisplayName = s_nullProjectName;
+    }
+    else {
+      m_projectDisplayName = project->name();
       project->deleteLater();
     }
   }
-  return m_projectName;
+  return m_projectDisplayName;
 }
 
 QList<Tag *> Activity::tags(QObject *parent) const
@@ -830,7 +845,7 @@ QString Activity::durationInWords() const
   }
 }
 
-QVariantMap Activity::toVariantMap()
+QVariantMap Activity::toVariantMap() const
 {
   QVariantMap map;
 
@@ -850,7 +865,7 @@ QVariantMap Activity::toVariantMap()
   return map;
 }
 
-bool Activity::isSimilarTo(Activity *other)
+bool Activity::isSimilarTo(const Activity *other) const
 {
   return other != NULL && other->nameWithProject() == nameWithProject() &&
     other->tagNames() == tagNames();
@@ -880,15 +895,6 @@ void Activity::stop()
   }
 }
 
-void Activity::startDurationTimer()
-{
-  m_durationTimer = new QTimer(this);
-  connect(m_durationTimer, SIGNAL(timeout()), SIGNAL(durationChanged()));
-  m_durationTimer->start(60000);
-  //qDebug() << "Activity" << id() << "duration timer started.";
-  emit durationChanged();
-}
-
 void Activity::beforeValidation()
 {
   if (m_startedAtMDY.isValid() && m_startedAtHM.isValid()) {
@@ -910,11 +916,19 @@ void Activity::beforeValidation()
   }
 }
 
-void Activity::setupDurationTimer()
+void Activity::startDurationTimer()
 {
-  int msecs = startedAt().msecsTo(QDateTime::currentDateTime()) % 60000;
+  m_durationTimer = new QTimer(this);
+  m_durationTimer->setInterval(60000);
+  connect(m_durationTimer, SIGNAL(timeout()), SIGNAL(durationChanged()));
+
+  QTime nowTime = QTime::currentTime();
+  QTime startTime = startedAt().time();
+  int msecs = qAbs(((startTime.second() * 1000) + startTime.msec()) -
+    ((nowTime.second() * 1000) + nowTime.msec()));
   //qDebug() << "Activity" << id() << "milliseconds until tick:" << msecs;
-  QTimer::singleShot(msecs, this, SLOT(startDurationTimer()));
+  QTimer::singleShot(msecs, this, SIGNAL(durationChanged()));
+  QTimer::singleShot(msecs, m_durationTimer, SLOT(start()));
 }
 
 void Activity::addTags(const QList<Tag *> &tags)
@@ -1008,7 +1022,7 @@ void Activity::afterSave()
   bool tooShort = false;
   bool justStarted = false;
   if (isRunning() && !wasRunning() && m_durationTimer == NULL) {
-    setupDurationTimer();
+    startDurationTimer();
     justStarted = true;
   }
   else if (!isRunning() && wasRunning()) {
@@ -1030,6 +1044,6 @@ void Activity::afterSave()
     if (justStarted) {
       emit started();
     }
-    m_projectName = QString();
+    m_projectDisplayName = QString();
   }
 }
