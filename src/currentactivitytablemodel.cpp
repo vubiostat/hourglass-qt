@@ -100,7 +100,27 @@ bool CurrentActivityTableModel::containsActivity(QSharedPointer<Activity> activi
   return activity->isRunning();
 }
 
+void CurrentActivityTableModel::connectActivity(Activity *activity)
+{
+  AbstractActivityModel::connectActivity(activity);
+  qDebug() << "Current activity table connected to Activity" << activity->id();
+  connect(activity, SIGNAL(durationChanged()),
+      this, SLOT(durationChanged()));
+}
+
 void CurrentActivityTableModel::afterRefresh()
 {
   m_empty = activityCount() == 0;
+}
+
+void CurrentActivityTableModel::durationChanged()
+{
+  Activity *activity = static_cast<Activity *>(QObject::sender());
+  qDebug() << "Current activity table duration changed for Activity" << activity->id();
+
+  int row = indexOfActivityId(activity->id());
+  if (row >= 0) {
+    QModelIndex modelIndex = index(row, 3);
+    emit dataChanged(modelIndex, modelIndex);
+  }
 }
