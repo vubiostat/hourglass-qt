@@ -21,4 +21,8 @@ SOURCES += mainwindow.cpp hourglass.cpp abstractactivitymodel.cpp activitytablem
 HEADERS += mainwindow.h hourglass.h abstractactivitymodel.h activitytablemodel.h activitydelegate.h activitytableview.h abstractlineedit.h activitylineedit.h activitydialog.h record.h project.h tag.h activity.h currentactivitytablemodel.h currentactivitydelegate.h currentactivitytableview.h recordmanager.h activitynameslistmodel.h namesdelegate.h tagnameslistmodel.h tagslineedit.h aboutdialog.h preferencesdialog.h projecttotalslistmodel.h projecttotaldelegate.h projecttotalslistview.h
 
 target.path = $${PREFIX}/bin
-INSTALLS += target
+desktop.files += hourglass.desktop
+desktop.path = $${PREFIX}/share/applications
+icon.files += icons/hourglass.png
+icon.path = $${PREFIX}/share/pixmaps
+INSTALLS += target desktop icon
