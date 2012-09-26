@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>ActivityDialog</class>
  <widget class="QDialog" name="ActivityDialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>775</width>
-    <height>252</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Add earlier activity</string>
   </property>
@@ -249,6 +241,19 @@
        <item row="3" column="1" colspan="2">
         <widget class="TagsLineEdit" name="leUntimedTags"/>
        </item>
+       <item row="4" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
       <zorder>lblUntimedDuration</zorder>
       <zorder>lblUntimedDate</zorder>
@@ -256,6 +261,7 @@
       <zorder>leUntimedActivity</zorder>
       <zorder>lblUntimedTags</zorder>
       <zorder>leUntimedTags</zorder>
+      <zorder>verticalSpacer_2</zorder>
      </widget>
     </widget>
    </item>
