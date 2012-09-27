@@ -1,12 +1,12 @@
 #include "abstractactivitymodel.h"
 
 AbstractActivityModel::AbstractActivityModel(RecordManager<Activity> *recordManager, QObject *parent)
-  : QAbstractItemModel(parent), m_recordManager(recordManager)
+  : QAbstractItemModel(parent), m_recordManager(recordManager), m_allUntimed(true)
 {
 }
 
 AbstractActivityModel::AbstractActivityModel(const QDate &date, RecordManager<Activity> *recordManager, QObject *parent)
-  : QAbstractItemModel(parent), m_date(date), m_recordManager(recordManager)
+  : QAbstractItemModel(parent), m_date(date), m_recordManager(recordManager), m_allUntimed(true)
 {
 }
 
@@ -34,9 +34,16 @@ QSharedPointer<Activity> AbstractActivityModel::activityAt(int index) const
   return m_activities[m_activityIds[index]];
 }
 
+bool AbstractActivityModel::allUntimed() const
+{
+  return m_allUntimed;
+}
+
 void AbstractActivityModel::refreshActivities()
 {
   beginResetModel();
+
+  m_allUntimed = true;
 
   QList<int> previousActivityIds = m_activityIds;
   m_activityIds = fetchActivityIds();
@@ -47,6 +54,9 @@ void AbstractActivityModel::refreshActivities()
       connectActivity(ptr.data());
 
       m_activities[activityId] = ptr;
+    }
+    if (!m_activities[activityId]->isUntimed()) {
+      m_allUntimed = false;
     }
   }
 

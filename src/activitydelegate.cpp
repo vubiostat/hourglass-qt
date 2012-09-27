@@ -26,7 +26,13 @@ QSize ActivityDelegate::sizeHint(const QStyleOptionViewItem &option, const QMode
       size.setWidth(option.fontMetrics.width("00:00") + 7);
       break;
     case 2:
-      size.setWidth(option.fontMetrics.width("00:00") + 22);
+      if (index.data().toString().isEmpty()) {
+        /* Little hack to add left padding if all events are untimed */
+        size.setWidth(15);
+      }
+      else {
+        size.setWidth(option.fontMetrics.width("00:00") + 22);
+      }
       break;
     case 1:
       size.setWidth(option.fontMetrics.width("-"));
