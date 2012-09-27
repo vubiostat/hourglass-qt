@@ -38,6 +38,7 @@ void ActivityTableView::setModel(AbstractActivityModel *newModel)
 
     setHeaderStretch();
     resizeHeightIfFixed();
+    checkAllUntimed();
   }
 }
 
@@ -60,6 +61,7 @@ QSize ActivityTableView::minimumSizeHint() const
 void ActivityTableView::modelReset()
 {
   resizeHeightIfFixed();
+  checkAllUntimed();
 }
 
 void ActivityTableView::clicked(const QModelIndex &index)
@@ -93,6 +95,13 @@ void ActivityTableView::doubleClicked(const QModelIndex &index)
 void ActivityTableView::setHeaderStretch()
 {
   horizontalHeader()->setResizeMode(5, QHeaderView::Stretch);
+}
+
+void ActivityTableView::checkAllUntimed()
+{
+  bool hide = model()->allUntimed();
+  setColumnHidden(0, hide);
+  setColumnHidden(1, hide);
 }
 
 void ActivityTableView::resizeHeightIfFixed()

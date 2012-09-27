@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>622</width>
-    <height>279</height>
+    <width>528</width>
+    <height>240</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -173,30 +173,6 @@
        <string>Untimed</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="1" column="0">
-        <widget class="QLabel" name="lblUntimedDuration">
-         <property name="text">
-          <string>Duration:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1" colspan="2">
-        <widget class="ActivityLineEdit" name="leUntimedActivity"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="lblUntimedTags">
-         <property name="text">
-          <string>Tags:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="lblUntimedActivity">
-         <property name="text">
-          <string>Activity:</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
@@ -272,16 +248,6 @@
          </item>
         </layout>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="lblUntimedDate">
-         <property name="text">
-          <string>Date:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1" colspan="2">
-        <widget class="TagsLineEdit" name="leUntimedTags"/>
-       </item>
        <item row="4" column="1">
         <spacer name="verticalSpacer_2">
          <property name="orientation">
@@ -294,6 +260,40 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lblUntimedDuration">
+         <property name="text">
+          <string>Duration:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lblUntimedDate">
+         <property name="text">
+          <string>Date:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lblUntimedActivity">
+         <property name="text">
+          <string>Activity:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="ActivityLineEdit" name="leUntimedActivity"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="lblUntimedTags">
+         <property name="text">
+          <string>Tags:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="2">
+        <widget class="TagsLineEdit" name="leUntimedTags"/>
        </item>
       </layout>
       <zorder>lblUntimedDuration</zorder>

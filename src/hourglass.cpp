@@ -15,7 +15,6 @@ Hourglass::Hourglass(int &argc, char **argv)
   setOrganizationName("vubiostat");
   setOrganizationDomain("biostat.mc.vanderbilt.edu");
   setApplicationName("hourglass");
-  setAttribute(Qt::AA_DontShowIconsInMenus, false);
 
   if (setupDatabase()) {
     m_mainwindow = new MainWindow();

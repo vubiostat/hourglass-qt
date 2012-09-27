@@ -504,21 +504,11 @@
    <addaction name="menu_Help"/>
   </widget>
   <action name="action_Quit">
-   <property name="icon">
-    <iconset theme="application-exit">
-     <normaloff/>
-    </iconset>
-   </property>
    <property name="text">
     <string>&amp;Quit</string>
    </property>
   </action>
   <action name="action_About">
-   <property name="icon">
-    <iconset theme="help-about">
-     <normaloff/>
-    </iconset>
-   </property>
    <property name="text">
     <string>&amp;About</string>
    </property>
@@ -529,11 +519,6 @@
    </property>
   </action>
   <action name="action_Preferences">
-   <property name="icon">
-    <iconset theme="preferences-other">
-     <normaloff/>
-    </iconset>
-   </property>
    <property name="text">
     <string>&amp;Preferences</string>
    </property>

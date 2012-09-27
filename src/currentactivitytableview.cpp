@@ -24,6 +24,11 @@ void CurrentActivityTableView::setHeaderStretch()
   horizontalHeader()->setResizeMode(4, QHeaderView::Fixed);
 }
 
+void CurrentActivityTableView::checkAllUntimed()
+{
+  /* Do nothing */
+}
+
 void CurrentActivityTableView::clicked(const QModelIndex &index)
 {
   switch (index.column()) {

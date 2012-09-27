@@ -22,6 +22,7 @@ class AbstractActivityModel : public QAbstractItemModel
 
     QSharedPointer<Activity> activityAt(int index) const;
     const QDate &date() const;
+    bool allUntimed() const;
 
   public slots:
     void refreshActivities();
@@ -47,6 +48,7 @@ class AbstractActivityModel : public QAbstractItemModel
   private:
     QDate m_date;
     RecordManager<Activity> *m_recordManager;
+    bool m_allUntimed;
     QList<int> m_activityIds;
     QHash<int, QSharedPointer<Activity> > m_activities;
 };

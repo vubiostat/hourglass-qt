@@ -16,6 +16,7 @@ class CurrentActivityTableView : public ActivityTableView
 
   protected:
     void setHeaderStretch();
+    void checkAllUntimed();
 
   protected slots:
     void clicked(const QModelIndex &index);

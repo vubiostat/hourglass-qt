@@ -31,6 +31,7 @@ class ActivityTableView : public QTableView
 
   protected:
     virtual void setHeaderStretch();
+    virtual void checkAllUntimed();
 
   private:
     void resizeHeightIfFixed();

@@ -105,15 +105,19 @@ QVariant ActivityTableModel::data(const QModelIndex &index, int role) const
       break;
 
     case Qt::TextAlignmentRole:
-      if (index.column() >= 3 && index.column() <= 5) {
-        return (int) (Qt::AlignVCenter | Qt::AlignLeft);
+      switch (index.column()) {
+        case 0:
+        case 6:
+          return (int) (Qt::AlignVCenter | Qt::AlignRight);
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          return (int) (Qt::AlignVCenter | Qt::AlignLeft);
+        default:
+          return Qt::AlignCenter;
       }
-      else if (index.column() == 6) {
-        return (int) (Qt::AlignVCenter | Qt::AlignRight);
-      }
-      else {
-        return Qt::AlignCenter;
-      }
+      break;
 
     case Qt::ForegroundRole:
       if (index.column() == 4) {
