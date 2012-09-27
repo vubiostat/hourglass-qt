@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QSharedPointer>
+#include <QPalette>
 #include "ui_activitydialog.h"
 #include "activity.h"
 
@@ -31,6 +32,17 @@ class ActivityDialog : public QDialog
   private:
     Ui::ActivityDialog m_ui;
     QSharedPointer<Activity> m_activity;
+    QPalette m_frStartedAtPalette;
+    QPalette m_frEndedAtPalette;
+    bool m_errorStartedAt;
+    bool m_errorEndedAt;
+
+    void setupFrames();
+    QDateTime startedAt();
+    QDateTime endedAt();
+    bool isTimeValid();
+    void setErrorStartedAt(bool toggle);
+    void setErrorEndedAt(bool toggle);
 };
 
 #endif

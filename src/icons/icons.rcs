@@ -1,5 +1,14 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icons">
   <file>hourglass.png</file>
+  <file>accessories-text-editor-16x16.png</file>
+  <file>accessories-text-editor-22x22.png</file>
+  <file>accessories-text-editor-24x24.png</file>
+  <file>accessories-text-editor-32x32.png</file>
+  <file>accessories-text-editor-48x48.png</file>
+  <file>user-trash-22x22.png</file>
+  <file>user-trash-24x24.png</file>
+  <file>user-trash-32x32.png</file>
+  <file>user-trash-48x48.png</file>
 </qresource>
 </RCC>

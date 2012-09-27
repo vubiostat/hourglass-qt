@@ -17,10 +17,14 @@ class CurrentActivityTableModel : public AbstractActivityModel
   protected:
     QList<int> fetchActivityIds() const;
     bool containsActivity(QSharedPointer<Activity> ptr) const;
+    void connectActivity(Activity *activity);
     void afterRefresh();
 
   private:
     bool m_empty;
+
+  private slots:
+    void durationChanged();
 };
 
 #endif

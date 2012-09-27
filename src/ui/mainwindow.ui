@@ -23,6 +23,9 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
       </property>
@@ -64,6 +67,9 @@
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -73,7 +79,11 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="ActivityTableView" name="tblToday"/>
+         <widget class="ActivityTableView" name="tblToday">
+          <property name="focusPolicy">
+           <enum>Qt::ClickFocus</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -88,7 +98,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-790</y>
              <width>743</width>
              <height>873</height>
             </rect>
@@ -114,6 +124,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
@@ -126,6 +139,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
                  </property>
                 </widget>
                </item>
@@ -152,6 +168,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
@@ -164,6 +183,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
                  </property>
                 </widget>
                </item>
@@ -190,6 +212,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
@@ -202,6 +227,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
                  </property>
                 </widget>
                </item>
@@ -228,6 +256,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
@@ -240,6 +271,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
                  </property>
                 </widget>
                </item>
@@ -266,6 +300,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
@@ -278,6 +315,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
                  </property>
                 </widget>
                </item>
@@ -304,6 +344,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
@@ -316,6 +359,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
                  </property>
                 </widget>
                </item>
@@ -342,6 +388,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
@@ -354,6 +403,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
                  </property>
                 </widget>
                </item>
@@ -377,6 +429,9 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
         </property>
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
@@ -512,29 +567,11 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>tblCurrent</tabstop>
   <tabstop>leActivity</tabstop>
   <tabstop>leTags</tabstop>
   <tabstop>btnStartActivity</tabstop>
-  <tabstop>tabWidget</tabstop>
-  <tabstop>tblToday</tabstop>
   <tabstop>btnAddEarlierActivity</tabstop>
-  <tabstop>lvTodayTotals</tabstop>
-  <tabstop>tblTuesday</tabstop>
-  <tabstop>tblWednesday</tabstop>
-  <tabstop>tblThursday</tabstop>
-  <tabstop>tblFriday</tabstop>
-  <tabstop>tblSaturday</tabstop>
   <tabstop>saWeek</tabstop>
-  <tabstop>tblSunday</tabstop>
-  <tabstop>lvSundayTotals</tabstop>
-  <tabstop>lvMondayTotals</tabstop>
-  <tabstop>lvTuesdayTotals</tabstop>
-  <tabstop>lvWednesdayTotals</tabstop>
-  <tabstop>lvThursdayTotals</tabstop>
-  <tabstop>lvFridayTotals</tabstop>
-  <tabstop>lvSaturdayTotals</tabstop>
-  <tabstop>tblMonday</tabstop>
  </tabstops>
  <resources/>
  <connections/>

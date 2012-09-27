@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Hourglass
+Comment=Activity tracking utility
+Exec=/usr/bin/hourglass
+Icon=/usr/share/pixmaps/hourglass.png
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Qt;Utility;
+Name[en_US]=Hourglass

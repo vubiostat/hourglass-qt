@@ -1,9 +1,10 @@
 #include "activitydialog.h"
 
 ActivityDialog::ActivityDialog(QWidget *parent, Qt::WindowFlags f)
-  : QDialog(parent, f)
+  : QDialog(parent, f), m_errorStartedAt(true), m_errorEndedAt(true)
 {
   m_ui.setupUi(this);
+  setupFrames();
 
   QDateTime now = QDateTime::currentDateTime();
   m_ui.deStartedAt->setDate(now.date());
@@ -14,10 +15,11 @@ ActivityDialog::ActivityDialog(QWidget *parent, Qt::WindowFlags f)
 }
 
 ActivityDialog::ActivityDialog(QSharedPointer<Activity> activity, QWidget *parent, Qt::WindowFlags f)
-  : QDialog(parent, f), m_activity(activity)
+  : QDialog(parent, f), m_activity(activity), m_errorStartedAt(true), m_errorEndedAt(true)
 {
   m_ui.setupUi(this);
   setWindowTitle("Edit activity");
+  setupFrames();
 
   if (activity->isUntimed()) {
     QDate date = activity->day();
@@ -129,28 +131,81 @@ void ActivityDialog::on_cbInProgress_clicked()
 
 void ActivityDialog::on_deStartedAt_dateChanged(const QDate &date)
 {
-  if (date > m_ui.deEndedAt->date()) {
-    m_ui.deEndedAt->setDate(date);
+  if (m_errorStartedAt) {
+    setErrorStartedAt(isTimeValid());
+  }
+  else {
+    setErrorEndedAt(isTimeValid());
   }
 }
 
 void ActivityDialog::on_teStartedAt_timeChanged(const QTime &time)
 {
-  if (time > m_ui.teEndedAt->time()) {
-    m_ui.teEndedAt->setTime(time);
+  if (m_errorStartedAt) {
+    setErrorStartedAt(isTimeValid());
+  }
+  else {
+    setErrorEndedAt(isTimeValid());
   }
 }
 
 void ActivityDialog::on_deEndedAt_dateChanged(const QDate &date)
 {
-  if (date < m_ui.deStartedAt->date()) {
-    m_ui.deStartedAt->setDate(date);
+  if (m_errorEndedAt) {
+    setErrorEndedAt(isTimeValid());
+  }
+  else {
+    setErrorStartedAt(isTimeValid());
   }
 }
 
 void ActivityDialog::on_teEndedAt_timeChanged(const QTime &time)
 {
-  if (time < m_ui.teStartedAt->time()) {
-    m_ui.teStartedAt->setTime(time);
+  if (m_errorEndedAt) {
+    setErrorEndedAt(isTimeValid());
+  }
+  else {
+    setErrorStartedAt(isTimeValid());
+  }
+}
+
+void ActivityDialog::setupFrames()
+{
+  m_frStartedAtPalette = m_ui.frStartedAt->palette();
+  m_frEndedAtPalette = m_ui.frEndedAt->palette();
+  setErrorStartedAt(false);
+  setErrorEndedAt(false);
+}
+
+QDateTime ActivityDialog::startedAt()
+{
+  return QDateTime(m_ui.deStartedAt->date(), m_ui.teStartedAt->time());
+}
+
+QDateTime ActivityDialog::endedAt()
+{
+  return QDateTime(m_ui.deEndedAt->date(), m_ui.teEndedAt->time());
+}
+
+bool ActivityDialog::isTimeValid()
+{
+  return startedAt() > endedAt();
+}
+
+void ActivityDialog::setErrorStartedAt(bool toggle)
+{
+  if (toggle != m_errorStartedAt) {
+    m_errorStartedAt = toggle;
+    m_frStartedAtPalette.setColor(QPalette::Foreground, (toggle ? Qt::red : Qt::transparent));
+    m_ui.frStartedAt->setPalette(m_frStartedAtPalette);
+  }
+}
+
+void ActivityDialog::setErrorEndedAt(bool toggle)
+{
+  if (toggle != m_errorEndedAt) {
+    m_errorEndedAt = toggle;
+    m_frEndedAtPalette.setColor(QPalette::Foreground, (toggle ? Qt::red : Qt::transparent));
+    m_ui.frEndedAt->setPalette(m_frEndedAtPalette);
   }
 }

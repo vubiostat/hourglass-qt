@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>ActivityDialog</class>
  <widget class="QDialog" name="ActivityDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>622</width>
+    <height>279</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Add earlier activity</string>
   </property>
@@ -26,20 +34,38 @@
        <item row="0" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QDateEdit" name="deStartedAt">
-           <property name="calendarPopup">
-            <bool>true</bool>
+          <widget class="QFrame" name="frStartedAt">
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTimeEdit" name="teStartedAt">
-           <property name="currentSection">
-            <enum>QDateTimeEdit::HourSection</enum>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
            </property>
-           <property name="displayFormat">
-            <string>HH:mm</string>
+           <property name="lineWidth">
+            <number>1</number>
            </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <property name="margin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QDateEdit" name="deStartedAt">
+              <property name="calendarPopup">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTimeEdit" name="teStartedAt">
+              <property name="currentSection">
+               <enum>QDateTimeEdit::HourSection</enum>
+              </property>
+              <property name="displayFormat">
+               <string>HH:mm</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
@@ -50,20 +76,35 @@
           </widget>
          </item>
          <item>
-          <widget class="QTimeEdit" name="teEndedAt">
-           <property name="currentSection">
-            <enum>QDateTimeEdit::HourSection</enum>
+          <widget class="QFrame" name="frEndedAt">
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
            </property>
-           <property name="displayFormat">
-            <string>HH:mm</string>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QDateEdit" name="deEndedAt">
-           <property name="calendarPopup">
-            <bool>true</bool>
-           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <property name="margin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QTimeEdit" name="teEndedAt">
+              <property name="currentSection">
+               <enum>QDateTimeEdit::HourSection</enum>
+              </property>
+              <property name="displayFormat">
+               <string>HH:mm</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDateEdit" name="deEndedAt">
+              <property name="calendarPopup">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
@@ -241,6 +282,19 @@
        <item row="3" column="1" colspan="2">
         <widget class="TagsLineEdit" name="leUntimedTags"/>
        </item>
+       <item row="4" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
       <zorder>lblUntimedDuration</zorder>
       <zorder>lblUntimedDate</zorder>
@@ -276,15 +330,11 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>deStartedAt</tabstop>
-  <tabstop>teStartedAt</tabstop>
-  <tabstop>teEndedAt</tabstop>
-  <tabstop>deEndedAt</tabstop>
   <tabstop>cbInProgress</tabstop>
   <tabstop>leActivity</tabstop>
   <tabstop>leTags</tabstop>
-  <tabstop>tabWidget</tabstop>
   <tabstop>buttonBox</tabstop>
+  <tabstop>tabWidget</tabstop>
   <tabstop>deUntimedDate</tabstop>
   <tabstop>sbUntimedHours</tabstop>
   <tabstop>sbUntimedMinutes</tabstop>
