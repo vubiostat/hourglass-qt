@@ -1,4 +1,5 @@
 #include "projecttotalslistview.h"
+#include <QScrollBar>
 
 ProjectTotalsListView::ProjectTotalsListView(QWidget *parent)
   : QListView(parent)
@@ -42,7 +43,9 @@ QSize ProjectTotalsListView::minimumSizeHint() const
     int height = 0;
     int rowCount = model()->rowCount();
     for (int i = 0; i < rowCount; i++) {
-      height = qMax(height, sizeHintForRow(i));
+      int rowHeight = sizeHintForRow(i) +
+        horizontalScrollBar()->sizeHint().height();
+      height = qMax(height, rowHeight);
     }
     size.setHeight(height + 4);
   }
