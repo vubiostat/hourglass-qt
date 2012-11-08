@@ -3,7 +3,7 @@
 #include <QSqlError>
 #include <QVariant>
 #include <QStringList>
-#include "tag.h"
+#include "hourglass/tag.h"
 
 const QString Tag::findActivityTagsQuery = QString(
     "SELECT tags.id, tags.name FROM activities_tags "

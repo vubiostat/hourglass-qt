@@ -4,8 +4,8 @@
 #include <QStringList>
 #include <QRegExp>
 #include <QSettings>
-#include "activity.h"
-#include "tag.h"
+#include "hourglass/activity.h"
+#include "hourglass/tag.h"
 
 // Static members
 const QString Activity::s_tableName = QString("activities");

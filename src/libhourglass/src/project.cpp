@@ -3,7 +3,7 @@
 #include <QSqlError>
 #include <QVariant>
 #include <QStringList>
-#include "project.h"
+#include "hourglass/project.h"
 
 const QString Project::findQuery = QString(
     "SELECT id, name FROM projects");

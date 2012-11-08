@@ -1,5 +1,5 @@
-#include "activitynameslistmodel.h"
-#include "activity.h"
+#include "hourglass/activitynameslistmodel.h"
+#include "hourglass/activity.h"
 
 ActivityNamesListModel::ActivityNamesListModel(QObject *parent)
   : QAbstractListModel(parent)

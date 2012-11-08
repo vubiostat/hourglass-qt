@@ -4,8 +4,8 @@
 #include <QDialog>
 #include <QSharedPointer>
 #include <QPalette>
+#include "hourglass/activity.h"
 #include "ui_activitydialog.h"
-#include "activity.h"
 
 class ActivityDialog : public QDialog
 {

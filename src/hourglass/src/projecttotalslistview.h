@@ -2,7 +2,7 @@
 #define __PROJECTTOTALSLISTVIEW_H
 
 #include <QListView>
-#include "abstractactivitymodel.h"
+#include "hourglass/abstractactivitymodel.h"
 
 class ProjectTotalsListView : public QListView
 {

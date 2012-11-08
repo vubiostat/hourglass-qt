@@ -8,10 +8,10 @@
 #include <QTimer>
 #include "ui_mainwindow.h"
 
-#include "recordmanager.h"
-#include "activity.h"
-#include "activitynameslistmodel.h"
-#include "tagnameslistmodel.h"
+#include "hourglass/recordmanager.h"
+#include "hourglass/activity.h"
+#include "hourglass/activitynameslistmodel.h"
+#include "hourglass/tagnameslistmodel.h"
 
 class MainWindow : public QMainWindow
 {

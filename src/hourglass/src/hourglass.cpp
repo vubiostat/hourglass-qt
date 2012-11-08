@@ -4,8 +4,8 @@
 #include <QDir>
 #include <QSqlQuery>
 #include <QSqlError>
-#include "activity.h"
 #include <QtDebug>
+#include "hourglass/activity.h"
 
 Hourglass::Hourglass(int &argc, char **argv)
   : QApplication(argc, argv)

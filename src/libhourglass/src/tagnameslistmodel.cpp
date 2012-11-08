@@ -1,5 +1,5 @@
-#include "tagnameslistmodel.h"
-#include "tag.h"
+#include "hourglass/tagnameslistmodel.h"
+#include "hourglass/tag.h"
 
 TagNamesListModel::TagNamesListModel(QObject *parent)
   : QAbstractListModel(parent)

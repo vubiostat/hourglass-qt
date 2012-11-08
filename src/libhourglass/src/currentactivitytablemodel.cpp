@@ -1,4 +1,4 @@
-#include "currentactivitytablemodel.h"
+#include "hourglass/currentactivitytablemodel.h"
 #include <QFont>
 
 CurrentActivityTableModel::CurrentActivityTableModel(RecordManager<Activity> *recordManager, QObject *parent)

@@ -1,4 +1,4 @@
-#include "activitytablemodel.h"
+#include "hourglass/activitytablemodel.h"
 
 const QString ActivityTableModel::s_timeSeparator = QString("-");
 

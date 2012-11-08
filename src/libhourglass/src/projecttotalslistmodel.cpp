@@ -1,4 +1,4 @@
-#include "projecttotalslistmodel.h"
+#include "hourglass/projecttotalslistmodel.h"
 
 ProjectTotalsListModel::ProjectTotalsListModel(const QDate &date, RecordManager<Activity> *recordManager, QObject *parent)
   : AbstractActivityModel(date, recordManager, parent)

@@ -1,4 +1,4 @@
-#include "abstractactivitymodel.h"
+#include "hourglass/abstractactivitymodel.h"
 
 AbstractActivityModel::AbstractActivityModel(RecordManager<Activity> *recordManager, QObject *parent)
   : QAbstractItemModel(parent), m_recordManager(recordManager), m_allUntimed(true)

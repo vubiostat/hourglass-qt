@@ -6,7 +6,7 @@
 #include <QList>
 #include <QPushButton>
 #include <QHeaderView>
-#include "abstractactivitymodel.h"
+#include "hourglass/abstractactivitymodel.h"
 
 class ActivityTableView : public QTableView
 {
