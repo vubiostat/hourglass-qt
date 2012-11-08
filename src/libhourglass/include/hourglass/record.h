@@ -11,17 +11,13 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 
-template<typename T>
-struct is_pointer { static const bool value = false; };
-
-template<typename T>
-struct is_pointer<T*> { static const bool value = true; };
-
 class Record : public QObject
 {
   Q_OBJECT
 
   public:
+    static QSqlDatabase &database();
+    static void setDatabase(QSqlDatabase &database);
 
     template <class T>
     static QList<T*> find(const QString &tableName, QObject *parent = 0)
@@ -125,7 +121,6 @@ class Record : public QObject
 
   protected:
     Record(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
-    static QSqlDatabase database();
 
     virtual void beforeValidation();
     virtual bool validate();
@@ -135,6 +130,7 @@ class Record : public QObject
     virtual void afterCreate();
 
   private:
+    static QSqlDatabase s_database;
     static bool executeFindQuery(QSqlQuery &query, const QString &tableName, const QString &select, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate);
 
     QMap<QString, QVariant> attributes;

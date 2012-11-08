@@ -14,4 +14,4 @@ MOC_DIR = .moc
 RCC_DIR = .rcc
 UI_DIR = .ui
 
-SOURCES += abstractactivitymodel.cpp abstractnameslistmodel.cpp activity.cpp activitynameslistmodel.cpp activitytablemodel.cpp currentactivitytablemodel.cpp project.cpp projecttotalslistmodel.cpp record.cpp recordmanager.cpp tag.cpp tagnameslistmodel.cpp
+SOURCES += abstractactivitymodel.cpp abstractnameslistmodel.cpp activity.cpp activitynameslistmodel.cpp activitytablemodel.cpp currentactivitytablemodel.cpp project.cpp projecttotalslistmodel.cpp record.cpp recordmanager.cpp tag.cpp tagnameslistmodel.cpp databasemanager.cpp

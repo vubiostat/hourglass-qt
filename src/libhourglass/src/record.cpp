@@ -2,9 +2,16 @@
 #include <QDateTime>
 #include <QSqlError>
 
-QSqlDatabase Record::database()
+QSqlDatabase Record::s_database;
+
+QSqlDatabase &Record::database()
 {
-  return QSqlDatabase::database();
+  return s_database;
+}
+
+void Record::setDatabase(QSqlDatabase &database)
+{
+  s_database = database;
 }
 
 QList<int> Record::findIds(const QString &tableName)

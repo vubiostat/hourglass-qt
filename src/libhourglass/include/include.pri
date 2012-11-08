@@ -10,4 +10,5 @@ HEADERS += \
   $$PWD/hourglass/activity.h \
   $$PWD/hourglass/activitynameslistmodel.h \
   $$PWD/hourglass/currentactivitytablemodel.h \
-  $$PWD/hourglass/abstractnameslistmodel.h
+  $$PWD/hourglass/abstractnameslistmodel.h \
+  $$PWD/hourglass/databasemanager.h
