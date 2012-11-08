@@ -17,12 +17,78 @@ void TestRecord::init()
 void TestRecord::cleanup()
 {
   m_database.close();
+  while (!m_records.isEmpty()) {
+    delete m_records.takeLast();
+  }
 }
 
 void TestRecord::cleanupTestCase()
 {
   m_database = QSqlDatabase();
   QSqlDatabase::removeDatabase("QSQLITE");
+}
+
+void TestRecord::find()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
+
+  m_records = Record::find<Record>("foo");
+  QCOMPARE(m_records.size(), 1);
+  QCOMPARE(m_records[0]->id(), 1);
+  QCOMPARE(m_records[0]->get("bar").toString(), QString("foo"));
+}
+
+void TestRecord::findWithConditions()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar')");
+
+  m_records = Record::find<Record>("foo", "WHERE bar = 'foo'");
+  QCOMPARE(m_records.size(), 1);
+  QCOMPARE(m_records[0]->id(), 1);
+  QCOMPARE(m_records[0]->get("bar").toString(), QString("foo"));
+}
+
+void TestRecord::findWithConditionsAndPredicate()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar 2'), ('bar 1')");
+
+  m_records = Record::find<Record>("foo", "WHERE bar LIKE 'bar%'", "ORDER BY bar");
+  QCOMPARE(m_records.size(), 2);
+  QCOMPARE(m_records[0]->id(), 3);
+  QCOMPARE(m_records[0]->get("bar").toString(), QString("bar 1"));
+  QCOMPARE(m_records[1]->id(), 2);
+  QCOMPARE(m_records[1]->get("bar").toString(), QString("bar 2"));
+}
+
+void TestRecord::findWithConditionsAndBindValues()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar')");
+
+  QList<QVariant> bindValues;
+  bindValues << "bar";
+  m_records = Record::find<Record>("foo", "WHERE bar = ?", bindValues);
+  QCOMPARE(m_records.size(), 1);
+  QCOMPARE(m_records[0]->id(), 2);
+  QCOMPARE(m_records[0]->get("bar").toString(), QString("bar"));
+}
+
+void TestRecord::findWithEverything()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar 2'), ('bar 1')");
+
+  QList<QVariant> bindValues;
+  bindValues << "bar%";
+  m_records = Record::find<Record>("foo", "WHERE bar LIKE ?", bindValues, "ORDER BY bar");
+  QCOMPARE(m_records.size(), 2);
+  QCOMPARE(m_records[0]->id(), 3);
+  QCOMPARE(m_records[0]->get("bar").toString(), QString("bar 1"));
+  QCOMPARE(m_records[1]->id(), 2);
+  QCOMPARE(m_records[1]->get("bar").toString(), QString("bar 2"));
 }
 
 void TestRecord::findIds()

@@ -18,6 +18,12 @@ class TestRecord : public QObject
     void cleanup();
     void cleanupTestCase();
 
+    void find();
+    void findWithConditions();
+    void findWithConditionsAndPredicate();
+    void findWithConditionsAndBindValues();
+    void findWithEverything();
+
     void findIds();
     void findIdsWithConditions();
     void findIdsWithConditionsAndPredicate();
@@ -26,6 +32,7 @@ class TestRecord : public QObject
 
   private:
     QSqlDatabase m_database;
+    QList<Record *> m_records;
 
     void executeQuery(const QString &query);
 };
