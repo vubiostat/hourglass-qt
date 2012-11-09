@@ -152,12 +152,6 @@ void Record::unset(const QString &attributeName)
   modified = true;
 }
 
-bool Record::containsAttribute(const QString &attributeName) const
-{
-  return dirtyAttributes.contains(attributeName) ||
-    attributes.contains(attributeName);
-}
-
 int Record::id() const
 {
   QVariant id = get("id");

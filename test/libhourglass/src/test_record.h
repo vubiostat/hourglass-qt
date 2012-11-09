@@ -18,17 +18,30 @@ class TestRecord : public QObject
     void cleanup();
     void cleanupTestCase();
 
-    void find();
-    void findWithConditions();
-    void findWithConditionsAndPredicate();
-    void findWithConditionsAndBindValues();
-    void findWithEverything();
+    void staticFind();
+    void staticFindWithParent();
+    void staticFindWithConditions();
+    void staticFindWithConditionsAndPredicate();
+    void staticFindWithConditionsAndBindValues();
+    void staticFindWithEverything();
 
-    void findIds();
-    void findIdsWithConditions();
-    void findIdsWithConditionsAndPredicate();
-    void findIdsWithConditionsAndBindValues();
-    void findIdsWithEverything();
+    void staticFindIds();
+    void staticFindIdsWithConditions();
+    void staticFindIdsWithConditionsAndPredicate();
+    void staticFindIdsWithConditionsAndBindValues();
+    void staticFindIdsWithEverything();
+
+    void staticCount();
+    void staticCountWithConditions();
+    void staticCountWithConditionsAndBindValues();
+
+    void getDirty();
+    void getOriginal();
+
+    void isModifiedAfterSet();
+
+    void unsetOriginalValue();
+    void unsetDirtyValue();
 
   private:
     QSqlDatabase m_database;

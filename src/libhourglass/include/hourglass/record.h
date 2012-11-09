@@ -102,7 +102,6 @@ class Record : public QObject
     QVariant get(const QString &attributeName, bool dirty = true) const;
     void set(const QString &attributeName, const QVariant &value);
     void unset(const QString &attributeName);
-    bool containsAttribute(const QString &attributeName) const;
 
     int id() const;
     bool isNew() const;

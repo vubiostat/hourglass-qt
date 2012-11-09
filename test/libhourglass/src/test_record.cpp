@@ -28,7 +28,7 @@ void TestRecord::cleanupTestCase()
   QSqlDatabase::removeDatabase("QSQLITE");
 }
 
-void TestRecord::find()
+void TestRecord::staticFind()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
@@ -39,7 +39,17 @@ void TestRecord::find()
   QCOMPARE(m_records[0]->get("bar").toString(), QString("foo"));
 }
 
-void TestRecord::findWithConditions()
+void TestRecord::staticFindWithParent()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
+
+  m_records = Record::find<Record>("foo", this);
+  QCOMPARE(m_records.size(), 1);
+  QCOMPARE(m_records[0]->parent(), this);
+}
+
+void TestRecord::staticFindWithConditions()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar')");
@@ -50,7 +60,7 @@ void TestRecord::findWithConditions()
   QCOMPARE(m_records[0]->get("bar").toString(), QString("foo"));
 }
 
-void TestRecord::findWithConditionsAndPredicate()
+void TestRecord::staticFindWithConditionsAndPredicate()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar 2'), ('bar 1')");
@@ -63,7 +73,7 @@ void TestRecord::findWithConditionsAndPredicate()
   QCOMPARE(m_records[1]->get("bar").toString(), QString("bar 2"));
 }
 
-void TestRecord::findWithConditionsAndBindValues()
+void TestRecord::staticFindWithConditionsAndBindValues()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar')");
@@ -76,7 +86,7 @@ void TestRecord::findWithConditionsAndBindValues()
   QCOMPARE(m_records[0]->get("bar").toString(), QString("bar"));
 }
 
-void TestRecord::findWithEverything()
+void TestRecord::staticFindWithEverything()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar 2'), ('bar 1')");
@@ -91,7 +101,7 @@ void TestRecord::findWithEverything()
   QCOMPARE(m_records[1]->get("bar").toString(), QString("bar 2"));
 }
 
-void TestRecord::findIds()
+void TestRecord::staticFindIds()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
@@ -101,7 +111,7 @@ void TestRecord::findIds()
   QCOMPARE(ids[0], 1);
 }
 
-void TestRecord::findIdsWithConditions()
+void TestRecord::staticFindIdsWithConditions()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar')");
@@ -111,7 +121,7 @@ void TestRecord::findIdsWithConditions()
   QCOMPARE(ids[0], 2);
 }
 
-void TestRecord::findIdsWithConditionsAndPredicate()
+void TestRecord::staticFindIdsWithConditionsAndPredicate()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar 2'), ('bar 1')");
@@ -122,7 +132,7 @@ void TestRecord::findIdsWithConditionsAndPredicate()
   QCOMPARE(ids[1], 2);
 }
 
-void TestRecord::findIdsWithConditionsAndBindValues()
+void TestRecord::staticFindIdsWithConditionsAndBindValues()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar')");
@@ -134,7 +144,7 @@ void TestRecord::findIdsWithConditionsAndBindValues()
   QCOMPARE(ids[0], 2);
 }
 
-void TestRecord::findIdsWithEverything()
+void TestRecord::staticFindIdsWithEverything()
 {
   executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
   executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar 2'), ('bar 1')");
@@ -145,6 +155,84 @@ void TestRecord::findIdsWithEverything()
   QCOMPARE(ids.size(), 2);
   QCOMPARE(ids[0], 3);
   QCOMPARE(ids[1], 2);
+}
+
+void TestRecord::staticCount()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
+
+  QCOMPARE(Record::count("foo"), 1);
+}
+
+void TestRecord::staticCountWithConditions()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar')");
+
+  QCOMPARE(Record::count("foo", "WHERE bar = 'bar'"), 1);
+}
+
+void TestRecord::staticCountWithConditionsAndBindValues()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo'), ('bar')");
+
+  QList<QVariant> bindValues;
+  bindValues << "bar";
+  QCOMPARE(Record::count("foo", "WHERE bar = ?", bindValues), 1);
+}
+
+void TestRecord::getDirty()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
+
+  m_records = Record::find<Record>("foo");
+  m_records[0]->set("bar", "baz");
+  QCOMPARE(m_records[0]->get("bar").toString(), QString("baz"));
+}
+
+void TestRecord::getOriginal()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
+
+  m_records = Record::find<Record>("foo");
+  m_records[0]->set("bar", "baz");
+  QCOMPARE(m_records[0]->get("bar", false).toString(), QString("foo"));
+}
+
+void TestRecord::isModifiedAfterSet()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
+
+  m_records = Record::find<Record>("foo");
+  m_records[0]->set("bar", "baz");
+  QVERIFY(m_records[0]->isModified());
+}
+
+void TestRecord::unsetOriginalValue()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
+
+  m_records = Record::find<Record>("foo");
+  m_records[0]->unset("bar");
+  QCOMPARE(m_records[0]->get("bar"), QVariant());
+  QCOMPARE(m_records[0]->get("bar", false).toString(), QString("foo"));
+}
+
+void TestRecord::unsetDirtyValue()
+{
+  executeQuery("CREATE TABLE foo (id INTEGER PRIMARY KEY AUTOINCREMENT, bar TEXT)");
+  executeQuery("INSERT INTO foo (bar) VALUES ('foo')");
+
+  m_records = Record::find<Record>("foo");
+  m_records[0]->set("bar", "baz");
+  m_records[0]->unset("bar");
+  QCOMPARE(m_records[0]->get("bar").toString(), QString("foo"));
 }
 
 void TestRecord::executeQuery(const QString &query)
