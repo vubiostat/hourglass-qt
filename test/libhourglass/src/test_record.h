@@ -8,6 +8,53 @@
 #include <QtTest/QtTest>
 #include "hourglass/record.h"
 
+class RecordSpy : public Record
+{
+  Q_OBJECT
+
+  public:
+    RecordSpy(QObject *parent = 0);
+    RecordSpy(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
+
+    bool wasNewAfterCreate();
+    bool wasNewAfterSave();
+    bool beforeValidationCalled();
+    bool beforeCreateCalled();
+    bool beforeSaveCalled();
+
+  protected:
+    void beforeCreate();
+    void beforeSave();
+    void afterCreate();
+    void afterSave();
+    void beforeValidation();
+
+  private:
+    bool m_wasNewAfterCreate;
+    bool m_wasNewAfterSave;
+    bool m_beforeValidationCalled;
+    bool m_beforeCreateCalled;
+    bool m_beforeSaveCalled;
+
+    void initializeValues();
+};
+
+class RecordMock : public Record
+{
+  Q_OBJECT
+
+  public:
+    RecordMock(QObject *parent = 0);
+
+    void setValidateReturnValue(bool value);
+
+  protected:
+    bool validate();
+
+  private:
+    bool m_validateReturnValue;
+};
+
 class TestRecord : public QObject
 {
   Q_OBJECT
@@ -38,14 +85,31 @@ class TestRecord : public QObject
     void getDirty();
     void getOriginal();
 
-    void isModifiedAfterSet();
-
     void unsetOriginalValue();
     void unsetDirtyValue();
+
+    void isNew();
+    void wasNew();
+
+    void isModifiedInitialValue();
+    void isModifiedAfterSet();
+    void isModifiedAfterUnset();
+
+    void isValidDependsOnValidate();
+    void isValidCallsBeforeValidation();
+
+    void saveNewRecord();
+    void saveReturnsFalseIfInvalid();
+    void saveCallsBeforeCreateForNewRecordsOnly();
+    void saveCallsBeforeSave();
+
+    void destroyNewRecordReturnsFalse();
+    void destroyExistingRecord();
 
   private:
     QSqlDatabase m_database;
     QList<Record *> m_records;
+    QList<RecordSpy *> m_record_spies;
 
     void executeQuery(const QString &query);
 };

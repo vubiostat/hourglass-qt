@@ -261,7 +261,7 @@ bool Record::save(const QString &tableName)
     wasNewRecord = false;
   }
   else {
-    qDebug() << "Query failed:" << query.lastError();
+    qDebug() << "Query failed:" << queryString << query.lastError();
   }
   return result;
 }
