@@ -68,24 +68,29 @@ const QString Activity::s_countChangesSinceWithDayConditionsTemplate = QString(
 
 const QString Activity::s_nullProjectName = QString("Unsorted");
 
+const QString &Activity::classTableName()
+{
+  return s_tableName;
+}
+
 QList<Activity *> Activity::find(QObject *parent)
 {
-  return Record::find<Activity>(s_tableName, QString(), s_defaultQueryPredicate, parent);
+  return Record::find<Activity>(QString(), s_defaultQueryPredicate, parent);
 }
 
 QList<Activity *> Activity::find(const QString &conditions, QObject *parent)
 {
-  return Record::find<Activity>(s_tableName, conditions, s_defaultQueryPredicate, parent);
+  return Record::find<Activity>(conditions, s_defaultQueryPredicate, parent);
 }
 
 QList<Activity *> Activity::find(const QString &conditions, const QString &predicate, QObject *parent)
 {
-  return Record::find<Activity>(s_tableName, conditions, predicate, parent);
+  return Record::find<Activity>(conditions, predicate, parent);
 }
 
 Activity *Activity::findById(int id, QObject *parent)
 {
-  return Record::findById<Activity>(s_tableName, id, parent);
+  return Record::findById<Activity>(id, parent);
 }
 
 QList<Activity *> Activity::findCurrent(QObject *parent)
@@ -110,17 +115,17 @@ QList<Activity *> Activity::findPeriod(const QDate &startDate, const QDate &endD
 
 QList<int> Activity::findIds()
 {
-  return Record::findIds(s_tableName, QString(), s_defaultQueryPredicate);
+  return Record::findIds<Activity>(QString(), s_defaultQueryPredicate);
 }
 
 QList<int> Activity::findIds(const QString &conditions)
 {
-  return Record::findIds(s_tableName, conditions, s_defaultQueryPredicate);
+  return Record::findIds<Activity>(conditions, s_defaultQueryPredicate);
 }
 
 QList<int> Activity::findIds(const QString &conditions, const QString &predicate)
 {
-  return Record::findIds(s_tableName, conditions, predicate);
+  return Record::findIds<Activity>(conditions, predicate);
 }
 
 QList<int> Activity::findCurrentIds()
@@ -144,12 +149,12 @@ QList<int> Activity::findPeriodIds(const QDate &startDate, const QDate &endDate)
 }
 
 int Activity::count() {
-  return Record::count(s_tableName);
+  return Record::count<Activity>();
 }
 
 int Activity::count(const QString &conditions)
 {
-  return Record::count(s_tableName, conditions);
+  return Record::count<Activity>(conditions);
 }
 
 int Activity::countChangesSince(const QDateTime &dateTime)
@@ -355,6 +360,11 @@ Activity::Activity(const QMap<QString, QVariant> &attributes, bool newRecord, QO
 Activity::~Activity()
 {
   qDebug() << "Activity" << id() << "was deconstructed.";
+}
+
+const QString &Activity::tableName() const
+{
+  return s_tableName;
 }
 
 // Attribute getters/setters
@@ -874,17 +884,6 @@ bool Activity::isSimilarTo(const Activity *other) const
 bool Activity::occursOn(const QDate &date) const
 {
   return (isUntimed() && day() == date) || (!isUntimed() && startedAt().date() == date);
-}
-
-// Overriden Record functions
-bool Activity::save()
-{
-  return Record::save(s_tableName);
-}
-
-bool Activity::destroy()
-{
-  return Record::destroy(s_tableName);
 }
 
 void Activity::stop()

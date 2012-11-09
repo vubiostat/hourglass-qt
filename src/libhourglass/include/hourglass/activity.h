@@ -18,6 +18,8 @@ class Activity : public Record
   Q_OBJECT
 
   public:
+    static const QString &classTableName();
+
     static QList<Activity *> find(QObject *parent = 0);
     static QList<Activity *> find(const QString &conditions, QObject *parent = 0);
     static QList<Activity *> find(const QString &conditions, const QString &predicate, QObject *parent = 0);
@@ -51,6 +53,8 @@ class Activity : public Record
     Activity(QObject *parent = 0);
     Activity(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
     ~Activity();
+
+    const QString &tableName() const;
 
     // Attribute getters
     QString name() const;
@@ -102,9 +106,6 @@ class Activity : public Record
     QVariantMap toVariantMap() const;
     bool isSimilarTo(const Activity *other) const;
     bool occursOn(const QDate &date) const;
-
-    bool save();
-    bool destroy();
 
   public slots:
     void stop();

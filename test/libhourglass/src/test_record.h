@@ -8,7 +8,21 @@
 #include <QtTest/QtTest>
 #include "hourglass/record.h"
 
-class RecordSpy : public Record
+class RecordSub : public Record
+{
+  public:
+    static const QString &classTableName();
+
+    RecordSub(QObject *parent = 0);
+    RecordSub(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
+
+    const QString &tableName() const;
+
+  private:
+    static const QString s_tableName;
+};
+
+class RecordSpy : public RecordSub
 {
   Q_OBJECT
 
@@ -39,12 +53,13 @@ class RecordSpy : public Record
     void initializeValues();
 };
 
-class RecordMock : public Record
+class RecordMock : public RecordSub
 {
   Q_OBJECT
 
   public:
     RecordMock(QObject *parent = 0);
+    RecordMock(const QMap<QString, QVariant> &attributes, bool newRecord, QObject *parent = 0);
 
     void setValidateReturnValue(bool value);
 
@@ -108,7 +123,7 @@ class TestRecord : public QObject
 
   private:
     QSqlDatabase m_database;
-    QList<Record *> m_records;
+    QList<RecordSub *> m_records;
     QList<RecordSpy *> m_record_spies;
 
     void executeQuery(const QString &query);

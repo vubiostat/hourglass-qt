@@ -5,6 +5,8 @@
 #include <QStringList>
 #include "hourglass/tag.h"
 
+const QString Tag::s_tableName = QString("tags");
+
 const QString Tag::findActivityTagsQuery = QString(
     "SELECT tags.id, tags.name FROM activities_tags "
     "JOIN tags ON activities_tags.tag_id = tags.id "
@@ -13,24 +15,29 @@ const QString Tag::findActivityTagsQuery = QString(
 const QString Tag::distinctNamesQuery = QString(
     "SELECT DISTINCT name FROM tags ORDER BY name");
 
+const QString &Tag::classTableName()
+{
+  return s_tableName;
+}
+
 QList<Tag *> Tag::find(QObject *parent)
 {
-  return Record::find<Tag>("tags", parent);
+  return Record::find<Tag>(parent);
 }
 
 QList<Tag *> Tag::find(const QString &conditions, QObject *parent)
 {
-  return Record::find<Tag>("tags", conditions, parent);
+  return Record::find<Tag>(conditions, parent);
 }
 
 QList<Tag *> Tag::find(const QString &conditions, const QList<QVariant> &bindValues, QObject *parent)
 {
-  return Record::find<Tag>("tags", conditions, bindValues, parent);
+  return Record::find<Tag>(conditions, bindValues, parent);
 }
 
 Tag *Tag::findById(int id, QObject *parent)
 {
-  return Record::findById<Tag>("tags", id, parent);
+  return Record::findById<Tag>(id, parent);
 }
 
 Tag *Tag::findOrCreateByName(const QString &name, QObject *parent)
@@ -89,6 +96,11 @@ QStringList Tag::distinctNames()
   return names;
 }
 
+const QString &Tag::tableName() const
+{
+  return s_tableName;
+}
+
 QString Tag::name() const
 {
   return get("name").toString();
@@ -97,9 +109,4 @@ QString Tag::name() const
 void Tag::setName(const QString &name)
 {
   set("name", name);
-}
-
-bool Tag::save()
-{
-  return Record::save("tags");
 }

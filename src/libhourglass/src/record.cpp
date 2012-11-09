@@ -3,6 +3,7 @@
 #include <QSqlError>
 
 QSqlDatabase Record::s_database;
+const QString Record::s_emptyTableName = QString();
 
 QSqlDatabase &Record::database()
 {
@@ -14,79 +15,9 @@ void Record::setDatabase(QSqlDatabase &database)
   s_database = database;
 }
 
-QList<int> Record::findIds(const QString &tableName)
+const QString &Record::classTableName()
 {
-  return findIds(tableName, QString());
-}
-
-QList<int> Record::findIds(const QString &tableName, const QString &conditions)
-{
-  QList<QVariant> emptyBindValues;
-  return findIds(tableName, conditions, emptyBindValues);
-}
-
-QList<int> Record::findIds(const QString &tableName, const QString &conditions, const QString &predicate)
-{
-  QList<QVariant> emptyBindValues;
-  return findIds(tableName, conditions, emptyBindValues, predicate);
-}
-
-QList<int> Record::findIds(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues)
-{
-  return findIds(tableName, conditions, bindValues, QString());
-}
-
-QList<int> Record::findIds(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate)
-{
-  QSqlQuery query;
-  if (!executeFindQuery(query, tableName, "id", conditions, bindValues, predicate)) {
-    qDebug() << "Query failed:" << query.lastQuery();
-    return QList<int>();
-  }
-
-  QList<int> result;
-  while (query.next()) {
-    result.append(query.value(0).toInt());
-  }
-  return result;
-}
-
-int Record::count(const QString &tableName)
-{
-  return count(tableName, QString());
-}
-
-int Record::count(const QString &tableName, const QString &conditions)
-{
-  QList<QVariant> emptyBindValues;
-  return count(tableName, conditions, emptyBindValues);
-}
-
-int Record::count(const QString &tableName, const QString &conditions, const QList<QVariant> &bindValues)
-{
-  QStringList queryStrings;
-  queryStrings << "SELECT COUNT(*) FROM";
-  queryStrings << tableName;
-  if (!conditions.isEmpty()) {
-    queryStrings << conditions;
-  }
-  QString queryString = queryStrings.join(" ");
-
-  QSqlDatabase database = Record::database();
-  QSqlQuery query(database);
-  query.prepare(queryString);
-  for (int i = 0; i < bindValues.size(); i++) {
-    query.addBindValue(bindValues[i]);
-  }
-  if (!query.exec()) {
-    qDebug() << "Query failed:" << queryString;
-    return -1;
-  }
-
-  if (query.next()) {
-    return query.value(0).toInt();
-  }
-  return -1;
+  return s_emptyTableName;
 }
 
 Record::Record(QObject *parent)
@@ -191,7 +122,7 @@ bool Record::validate()
   return true;
 }
 
-bool Record::save(const QString &tableName)
+bool Record::save()
 {
   if (!isValid()) {
     return false;
@@ -209,7 +140,7 @@ bool Record::save(const QString &tableName)
   else {
     queryString.append("UPDATE ");
   }
-  queryString.append(tableName + " ");
+  queryString.append(tableName() + " ");
 
   QStringList keys = dirtyAttributes.keys();
   if (newRecord) {
@@ -292,13 +223,13 @@ void Record::afterCreate()
 {
 }
 
-bool Record::destroy(const QString &tableName)
+bool Record::destroy()
 {
   if (newRecord) {
     return false;
   }
 
-  QString queryString("DELETE FROM " + tableName + " WHERE id = ?");
+  QString queryString("DELETE FROM " + tableName() + " WHERE id = ?");
 
   QSqlDatabase database = Record::database();
   QSqlQuery query(database);
@@ -325,6 +256,11 @@ bool Record::operator==(const Record &other)
 
 bool Record::executeFindQuery(QSqlQuery &query, const QString &tableName, const QString &select, const QString &conditions, const QList<QVariant> &bindValues, const QString &predicate)
 {
+  if (tableName.isEmpty()) {
+    qDebug() << "Empty table name!";
+    return false;
+  }
+
   QStringList queryStrings;
   queryStrings << "SELECT " << select << " FROM";
   queryStrings << tableName;

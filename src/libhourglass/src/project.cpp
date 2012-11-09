@@ -5,6 +5,8 @@
 #include <QStringList>
 #include "hourglass/project.h"
 
+const QString Project::s_tableName = QString("projects");
+
 const QString Project::findQuery = QString(
     "SELECT id, name FROM projects");
 
@@ -14,19 +16,24 @@ const QString Project::insertQuery = QString(
 const QString Project::distinctNamesQuery = QString(
     "SELECT DISTINCT name FROM projects ORDER BY name");
 
+const QString &Project::classTableName()
+{
+  return s_tableName;
+}
+
 QList<Project *> Project::find(const QString &conditions, QObject *parent)
 {
-  return Record::find<Project>("projects", conditions, parent);
+  return Record::find<Project>(conditions, parent);
 }
 
 QList<Project *> Project::find(const QString &conditions, const QList<QVariant> &bindValues, QObject *parent)
 {
-  return Record::find<Project>("projects", conditions, bindValues, parent);
+  return Record::find<Project>(conditions, bindValues, parent);
 }
 
 Project *Project::findById(int id, QObject *parent)
 {
-  return Record::findById<Project>("projects", id, parent);
+  return Record::findById<Project>(id, parent);
 }
 
 int Project::findOrCreateByName(const QString &name)
@@ -66,10 +73,10 @@ QList<QString> Project::distinctNames()
   return names;
 }
 
-bool Project::save()
+const QString &Project::tableName() const
 {
-  return Record::save("projects");
-}
+  return s_tableName;
+};
 
 QString Project::name() const
 {
